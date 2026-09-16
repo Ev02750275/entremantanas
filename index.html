@@ -8,8 +8,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome CDN -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- SDKs de Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -17,16 +15,11 @@
         .cal-day-reserva { background-color: #fde68a !important; color: #92400e !important; font-weight: bold; }
         .cal-day-curso { background-color: #a7f3d0 !important; color: #065f46 !important; font-weight: bold; }
         .cal-day-terminada { background-color: #e2e8f0 !important; color: #64748b !important; }
-        @media print {
-            body * { visibility: hidden; }
-            #areaImpresionPDF, #areaImpresionPDF * { visibility: visible; }
-            #areaImpresionPDF { position: absolute; left: 0; top: 0; width: 100%; }
-        }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 pb-12">
 
-    <!-- FRANJA VERDE SUPERIOR ORIGINAL -->
+    <!-- HEADER SUPERIOR -->
     <header class="bg-emerald-800 text-white p-4 md:p-6 shadow-md">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
@@ -63,7 +56,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
-            <!-- FORMULARIO -->
+            <!-- FORMULARIO PRINCIPAL DE RESERVAS -->
             <section class="lg:col-span-3 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <div class="flex justify-between items-center border-b pb-2 mb-4">
                     <h2 id="formTitulo" class="text-xl font-bold text-emerald-900"><i class="fa-solid fa-calendar-plus mr-2"></i>Ingresar / Editar Reserva</h2>
@@ -179,7 +172,7 @@
                         </select>
                     </div>
 
-                    <!-- CONTROL DE ABONOS (BOTÓN CORREGIDO CON TYPE="BUTTON") -->
+                    <!-- CONTROL DE ABONOS -->
                     <div class="bg-amber-50 p-3 rounded-lg border border-amber-200">
                         <label class="block font-bold text-xs uppercase text-amber-900 mb-2"><i class="fa-solid fa-money-bill-transfer mr-1"></i> Control de Ingresos / Abonos</label>
                         <div class="flex gap-2 mb-2">
@@ -305,30 +298,173 @@
 
     </main>
 
-    <!-- MODALES ORIGINALEA -->
+    <!-- MODAL 1: COSTOS DE CABAÑA (CONFIGURACIÓN DIARIA Y FIJA) -->
     <div id="modalCostos" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="text-lg font-bold text-amber-900"><i class="fa-solid fa-house-chimney-crack mr-2"></i>Estructura de Costos Cabaña</h3>
-                <button type="button" onclick="toggleModal('modalCostos')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <h3 class="text-lg font-bold text-amber-900 flex items-center">
+                    <i class="fa-solid fa-house-chimney-crack mr-2"></i>Estructura de Costos Cabaña
+                </h3>
+                <button type="button" onclick="toggleModal('modalCostos')" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
             </div>
-            <form id="formCostosCasa" class="grid grid-cols-2 gap-3 text-xs">
-                <div><label class="font-bold text-slate-600">Parafina ($/día)</label><input type="number" id="cParafina" value="3000" class="border rounded p-1.5 w-full"></div>
-                <div><label class="font-bold text-slate-600">Gas ($/día)</label><input type="number" id="cGas" value="2500" class="border rounded p-1.5 w-full"></div>
-                <div><label class="font-bold text-slate-600">Electricidad ($/día)</label><input type="number" id="cElectricidad" value="2000" class="border rounded p-1.5 w-full"></div>
-                <div><label class="font-bold text-slate-600">Leña ($/día)</label><input type="number" id="cLena" value="4000" class="border rounded p-1.5 w-full"></div>
-                <div><label class="font-bold text-slate-600">Starlink ($/día)</label><input type="number" id="cStarlinkDiario" value="1500" class="border rounded p-1.5 w-full"></div>
-                <div><label class="font-bold text-slate-600">MasPlagas ($/día)</label><input type="number" id="cMasPlagasDiario" value="1000" class="border rounded p-1.5 w-full"></div>
-                <div class="col-span-2"><label class="font-bold text-slate-600">Detergentes, papel e insumos ($/día)</label><input type="number" id="cDetergentesPapel" value="2000" class="border rounded p-1.5 w-full"></div>
-                <div><label class="font-bold text-teal-800">Aseo Cabaña ($/fijo)</label><input type="number" id="cAseo" value="25000" class="border rounded p-1.5 w-full font-bold"></div>
-                <div><label class="font-bold text-teal-800">Regalo Bienvenida ($/fijo)</label><input type="number" id="cRegalo" value="1500" class="border rounded p-1.5 w-full font-bold"></div>
+
+            <form id="formCostosCasa" class="space-y-4 text-xs">
+                <div class="bg-amber-50/70 border border-amber-200/60 p-2 rounded-lg font-bold text-amber-900 tracking-wide text-[11px] uppercase">
+                    COSTO DIARIO DE OPERACIÓN ($/DÍA)
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Parafina ($/día)</label>
+                        <input type="number" id="cParafina" value="5000" oninput="calcularCostosTotalesModal()" class="border rounded-lg p-2 w-full text-slate-800">
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Gas ($/día)</label>
+                        <input type="number" id="cGas" value="2500" oninput="calcularCostosTotalesModal()" class="border rounded-lg p-2 w-full text-slate-800">
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Electricidad ($/día)</label>
+                        <input type="number" id="cElectricidad" value="27000" oninput="calcularCostosTotalesModal()" class="border rounded-lg p-2 w-full text-slate-800">
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Leña ($/día)</label>
+                        <input type="number" id="cLena" value="6000" oninput="calcularCostosTotalesModal()" class="border rounded-lg p-2 w-full text-slate-800">
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Starlink ($/día)</label>
+                        <input type="number" id="cStarlinkDiario" value="5000" oninput="calcularCostosTotalesModal()" class="border rounded-lg p-2 w-full text-slate-800">
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">MasPlagas ($/día)</label>
+                        <input type="number" id="cMasPlagasDiario" value="5000" oninput="calcularCostosTotalesModal()" class="border rounded-lg p-2 w-full text-slate-800">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="font-bold text-slate-700 block mb-1">Detergentes, papel e insumos ($/día)</label>
+                        <input type="number" id="cDetergentesPapel" value="1000" oninput="calcularCostosTotalesModal()" class="border rounded-lg p-2 w-full text-slate-800">
+                    </div>
+                </div>
+
+                <div class="bg-emerald-50/70 border border-emerald-200/60 p-2 rounded-lg font-bold text-emerald-900 tracking-wide text-[11px] uppercase">
+                    COSTOS FIJOS POR PERÍODO DE ARRIENDO ($/RESERVA)
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Aseo Cabaña ($/fijo)</label>
+                        <input type="number" id="cAseo" value="110000" oninput="calcularCostosTotalesModal()" class="border rounded-lg p-2 w-full font-bold text-slate-800">
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Regalo Bienvenida ($/fijo)</label>
+                        <input type="number" id="cRegalo" value="10000" oninput="calcularCostosTotalesModal()" class="border rounded-lg p-2 w-full font-bold text-slate-800">
+                    </div>
+                </div>
+
+                <div class="bg-amber-50/80 p-3.5 rounded-xl border border-amber-200/70 space-y-1 text-xs">
+                    <div class="flex justify-between items-center font-bold text-amber-950">
+                        <span>COSTO OPERATIVO DIARIO TOTAL:</span>
+                        <span id="lblCostoDiarioTotal" class="text-sm font-black text-amber-900">$51.500</span>
+                    </div>
+                    <div class="flex justify-between items-center font-bold text-amber-950">
+                        <span>COSTO FIJO BASE POR RESERVA (Aseo + Regalo):</span>
+                        <span id="lblCostoFijoBase" class="text-sm font-black text-amber-900">$120.000</span>
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-2 border-t">
+                    <button type="button" onclick="guardarCostosCasa()" class="bg-amber-800 hover:bg-amber-900 text-white font-bold py-2.5 px-6 rounded-lg text-xs shadow transition-all">
+                        Guardar Configuración
+                    </button>
+                </div>
             </form>
-            <div class="flex justify-end gap-2 border-t pt-3">
-                <button type="button" onclick="guardarCostosCasa()" class="bg-amber-700 hover:bg-amber-800 text-white font-bold py-2 px-4 rounded-lg text-xs">Guardar Configuración</button>
+        </div>
+    </div>
+
+    <!-- MODAL 2: MÁRGENES DE OPERACIÓN REALES -->
+    <div id="modalMargenes" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="text-lg font-bold text-teal-900 flex items-center"><i class="fa-solid fa-scale-balanced mr-2"></i>Análisis de Márgenes Operativos</h3>
+                <button type="button" onclick="toggleModal('modalMargenes')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            
+            <div class="space-y-3 text-xs">
+                <div class="p-3 bg-teal-50 border border-teal-200 rounded-lg space-y-1">
+                    <span class="font-bold text-teal-900 block text-sm">Costo Operativo Diario Base:</span>
+                    <div class="flex justify-between text-teal-800"><span>Gasto Diario (Insumos + Servicios):</span><strong id="margenCostoDiario">$51.500 /día</strong></div>
+                    <div class="flex justify-between text-teal-800"><span>Costo Fijo por Reserva (Aseo/Regalo):</span><strong id="margenCostoFijo">$120.000 /reserva</strong></div>
+                </div>
+
+                <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg space-y-1.5">
+                    <span class="font-bold text-emerald-900 block text-sm">Rendimiento Sobre Tarifa Base ($380.000/noche):</span>
+                    <div class="flex justify-between text-slate-700"><span>Margen Bruto Operativo:</span><strong id="margenPorcentajeBruto" class="text-emerald-700 font-bold">86.4%</strong></div>
+                    <div class="flex justify-between text-slate-700"><span>Margen Neto Estimado (post aseo 2 noches):</span><strong id="margenPorcentajeNeto" class="text-emerald-800 font-extrabold">70.6%</strong></div>
+                </div>
+
+                <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-600">
+                    <p class="text-[11px] leading-relaxed">
+                        * El margen neto disminuye proporcionalmente en estadías de 1 solo día debido al peso del costo fijo de aseo ($110.000), y se optimiza en estadías de 3 o más noches.
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- MODAL 3: KPIS Y MÉTRICAS DE NEGOCIO COMPLETAS -->
+    <div id="modalKPIs" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="bg-white rounded-xl shadow-xl max-w-5xl w-full p-6 space-y-6 my-8">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-xl font-bold text-blue-900 flex items-center"><i class="fa-solid fa-chart-pie mr-2"></i>Centro de Analítica & KPIs de Negocio</h3>
+                <button type="button" onclick="toggleModal('modalKPIs')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div class="bg-blue-50 p-3.5 rounded-xl border border-blue-100">
+                    <span class="text-[10px] font-bold text-blue-600 uppercase">Noches Arrendadas</span>
+                    <h4 id="kpiDiasAno" class="text-xl font-black text-blue-900 mt-1">0 noches</h4>
+                </div>
+                <div class="bg-emerald-50 p-3.5 rounded-xl border border-emerald-100">
+                    <span class="text-[10px] font-bold text-emerald-600 uppercase">Ingreso Bruto Total</span>
+                    <h4 id="kpiIngresosBrutosAno" class="text-lg font-black text-emerald-900 mt-1">$0</h4>
+                </div>
+                <div class="bg-indigo-50 p-3.5 rounded-xl border border-indigo-100">
+                    <span class="text-[10px] font-bold text-indigo-600 uppercase">Tarifa Promedio (ADR)</span>
+                    <h4 id="kpiADR" class="text-lg font-black text-indigo-900 mt-1">$0 /noche</h4>
+                </div>
+                <div class="bg-amber-50 p-3.5 rounded-xl border border-amber-100">
+                    <span class="text-[10px] font-bold text-amber-600 uppercase">Tasa de Ocupación</span>
+                    <h4 id="kpiOcupacion" class="text-lg font-black text-amber-900 mt-1">0%</h4>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                    <span class="font-bold text-slate-700 text-xs uppercase block border-b pb-1">Ventas por Canal</span>
+                    <div id="kpiCanales" class="text-xs space-y-1 text-slate-600">
+                        <!-- Generado por JS -->
+                    </div>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                    <span class="font-bold text-slate-700 text-xs uppercase block border-b pb-1">Gastos & Costos Totales</span>
+                    <div class="text-xs space-y-1 text-slate-600">
+                        <div class="flex justify-between"><span>Costos Operativos:</span><strong id="kpiCostosOperativos">$0</strong></div>
+                        <div class="flex justify-between"><span>Comisiones Canal:</span><strong id="kpiComisiones">$0</strong></div>
+                        <div class="flex justify-between"><span>Bencina & Extras:</span><strong id="kpiBencinaExtras">$0</strong></div>
+                    </div>
+                </div>
+                <div class="bg-emerald-900 text-white p-4 rounded-xl space-y-2 flex flex-col justify-between">
+                    <div>
+                        <span class="font-bold text-emerald-300 text-xs uppercase block border-b border-emerald-800 pb-1">Utilidad Neta Real</span>
+                        <h3 id="kpiUtilidadNeta" class="text-2xl font-black text-emerald-400 mt-2">$0</h3>
+                    </div>
+                    <p class="text-[10px] text-emerald-200">* Calculado descontando todos los costos diarios, aseos, regalos y comisiones de canales.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DIRECTORIO DE HUÉSPEDES -->
     <div id="modalHuespedes" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-2">
@@ -351,32 +487,7 @@
         </div>
     </div>
 
-    <div id="modalMargenes" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
-            <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="text-lg font-bold text-teal-900"><i class="fa-solid fa-scale-balanced mr-2"></i>Análisis de Márgenes</h3>
-                <button type="button" onclick="toggleModal('modalMargenes')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            <div class="space-y-3 text-xs">
-                <div class="p-3 bg-teal-50 rounded-lg"><span class="font-bold text-teal-800">Costo Operativo Diario Estima:</span> $15.000 /día</div>
-                <div class="p-3 bg-emerald-50 rounded-lg"><span class="font-bold text-emerald-800">Margen Promedio Objetivo:</span> ~70%</div>
-            </div>
-        </div>
-    </div>
-
-    <div id="modalKPIs" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-        <div class="bg-white rounded-xl shadow-xl max-w-5xl w-full p-6 space-y-6 my-8">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="text-xl font-bold text-blue-900 flex items-center"><i class="fa-solid fa-chart-pie mr-2"></i>Centro de Analítica & KPIs de Negocio</h3>
-                <button type="button" onclick="toggleModal('modalKPIs')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div class="bg-blue-50 p-3.5 rounded-xl"><span class="text-[10px] font-bold text-blue-600 uppercase">Días Arrendados</span><h4 id="kpiDiasAno" class="text-xl font-black text-blue-900 mt-1">0 noches</h4></div>
-                <div class="bg-emerald-50 p-3.5 rounded-xl"><span class="text-[10px] font-bold text-emerald-600 uppercase">Ingresos Brutos</span><h4 id="kpiIngresosBrutosAno" class="text-lg font-black text-emerald-900 mt-1">$0</h4></div>
-            </div>
-        </div>
-    </div>
-
+    <!-- MODAL USUARIO -->
     <div id="modalUsuario" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-2">
@@ -389,8 +500,8 @@
         </div>
     </div>
 
+    <!-- SCRIPT PRINCIPAL -->
     <script>
-        // CONFIGURACIÓN FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyC6nbWndwjEx00-jvzt-KXDwA6anvg0-5A",
             authDomain: "entremontanas-75305.firebaseapp.com",
@@ -407,7 +518,7 @@
         let abonosTemp = [];
         let reservaCalculada = {};
         let mesCalendarioOffset = 0;
-        let costosCasa = { parafina: 3000, gas: 2500, electricidad: 2000, lena: 4000, starlinkDiario: 1500, masPlagasDiario: 1000, detergentesPapel: 2000, regalo: 1500, aseo: 25000 };
+        let costosCasa = { parafina: 5000, gas: 2500, electricidad: 27000, lena: 6000, starlinkDiario: 5000, masPlagasDiario: 5000, detergentesPapel: 1000, regalo: 10000, aseo: 110000 };
 
         function formatearFechaChile(f) { if(!f) return '-'; const p = f.split('-'); return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : f; }
         function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
@@ -418,7 +529,6 @@
                 if(el) el.addEventListener('input', calcularValores);
             });
 
-            // CORRECCIÓN SCRIPT: Escuchador exclusivo con prevención explícita de submit
             const btn = document.getElementById('btnAgregarPago');
             if (btn) {
                 btn.addEventListener('click', function(e) {
@@ -451,11 +561,85 @@
                 renderCalendario();
                 renderDirectorioHuespedes();
                 actualizarDashboardResumen();
+                actualizarKPIS();
+            });
+
+            db.collection('configuracion').doc('costos').onSnapshot((doc) => {
+                if (doc.exists) {
+                    costosCasa = doc.data();
+                    cargarValoresCostosCasa();
+                } else {
+                    calcularCostosTotalesModal();
+                }
             });
 
             renderTablaAbonos();
             calcularValores();
+            calcularCostosTotalesModal();
         });
+
+        function calcularCostosTotalesModal() {
+            const parafina = parseFloat(document.getElementById('cParafina').value) || 0;
+            const gas = parseFloat(document.getElementById('cGas').value) || 0;
+            const electricidad = parseFloat(document.getElementById('cElectricidad').value) || 0;
+            const lena = parseFloat(document.getElementById('cLena').value) || 0;
+            const starlink = parseFloat(document.getElementById('cStarlinkDiario').value) || 0;
+            const masPlagas = parseFloat(document.getElementById('cMasPlagasDiario').value) || 0;
+            const detergentes = parseFloat(document.getElementById('cDetergentesPapel').value) || 0;
+
+            const aseo = parseFloat(document.getElementById('cAseo').value) || 0;
+            const regalo = parseFloat(document.getElementById('cRegalo').value) || 0;
+
+            const totalDiario = parafina + gas + electricidad + lena + starlink + masPlagas + detergentes;
+            const totalFijo = aseo + regalo;
+
+            document.getElementById('lblCostoDiarioTotal').innerText = `$${totalDiario.toLocaleString('es-CL')}`;
+            document.getElementById('lblCostoFijoBase').innerText = `$${totalFijo.toLocaleString('es-CL')}`;
+
+            // Actualizar modal de márgenes dinámicamente
+            document.getElementById('margenCostoDiario').innerText = `$${totalDiario.toLocaleString('es-CL')} /día`;
+            document.getElementById('margenCostoFijo').innerText = `$${totalFijo.toLocaleString('es-CL')} /reserva`;
+
+            const tarifaBase = 380000;
+            const margenBrutoPct = (((tarifaBase - totalDiario) / tarifaBase) * 100).toFixed(1);
+            const costo2Noches = (totalDiario * 2) + totalFijo;
+            const ingreso2Noches = tarifaBase * 2;
+            const margenNetoPct = (((ingreso2Noches - costo2Noches) / ingreso2Noches) * 100).toFixed(1);
+
+            document.getElementById('margenPorcentajeBruto').innerText = `${margenBrutoPct}%`;
+            document.getElementById('margenPorcentajeNeto').innerText = `${margenNetoPct}%`;
+        }
+
+        function cargarValoresCostosCasa() {
+            document.getElementById('cParafina').value = costosCasa.parafina || 5000;
+            document.getElementById('cGas').value = costosCasa.gas || 2500;
+            document.getElementById('cElectricidad').value = costosCasa.electricidad || 27000;
+            document.getElementById('cLena').value = costosCasa.lena || 6000;
+            document.getElementById('cStarlinkDiario').value = costosCasa.starlinkDiario || 5000;
+            document.getElementById('cMasPlagasDiario').value = costosCasa.masPlagasDiario || 5000;
+            document.getElementById('cDetergentesPapel').value = costosCasa.detergentesPapel || 1000;
+            document.getElementById('cAseo').value = costosCasa.aseo || 110000;
+            document.getElementById('cRegalo').value = costosCasa.regalo || 10000;
+            calcularCostosTotalesModal();
+        }
+
+        async function guardarCostosCasa() {
+            costosCasa = {
+                parafina: parseFloat(document.getElementById('cParafina').value) || 0,
+                gas: parseFloat(document.getElementById('cGas').value) || 0,
+                electricidad: parseFloat(document.getElementById('cElectricidad').value) || 0,
+                lena: parseFloat(document.getElementById('cLena').value) || 0,
+                starlinkDiario: parseFloat(document.getElementById('cStarlinkDiario').value) || 0,
+                masPlagasDiario: parseFloat(document.getElementById('cMasPlagasDiario').value) || 0,
+                detergentesPapel: parseFloat(document.getElementById('cDetergentesPapel').value) || 0,
+                aseo: parseFloat(document.getElementById('cAseo').value) || 0,
+                regalo: parseFloat(document.getElementById('cRegalo').value) || 0
+            };
+
+            await db.collection('configuracion').doc('costos').set(costosCasa);
+            alert('Configuración de costos guardada.');
+            toggleModal('modalCostos');
+        }
 
         function calcularValores() {
             const inVal = document.getElementById('checkin').value;
@@ -596,6 +780,8 @@
             document.getElementById('reqCuna').checked = r.reqCuna;
             document.getElementById('reqProtectorEstufa').checked = r.reqProtectorEstufa;
             document.getElementById('reqPerro').checked = r.reqPerro;
+            document.getElementById('costoBencinaGenerador').value = r.costoBencinaGenerador || 0;
+            document.getElementById('costoImprevistosReserva').value = r.costoImprevistosReserva || 0;
             document.getElementById('valorDiarioFinal').value = r.valorDiarioFinal || 380000;
             document.getElementById('costoPlataforma').value = r.costoPlataforma || 0;
             document.getElementById('tipoDoc').value = r.tipoDoc;
@@ -689,9 +875,55 @@
             document.getElementById('dashResMes').innerText = delMes.length;
             document.getElementById('dashNochesMes').innerText = noches;
             document.getElementById('dashBrutoMes').innerText = `$${bruto.toLocaleString('es-CL')}`;
+        }
 
-            document.getElementById('kpiDiasAno').innerText = `${noches} noches`;
-            document.getElementById('kpiIngresosBrutosAno').innerText = `$${bruto.toLocaleString('es-CL')}`;
+        function actualizarKPIS() {
+            let totalNoches = 0;
+            let totalBruto = 0;
+            let totalComisiones = 0;
+            let totalBencinaExtras = 0;
+            let canalesMap = {};
+
+            const costoDiarioBase = (costosCasa.parafina || 0) + (costosCasa.gas || 0) + (costosCasa.electricidad || 0) + (costosCasa.lena || 0) + (costosCasa.starlinkDiario || 0) + (costosCasa.masPlagasDiario || 0) + (costosCasa.detergentesPapel || 0);
+            const costoFijoReserva = (costosCasa.aseo || 0) + (costosCasa.regalo || 0);
+
+            let costoOperativoTotal = 0;
+
+            reservas.forEach(r => {
+                const n = r.noches || 0;
+                const b = r.totalBruto || 0;
+                const c = parseFloat(r.costoPlataforma) || 0;
+                const e = (parseFloat(r.costoBencinaGenerador) || 0) + (parseFloat(r.costoImprevistosReserva) || 0);
+
+                totalNoches += n;
+                totalBruto += b;
+                totalComisiones += c;
+                totalBencinaExtras += e;
+
+                costoOperativoTotal += (n * costoDiarioBase) + costoFijoReserva;
+
+                canalesMap[r.canal] = (canalesMap[r.canal] || 0) + b;
+            });
+
+            const adr = totalNoches > 0 ? Math.round(totalBruto / totalNoches) : 0;
+            const ocupacionPct = ((totalNoches / 365) * 100).toFixed(1);
+            const utilidadNeta = totalBruto - (costoOperativoTotal + totalComisiones + totalBencinaExtras);
+
+            document.getElementById('kpiDiasAno').innerText = `${totalNoches} noches`;
+            document.getElementById('kpiIngresosBrutosAno').innerText = `$${totalBruto.toLocaleString('es-CL')}`;
+            document.getElementById('kpiADR').innerText = `$${adr.toLocaleString('es-CL')} /noche`;
+            document.getElementById('kpiOcupacion').innerText = `${ocupacionPct}%`;
+
+            document.getElementById('kpiCostosOperativos').innerText = `$${costoOperativoTotal.toLocaleString('es-CL')}`;
+            document.getElementById('kpiComisiones').innerText = `$${totalComisiones.toLocaleString('es-CL')}`;
+            document.getElementById('kpiBencinaExtras').innerText = `$${totalBencinaExtras.toLocaleString('es-CL')}`;
+            document.getElementById('kpiUtilidadNeta').innerText = `$${utilidadNeta.toLocaleString('es-CL')}`;
+
+            const contCanales = document.getElementById('kpiCanales');
+            contCanales.innerHTML = '';
+            for (const [canal, monto] of Object.entries(canalesMap)) {
+                contCanales.innerHTML += `<div class="flex justify-between"><span>${canal}:</span><strong>$${monto.toLocaleString('es-CL')}</strong></div>`;
+            }
         }
 
         function renderCalendario() {
