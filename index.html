@@ -34,7 +34,6 @@
                 <p class="text-emerald-200 text-xs md:text-sm">Control Operativo, Finanzas y Métricas KPIs (Nube Sincronizada ⚡)</p>
             </div>
 
-            <!-- BOTONES Y CONFIGURACIONES -->
             <div class="flex flex-wrap items-center gap-2 md:gap-3">
                 <div class="bg-emerald-900/80 px-3 py-1.5 rounded-lg border border-emerald-700 flex items-center gap-2">
                     <label class="text-xs uppercase font-bold text-emerald-200">Valor Diario Arriendo ($):</label>
@@ -181,18 +180,18 @@
                     <div class="bg-amber-50 p-3 rounded-lg border border-amber-200">
                         <label class="block font-bold text-xs uppercase text-amber-900 mb-2"><i class="fa-solid fa-money-bill-transfer mr-1"></i> Control de Ingresos / Abonos</label>
                         <div class="flex gap-2 mb-2">
-                            <input type="number" id="montoPago" placeholder="Monto CLP $" class="border rounded p-1 text-xs flex-1">
-                            <button type="button" onclick="agregarAbono()" class="bg-amber-700 hover:bg-amber-800 text-white font-bold py-1 px-3 rounded text-xs">
+                            <input type="number" id="montoPago" placeholder="Monto CLP $" class="border rounded p-1.5 text-xs flex-1 bg-white outline-none focus:ring-1 focus:ring-amber-500">
+                            <button type="button" id="btnAgregarPago" onclick="agregarAbono(event)" class="bg-amber-700 hover:bg-amber-800 text-white font-bold py-1.5 px-3 rounded text-xs transition-all flex items-center">
                                 + Agregar Pago
                             </button>
                         </div>
-                        <div class="max-h-28 overflow-y-auto bg-white rounded border">
+                        <div class="max-h-36 overflow-y-auto bg-white rounded border border-amber-200">
                             <table class="w-full text-xs text-left">
                                 <thead>
-                                    <tr class="bg-amber-100 text-amber-900 border-b">
-                                        <th class="p-1">Fecha Registro</th>
-                                        <th class="p-1">Monto</th>
-                                        <th class="p-1 text-center">Quitar</th>
+                                    <tr class="bg-amber-100/70 text-amber-900 border-b">
+                                        <th class="p-1.5">Fecha Registro</th>
+                                        <th class="p-1.5">Monto</th>
+                                        <th class="p-1.5 text-center">Quitar</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tablaAbonos"></tbody>
@@ -388,6 +387,8 @@
                     cargarValoresCostosCasa();
                 }
             });
+
+            renderTablaAbonos();
         });
 
         function calcularValores() {
@@ -431,7 +432,10 @@
             reservaCalculada = { dias, noches, totalBruto, costoPlataforma, totalAbonado, saldoPendiente };
         }
 
-        function agregarAbono() {
+        // AGREGAR ABONO
+        function agregarAbono(e) {
+            if (e) e.preventDefault();
+
             const inputMonto = document.getElementById('montoPago');
             const monto = parseFloat(inputMonto.value);
 
@@ -450,14 +454,22 @@
 
         function renderTablaAbonos() {
             const tbody = document.getElementById('tablaAbonos');
+            if (!tbody) return;
+
             tbody.innerHTML = '';
+            
+            if (abonosTemp.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="p-2 text-center text-slate-400 italic">No hay abonos registrados</td></tr>`;
+                return;
+            }
+
             abonosTemp.forEach((a, i) => {
                 tbody.innerHTML += `
-                    <tr class="border-b">
-                        <td class="p-1">${formatearFechaChile(a.fecha)}</td>
-                        <td class="p-1 font-bold">$${parseFloat(a.monto).toLocaleString('es-CL')}</td>
-                        <td class="p-1 text-center">
-                            <button type="button" onclick="quitarAbono(${i})" class="text-red-600 font-bold px-1 hover:bg-red-100 rounded">✕</button>
+                    <tr class="border-b hover:bg-amber-50/50">
+                        <td class="p-1.5">${formatearFechaChile(a.fecha)}</td>
+                        <td class="p-1.5 font-bold text-emerald-800">$${parseFloat(a.monto).toLocaleString('es-CL')}</td>
+                        <td class="p-1.5 text-center">
+                            <button type="button" onclick="quitarAbono(${i})" class="text-red-600 hover:text-red-800 font-bold px-2 py-0.5 rounded hover:bg-red-50">✕</button>
                         </td>
                     </tr>
                 `;
