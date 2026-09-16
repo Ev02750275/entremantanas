@@ -41,13 +41,13 @@
                     <input type="number" id="valorBaseGlobal" value="75000" oninput="calcularValores()" class="w-24 bg-emerald-950 text-white font-bold p-1 rounded border border-emerald-600 text-sm text-right outline-none">
                 </div>
 
-                <button onclick="limpiarFormulario()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
+                <button type="button" onclick="limpiarFormulario()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
                     <i class="fa-solid fa-plus mr-1"></i> Nueva Reserva
                 </button>
-                <button onclick="toggleModal('modalCostos')" class="bg-amber-600 hover:bg-amber-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
+                <button type="button" onclick="toggleModal('modalCostos')" class="bg-amber-600 hover:bg-amber-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
                     <i class="fa-solid fa-calculator mr-1"></i> Costo diario cabaña
                 </button>
-                <button onclick="toggleModal('modalKPIs')" class="bg-blue-600 hover:bg-blue-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
+                <button type="button" onclick="toggleModal('modalKPIs')" class="bg-blue-600 hover:bg-blue-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
                     <i class="fa-solid fa-chart-line mr-1"></i> KPIs
                 </button>
             </div>
@@ -228,8 +228,6 @@
                         <div class="flex justify-between"><span class="text-slate-300">Total Bruto:</span><span id="resTotalBruto" class="font-bold text-emerald-400">$0</span></div>
                         <div class="flex justify-between text-red-300"><span>- Costo Plataforma:</span><span id="resCostoPlataforma">$0</span></div>
                         <div class="border-t border-slate-700 pt-1.5 flex justify-between text-slate-200"><span>Ingreso Neto Cabaña:</span><span id="resNetoCaban" class="font-semibold">$0</span></div>
-                        <div class="flex justify-between text-yellow-300"><span>Base Factura (Neto):</span><span id="resNetoImpuesto">$0</span></div>
-                        <div class="flex justify-between text-yellow-300"><span>IVA (19%):</span><span id="resIva">$0</span></div>
 
                         <div class="border-t border-slate-700 pt-2 space-y-1">
                             <div class="flex justify-between text-emerald-300 font-semibold"><span>Total Abonado:</span><span id="resTotalAbonado">$0</span></div>
@@ -246,7 +244,7 @@
                 </div>
 
                 <div class="mt-4 border-t border-slate-700 pt-3">
-                    <button id="btnWsp" disabled onclick="generarWsp()" class="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-bold py-2 rounded-lg text-xs transition-all flex items-center justify-center">
+                    <button id="btnWsp" type="button" disabled onclick="generarWsp()" class="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-bold py-2 rounded-lg text-xs transition-all flex items-center justify-center">
                         <i class="fa-brands fa-whatsapp text-sm mr-1.5"></i> Copiar Confirmación
                     </button>
                 </div>
@@ -259,9 +257,9 @@
             <div class="flex flex-col sm:flex-row justify-between items-center border-b pb-4 mb-4 gap-2">
                 <h2 class="text-xl font-bold text-slate-800 flex items-center"><i class="fa-solid fa-calendar-days mr-2 text-emerald-700"></i>Calendario de Disponibilidad</h2>
                 <div class="flex items-center gap-3">
-                    <button onclick="cambiarMesCalendario(-1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded-lg font-bold text-sm"><i class="fa-solid fa-chevron-left mr-1"></i> Anterior</button>
-                    <button onclick="resetMesCalendario()" class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-lg font-bold text-xs">Hoy</button>
-                    <button onclick="cambiarMesCalendario(1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded-lg font-bold text-sm">Siguiente <i class="fa-solid fa-chevron-right ml-1"></i></button>
+                    <button type="button" onclick="cambiarMesCalendario(-1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded-lg font-bold text-sm"><i class="fa-solid fa-chevron-left mr-1"></i> Anterior</button>
+                    <button type="button" onclick="resetMesCalendario()" class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-lg font-bold text-xs">Hoy</button>
+                    <button type="button" onclick="cambiarMesCalendario(1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded-lg font-bold text-sm">Siguiente <i class="fa-solid fa-chevron-right ml-1"></i></button>
                 </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="calendarioContenedor"></div>
@@ -308,7 +306,7 @@
         <div class="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-2">
                 <h3 class="text-lg font-bold text-amber-900"><i class="fa-solid fa-house-chimney-crack mr-2"></i>Estructura de Costos Cabaña</h3>
-                <button onclick="toggleModal('modalCostos')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <button type="button" onclick="toggleModal('modalCostos')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
 
             <form id="formCostosCasa" class="grid grid-cols-2 gap-3 text-xs">
@@ -324,7 +322,7 @@
             </form>
 
             <div class="flex justify-end gap-2 border-t pt-3">
-                <button onclick="guardarCostosCasa()" class="bg-amber-700 hover:bg-amber-800 text-white font-bold py-2 px-4 rounded-lg text-xs">Guardar Configuración</button>
+                <button type="button" onclick="guardarCostosCasa()" class="bg-amber-700 hover:bg-amber-800 text-white font-bold py-2 px-4 rounded-lg text-xs">Guardar Configuración</button>
             </div>
         </div>
     </div>
@@ -334,19 +332,17 @@
         <div class="bg-white rounded-xl shadow-xl max-w-5xl w-full p-6 space-y-6 my-8">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 class="text-xl font-bold text-blue-900 flex items-center"><i class="fa-solid fa-chart-pie mr-2"></i>Centro de Analítica & KPIs de Negocio</h3>
-                <button onclick="toggleModal('modalKPIs')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <button type="button" onclick="toggleModal('modalKPIs')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div class="bg-blue-50 p-3.5 rounded-xl"><span class="text-[10px] font-bold text-blue-600 uppercase">Días Arrendados</span><h4 id="kpiDiasAno" class="text-xl font-black text-blue-900 mt-1">0 noches</h4></div>
                 <div class="bg-emerald-50 p-3.5 rounded-xl"><span class="text-[10px] font-bold text-emerald-600 uppercase">Ingresos Brutos</span><h4 id="kpiIngresosBrutosAno" class="text-lg font-black text-emerald-900 mt-1">$0</h4></div>
-                <div class="bg-amber-50 p-3.5 rounded-xl"><span class="text-[10px] font-bold text-amber-600 uppercase">Ocupación Estrellas</span><h4 id="kpiOcupacion" class="text-sm font-black text-amber-900 mt-1">0%</h4></div>
-                <div class="bg-purple-50 p-3.5 rounded-xl"><span class="text-[10px] font-bold text-purple-600 uppercase">Ganancia Promedio / Día</span><h4 id="kpiGananciaPromedioLimpiaDia" class="text-base font-black text-purple-900 mt-1">$0 /día</h4></div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURACIÓN DE FIREBASE (CON TUS CLAVES REALES) ---
+        // CONFIGURACIÓN FIREBASE CON TUS CLAVES REALES
         const firebaseConfig = {
             apiKey: "AIzaSyC6nbWndwjEx00-jvzt-KXDwA6anvg0-5A",
             authDomain: "entremontanas-75305.firebaseapp.com",
@@ -356,7 +352,6 @@
             appId: "1:839531887182:web:b7061aa008419a6f73a11f"
         };
 
-        // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
@@ -369,16 +364,14 @@
         function formatearFechaChile(f) { if(!f) return '-'; const p = f.split('-'); return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : f; }
         function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
 
-        // ESCUCHA EN TIEMPO REAL DESDE FIREBASE
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('valorDiarioFinal').value = document.getElementById('valorBaseGlobal').value;
 
-            // Detectar cambios en formulario para recalcular totales
             ['checkin', 'checkout', 'valorDiarioFinal', 'costoPlataforma', 'tipoDoc'].forEach(id => {
-                document.getElementById(id).addEventListener('input', calcularValores);
+                const el = document.getElementById(id);
+                if(el) el.addEventListener('input', calcularValores);
             });
 
-            // Escucha Firestore en tiempo real
             db.collection('reservas').onSnapshot((snapshot) => {
                 reservas = [];
                 snapshot.forEach((doc) => {
@@ -397,12 +390,15 @@
             });
         });
 
-        // CÁLCULOS AUTOMÁTICOS DE COSTOS Y TOTALES
         function calcularValores() {
             const inVal = document.getElementById('checkin').value;
             const outVal = document.getElementById('checkout').value;
             const valorDiarioFinal = parseFloat(document.getElementById('valorDiarioFinal').value) || 0;
             const costoPlataforma = parseFloat(document.getElementById('costoPlataforma').value) || 0;
+
+            let totalBruto = 0;
+            let noches = 0;
+            let dias = 0;
 
             if (inVal && outVal) {
                 const inDate = new Date(inVal);
@@ -410,9 +406,9 @@
 
                 if (outDate > inDate) {
                     const diffTime = Math.abs(outDate - inDate);
-                    const noches = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    const dias = noches + 1;
-                    const totalBruto = noches * valorDiarioFinal;
+                    noches = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    dias = noches + 1;
+                    totalBruto = noches * valorDiarioFinal;
 
                     document.getElementById('cantDiasMostrar').value = `${dias} días / ${noches} noches`;
                     document.getElementById('resNoches').innerText = `${dias}d / ${noches}n`;
@@ -422,29 +418,32 @@
                     const netoCaban = totalBruto - costoPlataforma;
                     document.getElementById('resNetoCaban').innerText = `$${netoCaban.toLocaleString('es-CL')}`;
 
-                    // Manejo de Abonos
-                    const totalAbonado = abonosTemp.reduce((acc, a) => acc + (parseFloat(a.monto) || 0), 0);
-                    const saldoPendiente = totalBruto - totalAbonado;
-
-                    document.getElementById('resTotalAbonado').innerText = `$${totalAbonado.toLocaleString('es-CL')}`;
-                    document.getElementById('resSaldoPendiente').innerText = `$${saldoPendiente.toLocaleString('es-CL')}`;
-
-                    reservaCalculada = { dias, noches, totalBruto, costoPlataforma, totalAbonado, saldoPendiente };
                     document.getElementById('btnWsp').disabled = false;
-                    return;
                 }
             }
-            document.getElementById('btnWsp').disabled = true;
+
+            const totalAbonado = abonosTemp.reduce((acc, a) => acc + (parseFloat(a.monto) || 0), 0);
+            const saldoPendiente = totalBruto - totalAbonado;
+
+            document.getElementById('resTotalAbonado').innerText = `$${totalAbonado.toLocaleString('es-CL')}`;
+            document.getElementById('resSaldoPendiente').innerText = `$${saldoPendiente.toLocaleString('es-CL')}`;
+
+            reservaCalculada = { dias, noches, totalBruto, costoPlataforma, totalAbonado, saldoPendiente };
         }
 
-        // CONTROL DE ABONOS
         function agregarAbono() {
-            const monto = parseFloat(document.getElementById('montoPago').value);
-            if (!monto || monto <= 0) return alert('Ingrese un monto válido');
-            
+            const inputMonto = document.getElementById('montoPago');
+            const monto = parseFloat(inputMonto.value);
+
+            if (isNaN(monto) || monto <= 0) {
+                alert('Ingresa un monto válido mayor a 0');
+                return;
+            }
+
             const hoy = new Date().toISOString().split('T')[0];
-            abonosTemp.push({ fecha: hoy, monto });
-            document.getElementById('montoPago').value = '';
+            abonosTemp.push({ fecha: hoy, monto: monto });
+            inputMonto.value = '';
+
             renderTablaAbonos();
             calcularValores();
         }
@@ -457,19 +456,20 @@
                     <tr class="border-b">
                         <td class="p-1">${formatearFechaChile(a.fecha)}</td>
                         <td class="p-1 font-bold">$${parseFloat(a.monto).toLocaleString('es-CL')}</td>
-                        <td class="p-1 text-center"><button type="button" onclick="quitarAbono(${i})" class="text-red-600 font-bold">×</button></td>
+                        <td class="p-1 text-center">
+                            <button type="button" onclick="quitarAbono(${i})" class="text-red-600 font-bold px-1 hover:bg-red-100 rounded">✕</button>
+                        </td>
                     </tr>
                 `;
             });
         }
 
-        function quitarAbono(i) {
-            abonosTemp.splice(i, 1);
+        function quitarAbono(index) {
+            abonosTemp.splice(index, 1);
             renderTablaAbonos();
             calcularValores();
         }
 
-        // GUARDAR RESERVA EN FIREBASE
         document.getElementById('reservaForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const idExistente = document.getElementById('reservaId').value;
@@ -506,14 +506,12 @@
             limpiarFormulario();
         });
 
-        // ELIMINAR RESERVA
         async function eliminarReserva(id) {
             if (confirm('¿Eliminar esta reserva?')) {
                 await db.collection('reservas').doc(String(id)).delete();
             }
         }
 
-        // EDITAR RESERVA
         function cargarParaEditar(id) {
             const r = reservas.find(x => x.id === id);
             if(!r) return;
@@ -544,7 +542,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // LIMPIAR FORMULARIO
         function limpiarFormulario() {
             document.getElementById('reservaForm').reset();
             document.getElementById('reservaId').value = '';
@@ -555,7 +552,6 @@
             calcularValores();
         }
 
-        // TABLA DE HISTORIAL
         function renderTabla() {
             const tbody = document.getElementById('tablaReservas');
             tbody.innerHTML = '';
@@ -580,15 +576,14 @@
                         <td class="p-3 text-xs">$${r.totalAbonado ? r.totalAbonado.toLocaleString('es-CL') : 0} / <span class="text-amber-700 font-bold">$${r.saldoPendiente ? r.saldoPendiente.toLocaleString('es-CL') : 0}</span></td>
                         <td class="p-3 font-bold">${r.estadoReserva}</td>
                         <td class="p-3 text-center space-x-2">
-                            <button onclick="cargarParaEditar(${r.id})" class="text-blue-600 hover:text-blue-800"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button onclick="eliminarReserva(${r.id})" class="text-red-600 hover:text-red-800"><i class="fa-solid fa-trash"></i></button>
+                            <button type="button" onclick="cargarParaEditar(${r.id})" class="text-blue-600 hover:text-blue-800"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button type="button" onclick="eliminarReserva(${r.id})" class="text-red-600 hover:text-red-800"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
             });
         }
 
-        // DASHBOARD RESUMEN DE MES
         function actualizarDashboardResumen() {
             const hoy = new Date();
             const mesActual = hoy.getMonth();
@@ -611,12 +606,10 @@
             document.getElementById('dashNochesMes').innerText = noches;
             document.getElementById('dashBrutoMes').innerText = `$${bruto.toLocaleString('es-CL')}`;
 
-            // Actualizar KPIs en Modal
             document.getElementById('kpiDiasAno').innerText = `${noches} noches`;
             document.getElementById('kpiIngresosBrutosAno').innerText = `$${bruto.toLocaleString('es-CL')}`;
         }
 
-        // CALENDARIO VISUAL
         function renderCalendario() {
             const cont = document.getElementById('calendarioContenedor');
             cont.innerHTML = '';
@@ -661,7 +654,6 @@
         function cambiarMesCalendario(val) { mesCalendarioOffset += val; renderCalendario(); }
         function resetMesCalendario() { mesCalendarioOffset = 0; renderCalendario(); }
 
-        // COSTOS CABAÑA
         function cargarValoresCostosCasa() {
             document.getElementById('cParafina').value = costosCasa.parafina || 3000;
             document.getElementById('cGas').value = costosCasa.gas || 2500;
@@ -692,7 +684,6 @@
             toggleModal('modalCostos');
         }
 
-        // GENERAR MENSAJE WHATSAPP
         function generarWsp() {
             const nombre = document.getElementById('nombre').value;
             const checkin = formatearFechaChile(document.getElementById('checkin').value);
