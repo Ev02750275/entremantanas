@@ -181,7 +181,7 @@
                         <label class="block font-bold text-xs uppercase text-amber-900 mb-2"><i class="fa-solid fa-money-bill-transfer mr-1"></i> Control de Ingresos / Abonos</label>
                         <div class="flex gap-2 mb-2">
                             <input type="number" id="montoPago" placeholder="Monto CLP $" class="border rounded p-1.5 text-xs flex-1 bg-white outline-none focus:ring-1 focus:ring-amber-500">
-                            <button type="button" id="btnAgregarPago" onclick="agregarAbono(event)" class="bg-amber-700 hover:bg-amber-800 text-white font-bold py-1.5 px-3 rounded text-xs transition-all flex items-center">
+                            <button type="button" id="btnAgregarPago" class="bg-amber-700 hover:bg-amber-800 text-white font-bold py-1.5 px-3 rounded text-xs transition-all flex items-center">
                                 + Agregar Pago
                             </button>
                         </div>
@@ -371,6 +371,30 @@
                 if(el) el.addEventListener('input', calcularValores);
             });
 
+            // Asignación directa del botón de abono
+            const btn = document.getElementById('btnAgregarPago');
+            if (btn) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const inputMonto = document.getElementById('montoPago');
+                    const monto = parseFloat(inputMonto.value);
+
+                    if (isNaN(monto) || monto <= 0) {
+                        alert('Ingresa un monto válido mayor a 0');
+                        return;
+                    }
+
+                    const hoy = new Date().toISOString().split('T')[0];
+                    abonosTemp.push({ fecha: hoy, monto: monto });
+                    inputMonto.value = '';
+
+                    renderTablaAbonos();
+                    calcularValores();
+                });
+            }
+
             db.collection('reservas').onSnapshot((snapshot) => {
                 reservas = [];
                 snapshot.forEach((doc) => {
@@ -430,26 +454,6 @@
             document.getElementById('resSaldoPendiente').innerText = `$${saldoPendiente.toLocaleString('es-CL')}`;
 
             reservaCalculada = { dias, noches, totalBruto, costoPlataforma, totalAbonado, saldoPendiente };
-        }
-
-        // AGREGAR ABONO
-        function agregarAbono(e) {
-            if (e) e.preventDefault();
-
-            const inputMonto = document.getElementById('montoPago');
-            const monto = parseFloat(inputMonto.value);
-
-            if (isNaN(monto) || monto <= 0) {
-                alert('Ingresa un monto válido mayor a 0');
-                return;
-            }
-
-            const hoy = new Date().toISOString().split('T')[0];
-            abonosTemp.push({ fecha: hoy, monto: monto });
-            inputMonto.value = '';
-
-            renderTablaAbonos();
-            calcularValores();
         }
 
         function renderTablaAbonos() {
