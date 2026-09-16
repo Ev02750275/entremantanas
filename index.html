@@ -26,7 +26,7 @@
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 pb-12">
 
-    <!-- FRANJA VERDE SUPERIOR COMPLETA -->
+    <!-- FRANJA VERDE SUPERIOR ORIGINAL -->
     <header class="bg-emerald-800 text-white p-4 md:p-6 shadow-md">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
@@ -38,20 +38,20 @@
                 <button type="button" onclick="limpiarFormulario()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
                     <i class="fa-solid fa-plus mr-1"></i> Nueva Reserva
                 </button>
-                <button type="button" onclick="abrirModalHuespedes()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
+                <button type="button" onclick="toggleModal('modalHuespedes')" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
                     <i class="fa-solid fa-users mr-1"></i> Huéspedes
                 </button>
                 <button type="button" onclick="toggleModal('modalCostos')" class="bg-amber-600 hover:bg-amber-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
                     <i class="fa-solid fa-calculator mr-1"></i> Costo diario cabaña
                 </button>
-                <button type="button" onclick="abrirModalRentabilidad()" class="bg-teal-600 hover:bg-teal-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
+                <button type="button" onclick="toggleModal('modalMargenes')" class="bg-teal-600 hover:bg-teal-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
                     <i class="fa-solid fa-scale-balanced mr-1"></i> Márgenes
                 </button>
-                <button type="button" onclick="abrirModalKPIs()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
+                <button type="button" onclick="toggleModal('modalKPIs')" class="bg-blue-600 hover:bg-blue-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
                     <i class="fa-solid fa-chart-line mr-1"></i> KPIs
                 </button>
 
-                <button type="button" onclick="abrirModalUsuarios()" class="bg-emerald-950/60 hover:bg-emerald-950 text-emerald-200 text-xs px-2.5 py-1.5 rounded-lg border border-emerald-700/60 transition-all flex items-center ml-auto md:ml-2">
+                <button type="button" onclick="toggleModal('modalUsuario')" class="bg-emerald-950/60 hover:bg-emerald-950 text-emerald-200 text-xs px-2.5 py-1.5 rounded-lg border border-emerald-700/60 transition-all flex items-center ml-auto md:ml-2">
                     <i class="fa-solid fa-circle-user mr-1.5 text-emerald-400"></i>
                     <span id="lblUsuarioActivo" class="font-semibold">Eduardo Vicencio</span>
                 </button>
@@ -85,7 +85,7 @@
                         <div>
                             <div class="flex justify-between items-center mb-1">
                                 <label class="block text-xs font-semibold uppercase text-slate-500">Teléfono / WhatsApp</label>
-                                <button type="button" onclick="mostrarClaveCerradura()" class="text-[10px] font-bold text-emerald-700 hover:underline"><i class="fa-solid fa-key mr-0.5"></i> Ver Clave</button>
+                                <button type="button" onclick="alert('Clave cerradura: 1234#')" class="text-[10px] font-bold text-emerald-700 hover:underline"><i class="fa-solid fa-key mr-0.5"></i> Ver Clave</button>
                             </div>
                             <input type="tel" id="telefono" required placeholder="+56912345678" class="w-full border rounded-lg p-2 text-sm">
                         </div>
@@ -179,7 +179,7 @@
                         </select>
                     </div>
 
-                    <!-- CONTROL DE ABONOS CORREGIDO -->
+                    <!-- CONTROL DE ABONOS -->
                     <div class="bg-amber-50 p-3 rounded-lg border border-amber-200">
                         <label class="block font-bold text-xs uppercase text-amber-900 mb-2"><i class="fa-solid fa-money-bill-transfer mr-1"></i> Control de Ingresos / Abonos</label>
                         <div class="flex gap-2 mb-2">
@@ -218,7 +218,7 @@
                 </form>
             </section>
 
-            <!-- PANEL RESUMEN -->
+            <!-- PANEL RESUMEN FINANCIERO -->
             <section class="bg-slate-800 text-white p-5 rounded-xl shadow-sm flex flex-col justify-between border border-slate-700">
                 <div class="space-y-4">
                     <h2 class="text-lg font-bold text-emerald-400 border-b border-slate-700 pb-2 flex items-center">
@@ -256,7 +256,7 @@
 
         </div>
 
-        <!-- CALENDARIO -->
+        <!-- CALENDARIO DE DISPONIBILIDAD -->
         <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
             <div class="flex flex-col sm:flex-row justify-between items-center border-b pb-4 mb-4 gap-2">
                 <h2 class="text-xl font-bold text-slate-800 flex items-center"><i class="fa-solid fa-calendar-days mr-2 text-emerald-700"></i>Calendario de Disponibilidad</h2>
@@ -305,14 +305,13 @@
 
     </main>
 
-    <!-- MODAL COSTO CABAÑA -->
+    <!-- MODALES -->
     <div id="modalCostos" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-2">
                 <h3 class="text-lg font-bold text-amber-900"><i class="fa-solid fa-house-chimney-crack mr-2"></i>Estructura de Costos Cabaña</h3>
                 <button type="button" onclick="toggleModal('modalCostos')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
-
             <form id="formCostosCasa" class="grid grid-cols-2 gap-3 text-xs">
                 <div><label class="font-bold text-slate-600">Parafina ($/día)</label><input type="number" id="cParafina" value="3000" class="border rounded p-1.5 w-full"></div>
                 <div><label class="font-bold text-slate-600">Gas ($/día)</label><input type="number" id="cGas" value="2500" class="border rounded p-1.5 w-full"></div>
@@ -324,34 +323,12 @@
                 <div><label class="font-bold text-teal-800">Aseo Cabaña ($/fijo)</label><input type="number" id="cAseo" value="25000" class="border rounded p-1.5 w-full font-bold"></div>
                 <div><label class="font-bold text-teal-800">Regalo Bienvenida ($/fijo)</label><input type="number" id="cRegalo" value="1500" class="border rounded p-1.5 w-full font-bold"></div>
             </form>
-
             <div class="flex justify-end gap-2 border-t pt-3">
                 <button type="button" onclick="guardarCostosCasa()" class="bg-amber-700 hover:bg-amber-800 text-white font-bold py-2 px-4 rounded-lg text-xs">Guardar Configuración</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL KPIS COMPLETO ORIGINAL -->
-    <div id="modalKPIs" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-        <div class="bg-white rounded-xl shadow-xl max-w-5xl w-full p-6 space-y-6 my-8">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="text-xl font-bold text-blue-900 flex items-center"><i class="fa-solid fa-chart-pie mr-2"></i>Centro de Analítica & KPIs de Negocio</h3>
-                <button type="button" onclick="toggleModal('modalKPIs')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div class="bg-blue-50 p-3.5 rounded-xl"><span class="text-[10px] font-bold text-blue-600 uppercase">Días Arrendados</span><h4 id="kpiDiasAno" class="text-xl font-black text-blue-900 mt-1">0 noches</h4></div>
-                <div class="bg-emerald-50 p-3.5 rounded-xl"><span class="text-[10px] font-bold text-emerald-600 uppercase">Ingresos Brutos</span><h4 id="kpiIngresosBrutosAno" class="text-lg font-black text-emerald-900 mt-1">$0</h4></div>
-                <div class="bg-amber-50 p-3.5 rounded-xl"><span class="text-[10px] font-bold text-amber-600 uppercase">Márgenes (Mín/Máx/Prom)</span><h4 id="kpiMargenesMinMaxProm" class="text-sm font-black text-amber-900 mt-1">0% | 0% | 0%</h4></div>
-                <div class="bg-purple-50 p-3.5 rounded-xl"><span class="text-[10px] font-bold text-purple-600 uppercase">Ganancia Promedio / Día</span><h4 id="kpiGananciaPromedioLimpiaDia" class="text-base font-black text-purple-900 mt-1">$0 /día</h4></div>
-            </div>
-            <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl flex justify-between items-center text-xs">
-                <span class="font-bold text-amber-900">💡 Tarifa Mínima Sugerida para obtener 25% de Utilidad Neta (Arriendo 2 Noches):</span>
-                <span id="kpiValorMinimo25" class="text-sm font-black text-amber-900 bg-amber-100 px-3 py-1 rounded-lg border border-amber-300">$0 /día</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL HUÉSPEDES -->
     <div id="modalHuespedes" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-2">
@@ -374,7 +351,32 @@
         </div>
     </div>
 
-    <!-- MODAL USUARIOS -->
+    <div id="modalMargenes" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="text-lg font-bold text-teal-900"><i class="fa-solid fa-scale-balanced mr-2"></i>Análisis de Márgenes</h3>
+                <button type="button" onclick="toggleModal('modalMargenes')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div class="p-3 bg-teal-50 rounded-lg"><span class="font-bold text-teal-800">Costo Operativo Diario Estima:</span> $15.000 /día</div>
+                <div class="p-3 bg-emerald-50 rounded-lg"><span class="font-bold text-emerald-800">Margen Promedio Objetivo:</span> ~70%</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalKPIs" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="bg-white rounded-xl shadow-xl max-w-5xl w-full p-6 space-y-6 my-8">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-xl font-bold text-blue-900 flex items-center"><i class="fa-solid fa-chart-pie mr-2"></i>Centro de Analítica & KPIs de Negocio</h3>
+                <button type="button" onclick="toggleModal('modalKPIs')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div class="bg-blue-50 p-3.5 rounded-xl"><span class="text-[10px] font-bold text-blue-600 uppercase">Días Arrendados</span><h4 id="kpiDiasAno" class="text-xl font-black text-blue-900 mt-1">0 noches</h4></div>
+                <div class="bg-emerald-50 p-3.5 rounded-xl"><span class="text-[10px] font-bold text-emerald-600 uppercase">Ingresos Brutos</span><h4 id="kpiIngresosBrutosAno" class="text-lg font-black text-emerald-900 mt-1">$0</h4></div>
+            </div>
+        </div>
+    </div>
+
     <div id="modalUsuario" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-2">
@@ -382,13 +384,13 @@
                 <button type="button" onclick="toggleModal('modalUsuario')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <div class="text-xs space-y-2">
-                <p>Usuario actual: <strong class="text-emerald-800">Eduardo Vicencio</strong></p>
+                <p>Usuario: <strong class="text-emerald-800">Eduardo Vicencio</strong></p>
             </div>
         </div>
     </div>
 
     <script>
-        // CONFIGURACIÓN DE FIREBASE CON TUS CLAVES REALES
+        // CONFIGURACIÓN FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyC6nbWndwjEx00-jvzt-KXDwA6anvg0-5A",
             authDomain: "entremontanas-75305.firebaseapp.com",
@@ -409,11 +411,6 @@
 
         function formatearFechaChile(f) { if(!f) return '-'; const p = f.split('-'); return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : f; }
         function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
-        function abrirModalHuespedes() { renderDirectorioHuespedes(); toggleModal('modalHuespedes'); }
-        function abrirModalUsuarios() { toggleModal('modalUsuario'); }
-        function abrirModalKPIs() { toggleModal('modalKPIs'); }
-        function abrirModalRentabilidad() { toggleModal('modalKPIs'); }
-        function mostrarClaveCerradura() { alert("Clave de la cerradura: 1234#"); }
 
         document.addEventListener('DOMContentLoaded', () => {
             ['checkin', 'checkout', 'valorDiarioFinal', 'costoPlataforma', 'tipoDoc'].forEach(id => {
@@ -421,7 +418,7 @@
                 if(el) el.addEventListener('input', calcularValores);
             });
 
-            // DISPARADOR EXPLÍCITO PARA EL BOTÓN DE ABONO (PREVIENE RECARGA Y ENVÍO DE FORMULARIO)
+            // MANEJO EXCLUSIVO DEL BOTÓN DE ABONO
             const btn = document.getElementById('btnAgregarPago');
             if (btn) {
                 btn.addEventListener('click', function(e) {
@@ -454,13 +451,6 @@
                 renderCalendario();
                 renderDirectorioHuespedes();
                 actualizarDashboardResumen();
-            });
-
-            db.collection('configuracion').doc('costos').onSnapshot((doc) => {
-                if (doc.exists) {
-                    costosCasa = doc.data();
-                    cargarValoresCostosCasa();
-                }
             });
 
             renderTablaAbonos();
@@ -552,8 +542,6 @@
         document.getElementById('reservaForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const idExistente = document.getElementById('reservaId').value;
-            const checkinVal = document.getElementById('checkin').value;
-            const checkoutVal = document.getElementById('checkout').value;
 
             const nuevaReserva = {
                 id: idExistente ? parseInt(idExistente) : Date.now(),
@@ -569,8 +557,8 @@
                 reqProtectorEstufa: document.getElementById('reqProtectorEstufa').checked,
                 costoBencinaGenerador: parseFloat(document.getElementById('costoBencinaGenerador').value) || 0,
                 costoImprevistosReserva: parseFloat(document.getElementById('costoImprevistosReserva').value) || 0,
-                checkin: checkinVal,
-                checkout: checkoutVal,
+                checkin: document.getElementById('checkin').value,
+                checkout: document.getElementById('checkout').value,
                 valorDiarioFinal: document.getElementById('valorDiarioFinal').value,
                 costoPlataforma: document.getElementById('costoPlataforma').value,
                 canal: document.getElementById('canal').value,
@@ -749,36 +737,6 @@
 
         function cambiarMesCalendario(val) { mesCalendarioOffset += val; renderCalendario(); }
         function resetMesCalendario() { mesCalendarioOffset = 0; renderCalendario(); }
-
-        function cargarValoresCostosCasa() {
-            document.getElementById('cParafina').value = costosCasa.parafina || 3000;
-            document.getElementById('cGas').value = costosCasa.gas || 2500;
-            document.getElementById('cElectricidad').value = costosCasa.electricidad || 2000;
-            document.getElementById('cLena').value = costosCasa.lena || 4000;
-            document.getElementById('cStarlinkDiario').value = costosCasa.starlinkDiario || 1500;
-            document.getElementById('cMasPlagasDiario').value = costosCasa.masPlagasDiario || 1000;
-            document.getElementById('cDetergentesPapel').value = costosCasa.detergentesPapel || 2000;
-            document.getElementById('cAseo').value = costosCasa.aseo || 25000;
-            document.getElementById('cRegalo').value = costosCasa.regalo || 1500;
-        }
-
-        async function guardarCostosCasa() {
-            costosCasa = {
-                parafina: parseFloat(document.getElementById('cParafina').value) || 0,
-                gas: parseFloat(document.getElementById('cGas').value) || 0,
-                electricidad: parseFloat(document.getElementById('cElectricidad').value) || 0,
-                lena: parseFloat(document.getElementById('cLena').value) || 0,
-                starlinkDiario: parseFloat(document.getElementById('cStarlinkDiario').value) || 0,
-                masPlagasDiario: parseFloat(document.getElementById('cMasPlagasDiario').value) || 0,
-                detergentesPapel: parseFloat(document.getElementById('cDetergentesPapel').value) || 0,
-                aseo: parseFloat(document.getElementById('cAseo').value) || 0,
-                regalo: parseFloat(document.getElementById('cRegalo').value) || 0
-            };
-
-            await db.collection('configuracion').doc('costos').set(costosCasa);
-            alert('Configuración de costos guardada.');
-            toggleModal('modalCostos');
-        }
 
         function generarWsp() {
             const nombre = document.getElementById('nombre').value;
