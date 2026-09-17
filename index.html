@@ -1190,7 +1190,6 @@
         }
 
         function renderTabla() {
-            function renderTabla() {
             const tbody = document.getElementById('tablaReservas');
             if (!tbody) return;
             tbody.innerHTML = '';
@@ -1205,7 +1204,7 @@
             const mes = mesInput ? mesInput.value : '';
             const ano = anoInput ? anoInput.value : '';
 
-            // Filtrado realizado en JavaScript para evitar bloqueos de índice en Firestore
+            // Filtrado directo en JavaScript sin exigir índices en Firestore
             const reservasFiltradas = reservas.filter(r => {
                 const nombreVal = (r.nombre || '').toLowerCase();
                 const coincideTexto = !texto || nombreVal.includes(texto);
@@ -1227,7 +1226,7 @@
             });
 
             if (reservasFiltradas.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400 font-semibold">No se encontraron reservas registradas para los filtros seleccionados.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400 font-semibold">No hay reservas registradas.</td></tr>`;
                 return;
             }
 
@@ -1293,6 +1292,13 @@
                 `;
             });
         }
+
+        async function eliminarReserva(id) {
+            if (confirm('¿Eliminar esta reserva?')) {
+                await db.collection('reservas').doc(id).delete();
+            }
+        }
+
         function abrirModalHuespedes() {
             const tbody = document.getElementById('tablaHuespedesBase');
             tbody.innerHTML = '';
@@ -1626,6 +1632,7 @@
 
             navigator.clipboard.writeText(texto);
             alert('¡Mensaje para WhatsApp copiado al portapapeles!');
-        }    </script>
+        }
+    </script>
 </body>
 </html>
