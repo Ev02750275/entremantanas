@@ -706,14 +706,14 @@
 
         function formatearFechaChile(fechaYYYYMMDD) {
             if (!fechaYYYYMMDD) return '-';
-            const partes = fechaYYYYMMDD.split('-');
+            const partes = String(fechaYYYYMMDD).split('-');
             if (partes.length !== 3) return fechaYYYYMMDD;
             return `${partes[2]}/${partes[1]}/${partes[0]}`;
         }
 
         function abrirChatWsp(telefono) {
             if (!telefono) return;
-            const soloNumeros = telefono.replace(/\D/g, '');
+            const soloNumeros = String(telefono).replace(/\D/g, '');
             if (soloNumeros) {
                 window.open(`https://wa.me/${soloNumeros}`, '_blank');
             }
@@ -912,7 +912,7 @@
 
         function obtenerUltimos4Telefono() {
             const fono = document.getElementById('telefono').value || '';
-            const soloNumeros = fono.replace(/\D/g, '');
+            const soloNumeros = String(fono).replace(/\D/g, '');
             return soloNumeros.length >= 4 ? soloNumeros.slice(-4) : '----';
         }
 
@@ -985,7 +985,7 @@
                     iva = totalBruto - netoImpuesto;
                 }
 
-                const totalAbonado = abonosTemp.reduce((sum, a) => sum + parseFloat(a.monto), 0);
+                const totalAbonado = abonosTemp.reduce((sum, a) => sum + parseFloat(a.monto || 0), 0);
                 const saldoPendiente = totalBruto - totalAbonado;
 
                 document.getElementById('resTotalBruto').innerText = `$${totalBruto.toLocaleString('es-CL')}`;
@@ -1045,28 +1045,36 @@
 
             const estadoCalculado = calcularEstadoAutomatico(checkinVal, checkoutVal, 'Auto');
 
+            // Mapeo seguro para Firebase (Garantiza cadenas de texto y números correctos)
             const nuevaReserva = {
-                estadoReserva: estadoCalculado,
-                nombre: document.getElementById('nombre').value,
-                rut: document.getElementById('rut').value,
-                email: document.getElementById('email').value,
-                telefono: document.getElementById('telefono').value,
-                adultos: document.getElementById('adultos').value,
-                ninos: document.getElementById('ninos').value,
-                reqPerro: document.getElementById('reqPerro').checked,
-                reqCuna: document.getElementById('reqCuna').checked,
-                reqProtectorEstufa: document.getElementById('reqProtectorEstufa').checked,
-                costoBencinaGenerador: parseFloat(document.getElementById('costoBencinaGenerador').value) || 0,
-                costoImprevistosReserva: parseFloat(document.getElementById('costoImprevistosReserva').value) || 0,
-                checkin: checkinVal,
-                checkout: checkoutVal,
-                valorDiarioFinal: document.getElementById('valorDiarioFinal').value,
-                costoPlataforma: document.getElementById('costoPlataforma').value,
-                canal: document.getElementById('canal').value,
-                tipoDoc: document.getElementById('tipoDoc').value,
-                anotaciones: document.getElementById('anotaciones').value,
-                abonos: [...abonosTemp],
-                ...reservaCalculada
+                estadoReserva: String(estadoCalculado || 'Reserva'),
+                nombre: String(document.getElementById('nombre').value || ''),
+                rut: String(document.getElementById('rut').value || ''),
+                email: String(document.getElementById('email').value || ''),
+                telefono: String(document.getElementById('telefono').value || ''),
+                adultos: Number(document.getElementById('adultos').value || 0),
+                ninos: Number(document.getElementById('ninos').value || 0),
+                reqPerro: Boolean(document.getElementById('reqPerro').checked),
+                reqCuna: Boolean(document.getElementById('reqCuna').checked),
+                reqProtectorEstufa: Boolean(document.getElementById('reqProtectorEstufa').checked),
+                costoBencinaGenerador: Number(document.getElementById('costoBencinaGenerador').value || 0),
+                costoImprevistosReserva: Number(document.getElementById('costoImprevistosReserva').value || 0),
+                checkin: String(checkinVal || ''),
+                checkout: String(checkoutVal || ''),
+                valorDiarioFinal: Number(document.getElementById('valorDiarioFinal').value || 0),
+                costoPlataforma: Number(document.getElementById('costoPlataforma').value || 0),
+                canal: String(document.getElementById('canal').value || 'Directo Web/Wsp'),
+                tipoDoc: String(document.getElementById('tipoDoc').value || 'Sin Documento'),
+                anotaciones: String(document.getElementById('anotaciones').value || ''),
+                abonos: abonosTemp.map(a => ({ fecha: String(a.fecha), monto: Number(a.monto) })),
+                dias: Number(reservaCalculada.dias || 0),
+                noches: Number(reservaCalculada.noches || 0),
+                totalBruto: Number(reservaCalculada.totalBruto || 0),
+                netoCaban: Number(reservaCalculada.netoCaban || 0),
+                netoImpuesto: Number(reservaCalculada.netoImpuesto || 0),
+                iva: Number(reservaCalculada.iva || 0),
+                totalAbonado: Number(reservaCalculada.totalAbonado || 0),
+                saldoPendiente: Number(reservaCalculada.saldoPendiente || 0)
             };
 
             try {
@@ -1114,23 +1122,23 @@
             if (!r) return;
 
             document.getElementById('reservaId').value = r.id;
-            document.getElementById('nombre').value = r.nombre;
+            document.getElementById('nombre').value = r.nombre || '';
             document.getElementById('rut').value = r.rut || '';
-            document.getElementById('email').value = r.email;
-            document.getElementById('telefono').value = r.telefono;
-            document.getElementById('adultos').value = r.adultos;
-            document.getElementById('ninos').value = r.ninos;
+            document.getElementById('email').value = r.email || '';
+            document.getElementById('telefono').value = r.telefono || '';
+            document.getElementById('adultos').value = r.adultos || 1;
+            document.getElementById('ninos').value = r.ninos || 0;
             document.getElementById('reqPerro').checked = !!r.reqPerro;
             document.getElementById('reqCuna').checked = !!r.reqCuna;
             document.getElementById('reqProtectorEstufa').checked = !!r.reqProtectorEstufa;
             document.getElementById('costoBencinaGenerador').value = r.costoBencinaGenerador || 0;
             document.getElementById('costoImprevistosReserva').value = r.costoImprevistosReserva || 0;
-            document.getElementById('checkin').value = r.checkin;
-            document.getElementById('checkout').value = r.checkout;
-            document.getElementById('valorDiarioFinal').value = r.valorDiarioFinal;
+            document.getElementById('checkin').value = r.checkin || '';
+            document.getElementById('checkout').value = r.checkout || '';
+            document.getElementById('valorDiarioFinal').value = r.valorDiarioFinal || 0;
             document.getElementById('costoPlataforma').value = r.costoPlataforma || 0;
-            document.getElementById('canal').value = r.canal;
-            document.getElementById('tipoDoc').value = r.tipoDoc;
+            document.getElementById('canal').value = r.canal || 'Directo Web/Wsp';
+            document.getElementById('tipoDoc').value = r.tipoDoc || 'Sin Documento';
             document.getElementById('anotaciones').value = r.anotaciones || '';
 
             abonosTemp = r.abonos ? [...r.abonos] : [];
@@ -1162,7 +1170,7 @@
                     <span class="text-slate-500 text-xs">${formatearFechaChile(r.checkin)} al ${formatearFechaChile(r.checkout)} (${noches} noches)</span>
                 </div>
                 <div class="space-y-1.5 border-t pt-2">
-                    <div class="flex justify-between font-semibold"><span>Ingreso Bruto Arriendo:</span><span class="text-slate-900">$${r.totalBruto.toLocaleString('es-CL')}</span></div>
+                    <div class="flex justify-between font-semibold"><span>Ingreso Bruto Arriendo:</span><span class="text-slate-900">$${(r.totalBruto||0).toLocaleString('es-CL')}</span></div>
                     <div class="flex justify-between text-red-600"><span>- Costo Plataforma:</span><span>-$${costoPlat.toLocaleString('es-CL')}</span></div>
                     <div class="flex justify-between text-amber-700"><span>- Costos Diarios Cabaña (${noches}n):</span><span>-$${costoDiarioTotal.toLocaleString('es-CL')}</span></div>
                     <div class="flex justify-between text-teal-800"><span>- Costos Fijos Base (Aseo + Regalo):</span><span>-$${costosFijos.toLocaleString('es-CL')}</span></div>
@@ -1182,7 +1190,7 @@
             if (!selectAno) return;
             const valActual = selectAno.value;
             selectAno.innerHTML = '<option value="">Todos los Años</option>';
-            const annos = [...new Set(reservas.map(r => r.checkin ? r.checkin.substring(0, 4) : ''))].filter(Boolean);
+            const annos = [...new Set(reservas.map(r => r.checkin ? String(r.checkin).substring(0, 4) : ''))].filter(Boolean);
             annos.sort().reverse().forEach(a => {
                 selectAno.innerHTML += `<option value="${a}">${a}</option>`;
             });
@@ -1204,21 +1212,20 @@
             const mes = mesInput ? mesInput.value : '';
             const ano = anoInput ? anoInput.value : '';
 
-            // Filtrado directo en JavaScript sin exigir índices en Firestore
             const reservasFiltradas = reservas.filter(r => {
-                const nombreVal = (r.nombre || '').toLowerCase();
+                const nombreVal = String(r.nombre || '').toLowerCase();
                 const coincideTexto = !texto || nombreVal.includes(texto);
                 const coincideEstado = !estado || r.estadoReserva === estado;
                 
                 let coincideMes = true;
                 if (mes && r.checkin) {
-                    const mesCheckin = r.checkin.split('-')[1];
+                    const mesCheckin = String(r.checkin).split('-')[1];
                     coincideMes = (mesCheckin === mes);
                 }
 
                 let coincideAno = true;
                 if (ano && r.checkin) {
-                    const anoCheckin = r.checkin.split('-')[0];
+                    const anoCheckin = String(r.checkin).split('-')[0];
                     coincideAno = (anoCheckin === ano);
                 }
 
@@ -1305,10 +1312,10 @@
 
             const mapaHuespedes = {};
             reservas.forEach(r => {
-                const clave = r.rut ? r.rut.trim() : r.nombre.trim().toLowerCase();
+                const clave = r.rut ? String(r.rut).trim() : String(r.nombre || '').trim().toLowerCase();
                 if (!mapaHuespedes[clave]) {
                     mapaHuespedes[clave] = {
-                        nombre: r.nombre,
+                        nombre: r.nombre || 'Sin nombre',
                         rut: r.rut || 'Sin RUT',
                         telefono: r.telefono || 'Sin Fono',
                         email: r.email || 'Sin Email',
@@ -1471,7 +1478,7 @@
                     <tr class="hover:bg-teal-50/50 border-b">
                         <td class="p-2 font-bold">${r.nombre}</td>
                         <td class="p-2">${nochesUso} noches</td>
-                        <td class="p-2 font-semibold text-slate-800">$${r.totalBruto.toLocaleString('es-CL')}</td>
+                        <td class="p-2 font-semibold text-slate-800">$${(r.totalBruto||0).toLocaleString('es-CL')}</td>
                         <td class="p-2 text-red-600">-$${costoPlat.toLocaleString('es-CL')}</td>
                         <td class="p-2 text-amber-700">-$${costoDiarioTotal.toLocaleString('es-CL')}</td>
                         <td class="p-2 text-teal-800 font-bold">-$${costosFijos.toLocaleString('es-CL')}</td>
@@ -1487,7 +1494,7 @@
         function actualizarDashboardResumen() {
             const hoy = new Date();
             const mesActualStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
-            const reservasMes = reservas.filter(r => r.checkin && r.checkin.startsWith(mesActualStr));
+            const reservasMes = reservas.filter(r => r.checkin && String(r.checkin).startsWith(mesActualStr));
 
             const nochesTotal = reservasMes.reduce((sum, r) => sum + (r.noches || 0), 0);
             const brutoTotal = reservasMes.reduce((sum, r) => sum + (r.totalBruto || 0), 0);
@@ -1500,7 +1507,7 @@
         function abrirModalKPIs() {
             const selectAnno = document.getElementById('kpiAnno');
             selectAnno.innerHTML = '';
-            const annos = [...new Set(reservas.map(r => r.checkin ? r.checkin.substring(0, 4) : new Date().getFullYear().toString()))];
+            const annos = [...new Set(reservas.map(r => r.checkin ? String(r.checkin).substring(0, 4) : new Date().getFullYear().toString()))];
             if(annos.length === 0) annos.push(new Date().getFullYear().toString());
 
             annos.sort().reverse().forEach(a => {
@@ -1513,7 +1520,7 @@
 
         function renderKPIs() {
             const annoSel = document.getElementById('kpiAnno').value || new Date().getFullYear().toString();
-            const reservasAno = reservas.filter(r => r.checkin && r.checkin.startsWith(annoSel));
+            const reservasAno = reservas.filter(r => r.checkin && String(r.checkin).startsWith(annoSel));
             const { diario, costosFijos, aseoFijo, regaloFijo, electricidadDiaria } = calcularCostoTotalDiarioCasa();
 
             const diasArrendados = reservasAno.reduce((sum, r) => sum + (r.noches || 1), 0);
@@ -1574,9 +1581,11 @@
             const mesesDias = Array(12).fill(0);
 
             reservasAno.forEach(r => {
-                const mes = parseInt(r.checkin.substring(5, 7)) - 1;
-                mesesIngresos[mes] += (r.totalBruto || 0);
-                mesesDias[mes] += (r.noches || 1);
+                const mes = parseInt(String(r.checkin).substring(5, 7)) - 1;
+                if (!isNaN(mes) && mes >= 0 && mes < 12) {
+                    mesesIngresos[mes] += (r.totalBruto || 0);
+                    mesesDias[mes] += (r.noches || 1);
+                }
             });
 
             const ctx = document.getElementById('chartIngresosMes').getContext('2d');
