@@ -28,7 +28,7 @@
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 pb-12">
 
-    <!-- FRANJA VERDE SUPERIOR ORIGINAL -->
+    <!-- FRANJA VERDE SUPERIOR -->
     <header class="bg-emerald-800 text-white p-4 md:p-6 shadow-md">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
@@ -305,7 +305,7 @@
 
         </div>
 
-        <!-- CALENDARIO -->
+        <!-- CALENDARIO DE DISPONIBILIDAD -->
         <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
             <div class="flex flex-col sm:flex-row justify-between items-center border-b pb-4 mb-4 gap-2">
                 <h2 class="text-xl font-bold text-slate-800 flex items-center">
@@ -677,7 +677,7 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN EXACTA CON TUS CREDENCIALES
+        // CONFIGURACIÓN DE FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyC6nbWndwjEx00-jvzt-KXDwA6anvg0-5A",
             authDomain: "entremontanas-75305.firebaseapp.com",
@@ -718,6 +718,9 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            renderCalendario();
+            renderTabla();
+
             document.getElementById('valorBaseGlobal').addEventListener('input', (e) => {
                 if(!document.getElementById('reservaId').value) {
                     document.getElementById('valorDiarioFinal').value = e.target.value;
@@ -745,6 +748,8 @@
                 renderTabla();
                 renderCalendario();
                 actualizarDashboardResumen();
+            }, error => {
+                console.error("Error en sincronización de reservas:", error);
             });
 
             // Escuchar cambios en Usuarios
@@ -759,6 +764,8 @@
                     }
                     actualizarUsuarioActivoUI();
                 }
+            }, error => {
+                console.error("Error en usuarios:", error);
             });
 
             // Escuchar cambios en Costos
@@ -769,6 +776,8 @@
                 } else {
                     db.collection('configuracion').doc('costos_casa').set(costosCasa);
                 }
+            }, error => {
+                console.error("Error en costos:", error);
             });
         }
 
@@ -1066,7 +1075,7 @@
             }
 
             document.getElementById('btnWsp').disabled = false;
-            alert('¡Reserva sincronizada en la nube con éxito!');
+            alert('¡Reserva guardada y sincronizada en la nube!');
             limpiarFormulario();
         });
 
@@ -1176,12 +1185,18 @@
 
         function renderTabla() {
             const tbody = document.getElementById('tablaReservas');
+            if (!tbody) return;
             tbody.innerHTML = '';
 
-            const texto = document.getElementById('filtroTexto').value.toLowerCase();
-            const estado = document.getElementById('filtroEstado').value;
-            const mes = document.getElementById('filtroMes').value;
-            const ano = document.getElementById('filtroAno').value;
+            const textoInput = document.getElementById('filtroTexto');
+            const estadoInput = document.getElementById('filtroEstado');
+            const mesInput = document.getElementById('filtroMes');
+            const anoInput = document.getElementById('filtroAno');
+
+            const texto = textoInput ? textoInput.value.toLowerCase() : '';
+            const estado = estadoInput ? estadoInput.value : '';
+            const mes = mesInput ? mesInput.value : '';
+            const ano = anoInput ? anoInput.value : '';
 
             const reservasFiltradas = reservas.filter(r => {
                 const coincideTexto = (r.nombre || '').toLowerCase().includes(texto);
@@ -1191,6 +1206,11 @@
                 return coincideTexto && coincideEstado && coincideMes && coincideAno;
             });
 
+            if (reservasFiltradas.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400">No hay reservas registradas.</td></tr>`;
+                return;
+            }
+
             reservasFiltradas.forEach(r => {
                 let reqsText = [];
                 if(r.reqPerro) reqsText.push('🐾 Perro');
@@ -1199,7 +1219,8 @@
                 const reqsHtml = reqsText.length > 0 ? `<div class="text-[11px] text-blue-700 font-semibold mt-0.5">${reqsText.join(' | ')}</div>` : '<div class="text-[11px] text-slate-400">Sin extras</div>';
 
                 const totalAbonado = r.abonos ? r.abonos.reduce((sum, a) => sum + parseFloat(a.monto), 0) : 0;
-                const saldoCalculado = r.totalBruto - totalAbonado;
+                const totalBrutoVal = parseFloat(r.totalBruto) || 0;
+                const saldoCalculado = totalBrutoVal - totalAbonado;
 
                 let abonosFormatted = '';
                 if (r.abonos && r.abonos.length > 0) {
@@ -1213,7 +1234,7 @@
                 </div>`;
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50">
+                    <tr class="hover:bg-slate-50 border-b">
                         <td class="p-3">
                             <button type="button" onclick="cargarParaEditar('${r.id}')" class="font-bold text-emerald-800 hover:text-emerald-600 hover:underline text-left text-sm block">
                                 ${r.nombre}
@@ -1231,7 +1252,7 @@
                             ${reqsHtml}
                         </td>
                         <td class="p-3"><span class="bg-slate-100 px-2 py-0.5 rounded text-xs">${r.canal}</span></td>
-                        <td class="p-3 font-bold text-slate-900 text-sm">$${r.totalBruto.toLocaleString('es-CL')}</td>
+                        <td class="p-3 font-bold text-slate-900 text-sm">$${totalBrutoVal.toLocaleString('es-CL')}</td>
                         <td class="p-3 text-xs">
                             ${abonosFormatted}
                             ${saldoHtml}
@@ -1315,6 +1336,7 @@
 
         function renderCalendario() {
             const contenedor = document.getElementById('calendarioContenedor');
+            if (!contenedor) return;
             contenedor.innerHTML = '';
 
             const hoy = new Date();
