@@ -10,9 +10,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SDKs de Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <style>
         .cal-day-reserva { background-color: #fde68a !important; color: #92400e !important; font-weight: bold; }
         .cal-day-curso { background-color: #a7f3d0 !important; color: #065f46 !important; font-weight: bold; }
@@ -26,32 +23,39 @@
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 pb-12">
 
-    <!-- FRANJA VERDE SUPERIOR -->
+    <!-- FRANJA VERDE SUPERIOR ORIGINAL -->
     <header class="bg-emerald-800 text-white p-4 md:p-6 shadow-md">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold flex items-center"><i class="fa-solid fa-mountain-sun mr-2"></i>Refugio Entre Montañas</h1>
-                <p class="text-emerald-200 text-xs md:text-sm">Control Operativo, Finanzas y Métricas KPIs (Nube Sincronizada ⚡)</p>
+                <p class="text-emerald-200 text-xs md:text-sm">Control Operativo, Finanzas y Métricas KPIs</p>
             </div>
 
+            <!-- BOTONES Y CONFIGURACIONES -->
             <div class="flex flex-wrap items-center gap-2 md:gap-3">
+                <div class="bg-emerald-900/80 px-3 py-1.5 rounded-lg border border-emerald-700 flex items-center gap-2">
+                    <label class="text-xs uppercase font-bold text-emerald-200">Valor Diario Arriendo ($):</label>
+                    <input type="number" id="valorBaseGlobal" value="75000" class="w-24 bg-emerald-950 text-white font-bold p-1 rounded border border-emerald-600 text-sm text-right outline-none">
+                </div>
+
                 <button type="button" onclick="limpiarFormulario()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
                     <i class="fa-solid fa-plus mr-1"></i> Nueva Reserva
                 </button>
-                <button type="button" onclick="toggleModal('modalHuespedes')" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
+                <button type="button" onclick="abrirModalHuespedes()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
                     <i class="fa-solid fa-users mr-1"></i> Huéspedes
                 </button>
                 <button type="button" onclick="toggleModal('modalCostos')" class="bg-amber-600 hover:bg-amber-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
                     <i class="fa-solid fa-calculator mr-1"></i> Costo diario cabaña
                 </button>
-                <button type="button" onclick="toggleModal('modalMargenes')" class="bg-teal-600 hover:bg-teal-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
+                <button type="button" onclick="abrirModalRentabilidad()" class="bg-teal-600 hover:bg-teal-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
                     <i class="fa-solid fa-scale-balanced mr-1"></i> Márgenes
                 </button>
-                <button type="button" onclick="toggleModal('modalKPIs')" class="bg-blue-600 hover:bg-blue-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
+                <button type="button" onclick="abrirModalKPIs()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
                     <i class="fa-solid fa-chart-line mr-1"></i> KPIs
                 </button>
 
-                <button type="button" onclick="toggleModal('modalUsuario')" class="bg-emerald-950/60 hover:bg-emerald-950 text-emerald-200 text-xs px-2.5 py-1.5 rounded-lg border border-emerald-700/60 transition-all flex items-center ml-auto md:ml-2">
+                <!-- BOTÓN DE USUARIO -->
+                <button type="button" onclick="abrirModalUsuarios()" class="bg-emerald-950/60 hover:bg-emerald-950 text-emerald-200 text-xs px-2.5 py-1.5 rounded-lg border border-emerald-700/60 transition-all flex items-center ml-auto md:ml-2">
                     <i class="fa-solid fa-circle-user mr-1.5 text-emerald-400"></i>
                     <span id="lblUsuarioActivo" class="font-semibold">Eduardo Vicencio</span>
                 </button>
@@ -61,6 +65,7 @@
 
     <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
 
+        <!-- FORMULARIO & RESUMEN FINANCIERO -->
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
             <!-- FORMULARIO -->
@@ -73,6 +78,7 @@
                 <form id="reservaForm" class="space-y-4">
                     <input type="hidden" id="reservaId">
 
+                    <!-- Datos Huésped -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Nombre Huésped</label>
@@ -85,7 +91,7 @@
                         <div>
                             <div class="flex justify-between items-center mb-1">
                                 <label class="block text-xs font-semibold uppercase text-slate-500">Teléfono / WhatsApp</label>
-                                <button type="button" onclick="alert('Clave cerradura: 1234#')" class="text-[10px] font-bold text-emerald-700 hover:underline"><i class="fa-solid fa-key mr-0.5"></i> Ver Clave</button>
+                                <button type="button" onclick="mostrarClaveCerradura()" class="text-[10px] font-bold text-emerald-700 hover:underline"><i class="fa-solid fa-key mr-0.5"></i> Ver Clave</button>
                             </div>
                             <input type="tel" id="telefono" required placeholder="+56912345678" class="w-full border rounded-lg p-2 text-sm">
                         </div>
@@ -107,6 +113,7 @@
                         </div>
                     </div>
 
+                    <!-- Fechas y Pasajeros -->
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Adultos</label>
@@ -126,6 +133,7 @@
                         </div>
                     </div>
 
+                    <!-- REQUERIMIENTOS ESPECIALES -->
                     <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
                         <label class="block font-bold text-xs uppercase text-blue-900 mb-2"><i class="fa-solid fa-list-check mr-1"></i> Requerimientos Especiales</label>
                         <div class="flex flex-wrap gap-4 text-xs font-medium text-slate-700">
@@ -141,8 +149,9 @@
                         </div>
                     </div>
 
+                    <!-- Gastos Específicos de la Reserva -->
                     <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                        <label class="block font-bold text-xs uppercase text-slate-700 mb-2"><i class="fa-solid fa-gas-pump mr-1"></i> Gastos Adicionales de la Reserva</label>
+                        <label class="block font-bold text-xs uppercase text-slate-700 mb-2"><i class="fa-solid fa-gas-pump mr-1"></i> Gastos Adicionales de la Reserva (Edición / Cierre)</label>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[11px] font-semibold text-slate-600">Bencina Generador ($)</label>
@@ -155,6 +164,7 @@
                         </div>
                     </div>
 
+                    <!-- Tarifas -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Días / Noches</label>
@@ -162,7 +172,7 @@
                         </div>
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Valor Diario A Cobrar ($ CLP)</label>
-                            <input type="number" id="valorDiarioFinal" value="380000" required class="w-full border rounded-lg p-2 text-sm font-bold text-emerald-800">
+                            <input type="number" id="valorDiarioFinal" required class="w-full border rounded-lg p-2 text-sm font-bold text-emerald-800">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Costo Plataforma Arriendo ($)</label>
@@ -181,20 +191,20 @@
 
                     <!-- CONTROL DE ABONOS -->
                     <div class="bg-amber-50 p-3 rounded-lg border border-amber-200">
-                        <label class="block font-bold text-xs uppercase text-amber-900 mb-2"><i class="fa-solid fa-money-bill-transfer mr-1"></i> Control de Ingresos / Abonos</label>
+                        <label class="block font-bold text-xs uppercase text-amber-900 mb-2"><i class="fa-solid fa-money-bill-transfer mr-1"></i> Control de Ingresos / Abonos (Fecha Automática)</label>
                         <div class="flex gap-2 mb-2">
-                            <input type="number" id="montoPago" placeholder="Monto CLP $" class="border rounded p-1.5 text-xs flex-1 bg-white outline-none">
-                            <button type="button" id="btnAgregarPago" class="bg-amber-700 hover:bg-amber-800 text-white font-bold py-1.5 px-3 rounded text-xs transition-all flex items-center">
+                            <input type="number" id="montoPago" placeholder="Monto CLP $" class="border rounded p-1 text-xs flex-1 bg-white outline-none">
+                            <button type="button" id="btnAgregarPago" onclick="agregarAbono()" class="bg-amber-700 hover:bg-amber-800 text-white font-bold py-1 px-3 rounded text-xs transition-all">
                                 + Agregar Pago
                             </button>
                         </div>
-                        <div class="max-h-36 overflow-y-auto bg-white rounded border border-amber-200">
+                        <div class="max-h-28 overflow-y-auto bg-white rounded border border-amber-200">
                             <table class="w-full text-xs text-left">
                                 <thead>
-                                    <tr class="bg-amber-100/70 text-amber-900 border-b">
-                                        <th class="p-1.5">Fecha Registro</th>
-                                        <th class="p-1.5">Monto</th>
-                                        <th class="p-1.5 text-center">Quitar</th>
+                                    <tr class="bg-amber-100 text-amber-900 border-b">
+                                        <th class="p-1">Fecha Registro</th>
+                                        <th class="p-1">Monto</th>
+                                        <th class="p-1 text-center">Quitar</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tablaAbonos"></tbody>
@@ -218,7 +228,7 @@
                 </form>
             </section>
 
-            <!-- PANEL RESUMEN FINANCIERO -->
+            <!-- PANEL RESUMEN -->
             <section class="bg-slate-800 text-white p-5 rounded-xl shadow-sm flex flex-col justify-between border border-slate-700">
                 <div class="space-y-4">
                     <h2 class="text-lg font-bold text-emerald-400 border-b border-slate-700 pb-2 flex items-center">
@@ -226,29 +236,63 @@
                     </h2>
 
                     <div class="space-y-2 text-xs">
-                        <div class="flex justify-between"><span class="text-slate-300">Estadía:</span><span id="resNoches" class="font-bold">0d / 0n</span></div>
-                        <div class="flex justify-between"><span class="text-slate-300">Total Bruto:</span><span id="resTotalBruto" class="font-bold text-emerald-400">$0</span></div>
-                        <div class="flex justify-between text-red-300"><span>- Costo Plataforma:</span><span id="resCostoPlataforma">$0</span></div>
-                        <div class="border-t border-slate-700 pt-1.5 flex justify-between text-slate-200"><span>Ingreso Neto Cabaña:</span><span id="resNetoCaban" class="font-semibold">$0</span></div>
-                        <div class="flex justify-between text-yellow-300"><span>Base Factura (Neto):</span><span id="resNetoImpuesto">$0</span></div>
-                        <div class="flex justify-between text-yellow-300"><span>IVA (19%):</span><span id="resIva">$0</span></div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-300">Estadía:</span>
+                            <span id="resNoches" class="font-bold">0d / 0n</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-300">Total Bruto:</span>
+                            <span id="resTotalBruto" class="font-bold text-emerald-400">$0</span>
+                        </div>
+                        <div class="flex justify-between text-red-300">
+                            <span>- Costo Plataforma:</span>
+                            <span id="resCostoPlataforma">$0</span>
+                        </div>
+                        <div class="border-t border-slate-700 pt-1.5 flex justify-between text-slate-200">
+                            <span>Ingreso Neto Cabaña:</span>
+                            <span id="resNetoCaban" class="font-semibold">$0</span>
+                        </div>
+                        <div class="flex justify-between text-yellow-300">
+                            <span>Base Factura (Neto):</span>
+                            <span id="resNetoImpuesto">$0</span>
+                        </div>
+                        <div class="flex justify-between text-yellow-300">
+                            <span>IVA (19%):</span>
+                            <span id="resIva">$0</span>
+                        </div>
 
                         <div class="border-t border-slate-700 pt-2 space-y-1">
-                            <div class="flex justify-between text-emerald-300 font-semibold"><span>Total Abonado:</span><span id="resTotalAbonado">$0</span></div>
-                            <div class="flex justify-between text-amber-300 font-bold text-sm"><span>Saldo Pendiente:</span><span id="resSaldoPendiente">$0</span></div>
+                            <div class="flex justify-between text-emerald-300 font-semibold">
+                                <span>Total Abonado:</span>
+                                <span id="resTotalAbonado">$0</span>
+                            </div>
+                            <div class="flex justify-between text-amber-300 font-bold text-sm">
+                                <span>Saldo Pendiente:</span>
+                                <span id="resSaldoPendiente">$0</span>
+                            </div>
                         </div>
                     </div>
 
+                    <!-- ESTADÍSTICAS RÁPIDAS DEL MES -->
                     <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700 space-y-1.5 text-xs mt-3">
                         <span class="font-bold text-emerald-400 uppercase text-[10px] tracking-wider block border-b border-slate-700 pb-1">⚡ Mes Actual</span>
-                        <div class="flex justify-between text-slate-300"><span>Reservas:</span><span id="dashResMes" class="font-bold">0</span></div>
-                        <div class="flex justify-between text-slate-300"><span>Noches:</span><span id="dashNochesMes" class="font-bold">0</span></div>
-                        <div class="flex justify-between text-emerald-300 font-semibold"><span>Ingreso Bruto:</span><span id="dashBrutoMes">$0</span></div>
+                        <div class="flex justify-between text-slate-300">
+                            <span>Reservas:</span>
+                            <span id="dashResMes" class="font-bold">0</span>
+                        </div>
+                        <div class="flex justify-between text-slate-300">
+                            <span>Noches:</span>
+                            <span id="dashNochesMes" class="font-bold">0</span>
+                        </div>
+                        <div class="flex justify-between text-emerald-300 font-semibold">
+                            <span>Ingreso Bruto:</span>
+                            <span id="dashBrutoMes">$0</span>
+                        </div>
                     </div>
                 </div>
 
                 <div class="mt-4 border-t border-slate-700 pt-3">
-                    <button id="btnWsp" type="button" disabled onclick="generarWsp()" class="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-bold py-2 rounded-lg text-xs transition-all flex items-center justify-center">
+                    <button id="btnWsp" disabled onclick="generarWsp()" class="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-bold py-2 rounded-lg text-xs transition-all flex items-center justify-center">
                         <i class="fa-brands fa-whatsapp text-sm mr-1.5"></i> Copiar Confirmación
                     </button>
                 </div>
@@ -256,16 +300,25 @@
 
         </div>
 
-        <!-- CALENDARIO DE DISPONIBILIDAD -->
+        <!-- CALENDARIO -->
         <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
             <div class="flex flex-col sm:flex-row justify-between items-center border-b pb-4 mb-4 gap-2">
-                <h2 class="text-xl font-bold text-slate-800 flex items-center"><i class="fa-solid fa-calendar-days mr-2 text-emerald-700"></i>Calendario de Disponibilidad</h2>
+                <h2 class="text-xl font-bold text-slate-800 flex items-center">
+                    <i class="fa-solid fa-calendar-days mr-2 text-emerald-700"></i>Calendario de Disponibilidad
+                </h2>
                 <div class="flex items-center gap-3">
                     <button type="button" onclick="cambiarMesCalendario(-1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded-lg font-bold text-sm"><i class="fa-solid fa-chevron-left mr-1"></i> Anterior</button>
                     <button type="button" onclick="resetMesCalendario()" class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-lg font-bold text-xs">Hoy</button>
                     <button type="button" onclick="cambiarMesCalendario(1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded-lg font-bold text-sm">Siguiente <i class="fa-solid fa-chevron-right ml-1"></i></button>
                 </div>
             </div>
+
+            <div class="flex flex-wrap gap-4 text-xs font-semibold mb-4 bg-slate-50 p-2.5 rounded-lg border">
+                <div class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded cal-day-reserva inline-block"></span> Reserva Confirmada</div>
+                <div class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded cal-day-curso inline-block"></span> Reserva en Curso</div>
+                <div class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded cal-day-terminada inline-block"></span> Reserva Terminada</div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="calendarioContenedor"></div>
         </section>
 
@@ -273,14 +326,26 @@
         <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b pb-3">
                 <h2 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-list mr-2"></i>Historial de Reservas</h2>
+                
                 <div class="flex flex-wrap gap-2 w-full md:w-auto">
-                    <input type="text" id="filtroTexto" oninput="renderTabla()" placeholder="🔍 Buscar huésped..." class="border rounded-lg p-1.5 text-xs bg-slate-50 w-full md:w-48 outline-none">
+                    <input type="text" id="filtroTexto" oninput="renderTabla()" placeholder="🔍 Buscar huésped..." class="border rounded-lg p-1.5 text-xs bg-slate-50 w-full md:w-48 outline-none focus:ring-1 focus:ring-emerald-500">
+                    
                     <select id="filtroEstado" onchange="renderTabla()" class="border rounded-lg p-1.5 text-xs bg-slate-50 font-semibold outline-none">
                         <option value="">Todos los Estados</option>
                         <option value="Reserva">🟡 Reserva</option>
                         <option value="Reserva en Curso">🟢 En Curso</option>
                         <option value="Reserva Terminada">⚪ Terminada</option>
                     </select>
+
+                    <select id="filtroMes" onchange="renderTabla()" class="border rounded-lg p-1.5 text-xs bg-slate-50 font-semibold outline-none">
+                        <option value="">Todos los Meses</option>
+                        <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+                        <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+                        <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+                        <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                    </select>
+
+                    <select id="filtroAno" onchange="renderTabla()" class="border rounded-lg p-1.5 text-xs bg-slate-50 font-semibold outline-none"></select>
                 </div>
             </div>
 
@@ -289,7 +354,7 @@
                     <thead>
                         <tr class="bg-slate-100 text-slate-600 border-b">
                             <th class="p-3">Huésped / Fono</th>
-                            <th class="p-3">Período de Estadía</th>
+                            <th class="p-3">Período de Estadía (DD/MM/AAAA)</th>
                             <th class="p-3">Pax / Requerimientos</th>
                             <th class="p-3">Canal</th>
                             <th class="p-3">Total</th>
@@ -305,143 +370,225 @@
 
     </main>
 
-    <!-- MODAL 1: COSTOS DE CABAÑA (COMPLETO Y CON DIVISORES) -->
-    <div id="modalCostos" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 space-y-4">
-            <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="text-lg font-bold text-amber-900 flex items-center">
-                    <i class="fa-solid fa-house-chimney-crack mr-2"></i>Estructura de Costos Cabaña
-                </h3>
-                <button type="button" onclick="toggleModal('modalCostos')" class="text-slate-400 hover:text-slate-600">
-                    <i class="fa-solid fa-xmark text-xl"></i>
+    <!-- MODAL CLAVE CERRADURA DE EMERGENCIA -->
+    <div id="modalClaveCerradura" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-xl max-w-xs w-full p-6 text-center space-y-4">
+            <div class="text-emerald-700 text-4xl"><i class="fa-solid fa-key"></i></div>
+            <h3 class="text-base font-bold text-slate-800">Clave Sugerida Cerradura</h3>
+            <p class="text-xs text-slate-500">Últimos 4 dígitos del celular del huésped:</p>
+            <div class="bg-slate-100 border p-3 rounded-lg text-3xl font-black tracking-widest text-emerald-800 font-mono" id="textoClaveSugerida">
+                ----
+            </div>
+            <div class="flex gap-2">
+                <button type="button" onclick="copiarClaveCerradura()" class="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 rounded-lg text-xs flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-copy"></i> Copiar
+                </button>
+                <button type="button" onclick="toggleModal('modalClaveCerradura')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-3 rounded-lg text-xs">
+                    Cerrar
                 </button>
             </div>
-
-            <form id="formCostosCasa" class="space-y-4 text-xs">
-                <div class="bg-amber-50/70 border border-amber-200/60 p-2 rounded-lg font-bold text-amber-900 tracking-wide text-[11px] uppercase">
-                    COSTO DIARIO DE OPERACIÓN ($/DÍA)
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="font-bold text-slate-700 block mb-1">Parafina ($/día)</label>
-                        <input type="number" id="cParafina" value="5000" oninput="calcularCostosTotalesModal()" class="border rounded-lg p-2 w-full text-slate-800">
-                    </div>
-                    <div>
-                        <label class="font-bold text-slate-700 block mb-1">Gas ($/día)</label>
-                        <input type="number" id="cGas" value="2500" oninput="calcularCostosTotalesModal()" class="border rounded-lg p-2 w-full text-slate-800">
-                    </div>
-                    <div>
-                        <label class="font-bold text-slate-700 block mb-1">Electricidad ($/día)</label>
-                        <input type="number" id="cElectricidad" value="27000" oninput="calcularCostosTotalesModal()" class="border rounded-lg p-2 w-full text-slate-800">
-                    </div>
-                    <div>
-                        <label class="font-bold text-slate-700 block mb-1">Leña ($/día)</label>
-                        <input type="number" id="cLena" value="6000" oninput="calcularCostosTotalesModal()" class="border rounded-lg p-2 w-full text-slate-800">
-                    </div>
-                    <div>
-                        <label class="font-bold text-slate-700 block mb-1">Starlink ($/día)</label>
-                        <input type="number" id="cStarlinkDiario" value="5000" oninput="calcularCostosTotalesModal()" class="border rounded-lg p-2 w-full text-slate-800">
-                    </div>
-                    <div>
-                        <label class="font-bold text-slate-700 block mb-1">MasPlagas ($/día)</label>
-                        <input type="number" id="cMasPlagasDiario" value="5000" oninput="calcularCostosTotalesModal()" class="border rounded-lg p-2 w-full text-slate-800">
-                    </div>
-                    <div class="col-span-2">
-                        <label class="font-bold text-slate-700 block mb-1">Detergentes, papel e insumos ($/día)</label>
-                        <input type="number" id="cDetergentesPapel" value="1000" oninput="calcularCostosTotalesModal()" class="border rounded-lg p-2 w-full text-slate-800">
-                    </div>
-                </div>
-
-                <div class="bg-emerald-50/70 border border-emerald-200/60 p-2 rounded-lg font-bold text-emerald-900 tracking-wide text-[11px] uppercase">
-                    COSTOS FIJOS POR PERÍODO DE ARRIENDO ($/RESERVA)
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="font-bold text-slate-700 block mb-1">Aseo Cabaña ($/fijo)</label>
-                        <input type="number" id="cAseo" value="110000" oninput="calcularCostosTotalesModal()" class="border rounded-lg p-2 w-full font-bold text-slate-800">
-                    </div>
-                    <div>
-                        <label class="font-bold text-slate-700 block mb-1">Regalo Bienvenida ($/fijo)</label>
-                        <input type="number" id="cRegalo" value="10000" oninput="calcularCostosTotalesModal()" class="border rounded-lg p-2 w-full font-bold text-slate-800">
-                    </div>
-                </div>
-
-                <div class="bg-amber-50/80 p-3.5 rounded-xl border border-amber-200/70 space-y-1 text-xs">
-                    <div class="flex justify-between items-center font-bold text-amber-950">
-                        <span>COSTO OPERATIVO DIARIO TOTAL:</span>
-                        <span id="lblCostoDiarioTotal" class="text-sm font-black text-amber-900">$51.500</span>
-                    </div>
-                    <div class="flex justify-between items-center font-bold text-amber-950">
-                        <span>COSTO FIJO BASE POR RESERVA (Aseo + Regalo):</span>
-                        <span id="lblCostoFijoBase" class="text-sm font-black text-amber-900">$120.000</span>
-                    </div>
-                </div>
-
-                <div class="flex justify-end pt-2 border-t">
-                    <button type="button" onclick="guardarCostosCasa()" class="bg-amber-800 hover:bg-amber-900 text-white font-bold py-2.5 px-6 rounded-lg text-xs shadow transition-all">
-                        Guardar Configuración
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 
-    <!-- MODAL 2: HUÉSPEDES -->
-    <div id="modalHuespedes" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 space-y-4">
+    <!-- MODAL USUARIOS -->
+    <div id="modalUsuarios" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="text-lg font-bold text-indigo-900"><i class="fa-solid fa-users mr-2"></i>Directorio de Huéspedes</h3>
-                <button type="button" onclick="toggleModal('modalHuespedes')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-users-gear mr-2 text-emerald-700"></i>Gestión de Usuarios</h3>
+                <button type="button" onclick="toggleModal('modalUsuarios')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
-            <div class="max-h-80 overflow-y-auto">
-                <table class="w-full text-left text-xs">
-                    <thead>
-                        <tr class="bg-indigo-50 text-indigo-900 border-b">
+
+            <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-200 text-xs">
+                <label class="block font-bold text-emerald-900 mb-1">Usuario Activo Actualmente:</label>
+                <select id="selUsuarioActivo" onchange="seleccionarUsuarioActivo(this.value)" class="w-full border rounded p-2 bg-white font-bold text-slate-800 text-sm outline-none">
+                </select>
+            </div>
+
+            <form id="formUsuario" onsubmit="guardarUsuario(event)" class="space-y-3 bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs">
+                <div class="flex justify-between items-center border-b pb-1">
+                    <span id="usrFormTitle" class="font-bold text-slate-700">Registrar Nuevo Usuario (Máx. 5)</span>
+                    <button type="button" id="btnCancelarEditUsr" onclick="cancelarEdicionUsuario()" class="hidden text-[10px] text-red-600 font-bold">Cancelar Edición</button>
+                </div>
+                <input type="hidden" id="usrEditId">
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-0.5">Nombre Completo</label>
+                    <input type="text" id="usrNombre" required placeholder="Ej: María González" class="w-full border rounded p-1.5">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-0.5">Email / Identificador</label>
+                    <input type="email" id="usrEmail" required placeholder="usuario@refugio.cl" class="w-full border rounded p-1.5">
+                </div>
+                <button type="submit" id="btnUsrSubmit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-1.5 rounded shadow">
+                    + Agregar Usuario
+                </button>
+            </form>
+
+            <div class="overflow-y-auto max-h-36 border rounded-lg">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-slate-100 border-b">
+                        <tr>
                             <th class="p-2">Nombre</th>
-                            <th class="p-2">RUT</th>
-                            <th class="p-2">Teléfono</th>
                             <th class="p-2">Email</th>
+                            <th class="p-2 text-center">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="tablaDirectorioHuespedes" class="divide-y"></tbody>
+                    <tbody id="tablaUsuarios" class="divide-y"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- MODAL 3: MÁRGENES (DINÁMICO CON COSTOS) -->
-    <div id="modalMargenes" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <!-- MODAL COSTO CABAÑA -->
+    <div id="modalCostos" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="text-lg font-bold text-teal-900 flex items-center"><i class="fa-solid fa-scale-balanced mr-2"></i>Análisis de Márgenes Operativos</h3>
-                <button type="button" onclick="toggleModal('modalMargenes')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <h3 class="text-lg font-bold text-amber-900"><i class="fa-solid fa-house-chimney-crack mr-2"></i>Estructura de Costos Cabaña</h3>
+                <button type="button" onclick="toggleModal('modalCostos')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
-            
-            <div class="space-y-3 text-xs">
-                <div class="p-3 bg-teal-50 border border-teal-200 rounded-lg space-y-1">
-                    <span class="font-bold text-teal-900 block text-sm">Costo Operativo Base Configurado:</span>
-                    <div class="flex justify-between text-teal-800"><span>Costo Diario (Insumos/Servicios):</span><strong id="margenCostoDiario">$51.500 /día</strong></div>
-                    <div class="flex justify-between text-teal-800"><span>Costo Fijo (Aseo + Bienvenida):</span><strong id="margenCostoFijo">$120.000 /reserva</strong></div>
+
+            <form id="formCostosCasa" class="grid grid-cols-2 gap-3 text-xs">
+                <div class="col-span-2 bg-amber-50 p-2 rounded border border-amber-200 mb-1">
+                    <span class="font-bold text-amber-900 block uppercase text-[10px]">Costo Diario de Operación ($/día)</span>
+                </div>
+                <div>
+                    <label class="font-bold text-slate-600">Parafina ($/día)</label>
+                    <input type="number" id="cParafina" value="3000" class="border rounded p-1.5 w-full">
+                </div>
+                <div>
+                    <label class="font-bold text-slate-600">Gas ($/día)</label>
+                    <input type="number" id="cGas" value="2500" class="border rounded p-1.5 w-full">
+                </div>
+                <div>
+                    <label class="font-bold text-slate-600">Electricidad ($/día)</label>
+                    <input type="number" id="cElectricidad" value="2000" class="border rounded p-1.5 w-full">
+                </div>
+                <div>
+                    <label class="font-bold text-slate-600">Leña ($/día)</label>
+                    <input type="number" id="cLena" value="4000" class="border rounded p-1.5 w-full">
+                </div>
+                <div>
+                    <label class="font-bold text-slate-600">Starlink ($/día)</label>
+                    <input type="number" id="cStarlinkDiario" value="1500" class="border rounded p-1.5 w-full">
+                </div>
+                <div>
+                    <label class="font-bold text-slate-600">MasPlagas ($/día)</label>
+                    <input type="number" id="cMasPlagasDiario" value="1000" class="border rounded p-1.5 w-full">
+                </div>
+                <div class="col-span-2">
+                    <label class="font-bold text-slate-600">Detergentes, papel e insumos ($/día)</label>
+                    <input type="number" id="cDetergentesPapel" value="2000" class="border rounded p-1.5 w-full">
                 </div>
 
-                <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg space-y-1.5">
-                    <span class="font-bold text-emerald-900 block text-sm">Margen sobre Tarifa Base ($380.000):</span>
-                    <div class="flex justify-between text-slate-700"><span>Margen Operativo Bruto Diario:</span><strong id="margenPorcentajeBruto" class="text-emerald-700 font-bold">86.4%</strong></div>
-                    <div class="flex justify-between text-slate-700"><span>Margen Neto Estimado (Estadía 2 noches):</span><strong id="margenPorcentajeNeto" class="text-emerald-800 font-extrabold">70.6%</strong></div>
+                <div class="col-span-2 bg-teal-50 p-2 rounded border border-teal-200 mt-2">
+                    <span class="font-bold text-teal-900 block uppercase text-[10px]">Costos Fijos por Período de Arriendo ($/reserva)</span>
                 </div>
+                <div>
+                    <label class="font-bold text-teal-800">Aseo Cabaña ($/fijo)</label>
+                    <input type="number" id="cAseo" value="25000" class="border rounded p-1.5 w-full font-bold text-teal-900 bg-teal-50/50">
+                </div>
+                <div>
+                    <label class="font-bold text-teal-800">Regalo Bienvenida ($/fijo)</label>
+                    <input type="number" id="cRegalo" value="1500" class="border rounded p-1.5 w-full font-bold text-teal-900 bg-teal-50/50">
+                </div>
+            </form>
 
-                <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-600">
-                    <p class="text-[11px] leading-relaxed">
-                        * El margen neto se ajusta automáticamente según la duración de la estancia y la tarifa cargada en cada reserva.
-                    </p>
+            <div class="bg-amber-50 p-3 rounded-lg border border-amber-200 text-xs space-y-1">
+                <div class="flex justify-between font-bold text-amber-900">
+                    <span>COSTO OPERATIVO DIARIO TOTAL:</span>
+                    <span id="resCostoDiarioTotal">$0</span>
                 </div>
+                <div class="flex justify-between font-bold text-teal-900">
+                    <span>COSTO FIJO BASE POR RESERVA (Aseo + Regalo):</span>
+                    <span id="resCostosFijosTotal">$0</span>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 border-t pt-3">
+                <button type="button" onclick="guardarCostosCasa()" class="bg-amber-700 hover:bg-amber-800 text-white font-bold py-2 px-4 rounded-lg text-xs">Guardar Configuración</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL 4: KPIS DE NEGOCIO COMPLETOS -->
+    <!-- MODAL MÁRGENES -->
+    <div id="modalRentabilidad" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-xl max-w-5xl w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="text-lg font-bold text-teal-900"><i class="fa-solid fa-scale-balanced mr-2"></i>Márgenes y Ganancia Real por Arriendo</h3>
+                <button type="button" onclick="toggleModal('modalRentabilidad')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div class="overflow-x-auto max-h-96">
+                <table class="w-full text-xs text-left border-collapse">
+                    <thead>
+                        <tr class="bg-teal-50 text-teal-900 border-b">
+                            <th class="p-2">Huésped</th>
+                            <th class="p-2">Noches</th>
+                            <th class="p-2">Ingreso Bruto</th>
+                            <th class="p-2">Plataforma</th>
+                            <th class="p-2">Costos Diarios</th>
+                            <th class="p-2">Fijos (Aseo+Reg)</th>
+                            <th class="p-2">Extras (Benc+Impr)</th>
+                            <th class="p-2">Ganancia Neta</th>
+                            <th class="p-2">Margen %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaMargenes" class="divide-y"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETALLE ECONÓMICO -->
+    <div id="modalDetalleEconomico" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="text-lg font-bold text-emerald-900"><i class="fa-solid fa-chart-line mr-2"></i>Resultado Económico Reserva</h3>
+                <button type="button" onclick="toggleModal('modalDetalleEconomico')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div id="contenidoDetalleEconomico" class="space-y-3 text-xs"></div>
+
+            <div class="flex justify-end border-t pt-3">
+                <button type="button" onclick="toggleModal('modalDetalleEconomico')" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-1.5 px-4 rounded text-xs">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL HUÉSPEDES -->
+    <div id="modalHuespedes" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-xl max-w-4xl w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="text-lg font-bold text-indigo-900"><i class="fa-solid fa-users mr-2"></i>Base de Datos de Huéspedes</h3>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="imprimirTablaHuespedes()" class="bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-1 px-3 rounded text-xs flex items-center gap-1">
+                        <i class="fa-solid fa-print"></i> Imprimir / PDF
+                    </button>
+                    <button type="button" onclick="toggleModal('modalHuespedes')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+            </div>
+
+            <div id="areaImpresionPDF" class="overflow-x-auto max-h-96">
+                <div class="mb-4 hidden print:block text-center border-b pb-2">
+                    <h2 class="text-xl font-bold">Refugio Entre Montañas - Base de Datos de Huéspedes</h2>
+                </div>
+                <table class="w-full text-xs text-left border-collapse">
+                    <thead>
+                        <tr class="bg-indigo-50 text-indigo-900 border-b">
+                            <th class="p-2">Nombre / Pasajero</th>
+                            <th class="p-2">RUT / Doc</th>
+                            <th class="p-2">Teléfono</th>
+                            <th class="p-2">Email</th>
+                            <th class="p-2 text-center">Reservas Totales</th>
+                            <th class="p-2">Última Visita</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaHuespedesBase" class="divide-y"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL KPIS & ANALÍTICA -->
     <div id="modalKPIs" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
         <div class="bg-white rounded-xl shadow-xl max-w-5xl w-full p-6 space-y-6 my-8">
             <div class="flex justify-between items-center border-b pb-3">
@@ -449,295 +596,422 @@
                 <button type="button" onclick="toggleModal('modalKPIs')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
 
+            <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-lg border">
+                <label class="text-xs font-bold uppercase text-slate-600">Filtrar Año Analizado:</label>
+                <select id="kpiAnno" onchange="renderKPIs()" class="border rounded p-1 text-sm bg-white font-bold"></select>
+            </div>
+
+            <!-- TARJETAS PRINCIPALES -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div class="bg-blue-50 p-3.5 rounded-xl border border-blue-100">
-                    <span class="text-[10px] font-bold text-blue-600 uppercase">Noches Arrendadas</span>
+                <div class="bg-blue-50 border border-blue-100 p-3.5 rounded-xl">
+                    <span class="text-[10px] font-bold text-blue-600 uppercase">Días Arrendados Año</span>
                     <h4 id="kpiDiasAno" class="text-xl font-black text-blue-900 mt-1">0 noches</h4>
                 </div>
-                <div class="bg-emerald-50 p-3.5 rounded-xl border border-emerald-100">
-                    <span class="text-[10px] font-bold text-emerald-600 uppercase">Ingresos Brutos</span>
+                <div class="bg-emerald-50 border border-emerald-100 p-3.5 rounded-xl">
+                    <span class="text-[10px] font-bold text-emerald-600 uppercase">Dinero Recibido (Bruto)</span>
                     <h4 id="kpiIngresosBrutosAno" class="text-lg font-black text-emerald-900 mt-1">$0</h4>
                 </div>
-                <div class="bg-indigo-50 p-3.5 rounded-xl border border-indigo-100">
-                    <span class="text-[10px] font-bold text-indigo-600 uppercase">Tarifa Promedio (ADR)</span>
-                    <h4 id="kpiADR" class="text-lg font-black text-indigo-900 mt-1">$0 /noche</h4>
+                <div class="bg-amber-50 border border-amber-100 p-3.5 rounded-xl">
+                    <span class="text-[10px] font-bold text-amber-600 uppercase">Margen Mín / Máx / Prom</span>
+                    <h4 id="kpiMargenesMinMaxProm" class="text-sm font-black text-amber-900 mt-1">0% | 0% | 0%</h4>
                 </div>
-                <div class="bg-amber-50 p-3.5 rounded-xl border border-amber-100">
-                    <span class="text-[10px] font-bold text-amber-600 uppercase">Tasa de Ocupación Anual</span>
-                    <h4 id="kpiOcupacion" class="text-lg font-black text-amber-900 mt-1">0%</h4>
+                <div class="bg-purple-50 border border-purple-100 p-3.5 rounded-xl">
+                    <span class="text-[10px] font-bold text-purple-600 uppercase">Ganancia Promedio / Día Arrendado</span>
+                    <h4 id="kpiGananciaPromedioLimpiaDia" class="text-base font-black text-purple-900 mt-1">$0 /día</h4>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
-                    <span class="font-bold text-slate-700 text-xs uppercase block border-b pb-1">Ventas por Canal</span>
-                    <div id="kpiCanales" class="text-xs space-y-1 text-slate-600"></div>
-                </div>
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
-                    <span class="font-bold text-slate-700 text-xs uppercase block border-b pb-1">Gastos & Costos Totales</span>
-                    <div class="text-xs space-y-1 text-slate-600">
-                        <div class="flex justify-between"><span>Costos Cabaña:</span><strong id="kpiCostosOperativos">$0</strong></div>
-                        <div class="flex justify-between"><span>Comisiones Canal:</span><strong id="kpiComisiones">$0</strong></div>
-                        <div class="flex justify-between"><span>Generador & Extras:</span><strong id="kpiBencinaExtras">$0</strong></div>
+            <!-- INCIDENCIAS PORCENTUALES -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-xl space-y-1">
+                    <span class="text-xs font-bold text-yellow-800 uppercase block">⚡ Solo Electricidad</span>
+                    <div class="flex justify-between items-baseline pt-1">
+                        <span class="text-xs text-slate-600">% Ingresos:</span>
+                        <span id="kpiIncidenciaElectricidadPct" class="text-base font-black text-yellow-900">0%</span>
                     </div>
                 </div>
-                <div class="bg-emerald-900 text-white p-4 rounded-xl space-y-2 flex flex-col justify-between">
-                    <div>
-                        <span class="font-bold text-emerald-300 text-xs uppercase block border-b border-emerald-800 pb-1">Utilidad Neta Real</span>
-                        <h3 id="kpiUtilidadNeta" class="text-2xl font-black text-emerald-400 mt-2">$0</h3>
-                    </div>
-                    <p class="text-[10px] text-emerald-200">* Calculado restando comisiones, costos de operación, aseos y gastos extraordinarios.</p>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- MODAL 5: USUARIO -->
-    <div id="modalUsuario" class="fixed inset-0 bg-slate-900/60 hidden backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4">
-            <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-user-gear mr-2"></i>Usuario Activo</h3>
-                <button type="button" onclick="toggleModal('modalUsuario')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <div class="bg-teal-50 border border-teal-100 p-3 rounded-xl space-y-1">
+                    <span class="text-xs font-bold text-teal-800 uppercase block">🧹 Solo Aseo</span>
+                    <div class="flex justify-between items-baseline pt-1">
+                        <span class="text-xs text-slate-600">% Ingresos:</span>
+                        <span id="kpiIncidenciaAseoPct" class="text-base font-black text-teal-900">0%</span>
+                    </div>
+                </div>
+
+                <div class="bg-pink-50 border border-pink-100 p-3 rounded-xl space-y-1">
+                    <span class="text-xs font-bold text-pink-800 uppercase block">🎁 Solo Regalo</span>
+                    <div class="flex justify-between items-baseline pt-1">
+                        <span class="text-xs text-slate-600">% Ingresos:</span>
+                        <span id="kpiIncidenciaRegaloPct" class="text-base font-black text-pink-900">0%</span>
+                    </div>
+                </div>
+
+                <div class="bg-indigo-50 border border-indigo-100 p-3 rounded-xl space-y-1">
+                    <span class="text-xs font-bold text-indigo-800 uppercase block">⚙️ Acumulado Total</span>
+                    <div class="flex justify-between items-baseline pt-1">
+                        <span class="text-[10px] text-slate-600">(Regalo+Aseo+Diario):</span>
+                        <span id="kpiIncidenciaAcumuladaPct" class="text-base font-black text-indigo-900">0%</span>
+                    </div>
+                </div>
             </div>
-            <div class="text-xs space-y-2">
-                <p>Usuario: <strong class="text-emerald-800">Eduardo Vicencio</strong></p>
+
+            <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl flex justify-between items-center text-xs">
+                <span class="font-bold text-amber-900">💡 Tarifa Mínima Sugerida para obtener 25% de Utilidad Neta (Arriendo 2 Noches):</span>
+                <span id="kpiValorMinimo25" class="text-sm font-black text-amber-900 bg-amber-100 px-3 py-1 rounded-lg border border-amber-300">$0 /día</span>
+            </div>
+
+            <!-- GRÁFICO MES A MES -->
+            <div class="bg-slate-50 p-4 rounded-xl border">
+                <h4 class="font-bold text-xs uppercase text-slate-500 mb-3">Días Arrendados e Ingresos Recibidos por Mes</h4>
+                <div class="h-64">
+                    <canvas id="chartIngresosMes"></canvas>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // CONFIGURACIÓN FIREBASE
-        const firebaseConfig = {
-            apiKey: "AIzaSyC6nbWndwjEx00-jvzt-KXDwA6anvg0-5A",
-            authDomain: "entremontanas-75305.firebaseapp.com",
-            projectId: "entremontanas-75305",
-            storageBucket: "entremontanas-75305.firebasestorage.app",
-            messagingSenderId: "839531887182",
-            appId: "1:839531887182:web:b7061aa008419a6f73a11f"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        let reservas = [];
+        let reservas = JSON.parse(localStorage.getItem('reservas_caban')) || [];
+        let usuarios = JSON.parse(localStorage.getItem('usuarios_caban')) || [
+            { id: 1, nombre: "Eduardo Vicencio", email: "evicencio@gmail.com" }
+        ];
+        let usuarioActivoId = localStorage.getItem('usr_activo_caban') || usuarios[0].id;
         let abonosTemp = [];
         let reservaCalculada = {};
+        let costosCasa = JSON.parse(localStorage.getItem('costos_casa_caban')) || {
+            parafina: 3000, gas: 2500, electricidad: 2000, lena: 4000, starlinkDiario: 1500, masPlagasDiario: 1000, detergentesPapel: 2000, regalo: 1500, aseo: 25000
+        };
         let mesCalendarioOffset = 0;
-        let costosCasa = { parafina: 5000, gas: 2500, electricidad: 27000, lena: 6000, starlinkDiario: 5000, masPlagasDiario: 5000, detergentesPapel: 1000, regalo: 10000, aseo: 110000 };
+        let chartInstance = null;
 
-        function formatearFechaChile(f) { if(!f) return '-'; const p = f.split('-'); return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : f; }
-        function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
+        function formatearFechaChile(fechaYYYYMMDD) {
+            if (!fechaYYYYMMDD) return '-';
+            const partes = fechaYYYYMMDD.split('-');
+            if (partes.length !== 3) return fechaYYYYMMDD;
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+
+        function abrirChatWsp(telefono) {
+            if (!telefono) return;
+            const soloNumeros = telefono.replace(/\D/g, '');
+            if (soloNumeros) {
+                window.open(`https://wa.me/${soloNumeros}`, '_blank');
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
-            ['checkin', 'checkout', 'valorDiarioFinal', 'costoPlataforma', 'tipoDoc'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) el.addEventListener('input', calcularValores);
-            });
-
-            // ESCUCHADOR EXCLUSIVO BOTÓN PAGO
-            const btn = document.getElementById('btnAgregarPago');
-            if (btn) {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    const inputMonto = document.getElementById('montoPago');
-                    const monto = parseFloat(inputMonto.value);
-
-                    if (isNaN(monto) || monto <= 0) {
-                        alert('Ingresa un monto válido mayor a 0');
-                        return;
-                    }
-
-                    const hoy = new Date().toISOString().split('T')[0];
-                    abonosTemp.push({ fecha: hoy, monto: monto });
-                    inputMonto.value = '';
-
-                    renderTablaAbonos();
+            document.getElementById('valorBaseGlobal').addEventListener('input', (e) => {
+                if(!document.getElementById('reservaId').value) {
+                    document.getElementById('valorDiarioFinal').value = e.target.value;
                     calcularValores();
-                });
-            }
-
-            // FIRESTORE SYNC RESERVAS
-            db.collection('reservas').onSnapshot((snapshot) => {
-                reservas = [];
-                snapshot.forEach((doc) => {
-                    reservas.push({ idDoc: doc.id, ...doc.data() });
-                });
-                renderTabla();
-                renderCalendario();
-                renderDirectorioHuespedes();
-                actualizarDashboardResumen();
-                actualizarKPIS();
-            });
-
-            // FIRESTORE SYNC COSTOS
-            db.collection('configuracion').doc('costos').onSnapshot((doc) => {
-                if (doc.exists) {
-                    costosCasa = doc.data();
-                    cargarValoresCostosCasa();
-                } else {
-                    calcularCostosTotalesModal();
                 }
             });
+            document.getElementById('valorDiarioFinal').value = document.getElementById('valorBaseGlobal').value;
 
-            renderTablaAbonos();
-            calcularValores();
-            calcularCostosTotalesModal();
+            ['checkin', 'checkout', 'valorDiarioFinal', 'costoPlataforma', 'tipoDoc'].forEach(id => {
+                document.getElementById(id).addEventListener('input', calcularValores);
+            });
+
+            document.getElementById('checkin').addEventListener('change', validarFechasEnTiempoReal);
+            document.getElementById('checkout').addEventListener('change', validarFechasEnTiempoReal);
+
+            cargarValoresCostosCasa();
+            actualizarEstadosAutomaticos();
+            poblarFiltroAnos();
+            actualizarUsuarioActivoUI();
+            renderTabla();
+            renderCalendario();
+            actualizarDashboardResumen();
         });
 
-        function calcularCostosTotalesModal() {
-            const parafina = parseFloat(document.getElementById('cParafina').value) || 0;
-            const gas = parseFloat(document.getElementById('cGas').value) || 0;
-            const electricidad = parseFloat(document.getElementById('cElectricidad').value) || 0;
-            const lena = parseFloat(document.getElementById('cLena').value) || 0;
-            const starlink = parseFloat(document.getElementById('cStarlinkDiario').value) || 0;
-            const masPlagas = parseFloat(document.getElementById('cMasPlagasDiario').value) || 0;
-            const detergentes = parseFloat(document.getElementById('cDetergentesPapel').value) || 0;
-
-            const aseo = parseFloat(document.getElementById('cAseo').value) || 0;
-            const regalo = parseFloat(document.getElementById('cRegalo').value) || 0;
-
-            const totalDiario = parafina + gas + electricidad + lena + starlink + masPlagas + detergentes;
-            const totalFijo = aseo + regalo;
-
-            document.getElementById('lblCostoDiarioTotal').innerText = `$${totalDiario.toLocaleString('es-CL')}`;
-            document.getElementById('lblCostoFijoBase').innerText = `$${totalFijo.toLocaleString('es-CL')}`;
-
-            // Actualización dinámica de Modal Márgenes
-            document.getElementById('margenCostoDiario').innerText = `$${totalDiario.toLocaleString('es-CL')} /día`;
-            document.getElementById('margenCostoFijo').innerText = `$${totalFijo.toLocaleString('es-CL')} /reserva`;
-
-            const tarifaBase = 380000;
-            const margenBrutoPct = (((tarifaBase - totalDiario) / tarifaBase) * 100).toFixed(1);
-            const costo2Noches = (totalDiario * 2) + totalFijo;
-            const ingreso2Noches = tarifaBase * 2;
-            const margenNetoPct = (((ingreso2Noches - costo2Noches) / ingreso2Noches) * 100).toFixed(1);
-
-            document.getElementById('margenPorcentajeBruto').innerText = `${margenBrutoPct}%`;
-            document.getElementById('margenPorcentajeNeto').innerText = `${margenNetoPct}%`;
+        function toggleModal(id) {
+            document.getElementById(id).classList.toggle('hidden');
         }
 
-        function cargarValoresCostosCasa() {
-            document.getElementById('cParafina').value = costosCasa.parafina || 5000;
-            document.getElementById('cGas').value = costosCasa.gas || 2500;
-            document.getElementById('cElectricidad').value = costosCasa.electricidad || 27000;
-            document.getElementById('cLena').value = costosCasa.lena || 6000;
-            document.getElementById('cStarlinkDiario').value = costosCasa.starlinkDiario || 5000;
-            document.getElementById('cMasPlagasDiario').value = costosCasa.masPlagasDiario || 5000;
-            document.getElementById('cDetergentesPapel').value = costosCasa.detergentesPapel || 1000;
-            document.getElementById('cAseo').value = costosCasa.aseo || 110000;
-            document.getElementById('cRegalo').value = costosCasa.regalo || 10000;
-            calcularCostosTotalesModal();
-        }
-
-        async function guardarCostosCasa() {
-            costosCasa = {
-                parafina: parseFloat(document.getElementById('cParafina').value) || 0,
-                gas: parseFloat(document.getElementById('cGas').value) || 0,
-                electricidad: parseFloat(document.getElementById('cElectricidad').value) || 0,
-                lena: parseFloat(document.getElementById('cLena').value) || 0,
-                starlinkDiario: parseFloat(document.getElementById('cStarlinkDiario').value) || 0,
-                masPlagasDiario: parseFloat(document.getElementById('cMasPlagasDiario').value) || 0,
-                detergentesPapel: parseFloat(document.getElementById('cDetergentesPapel').value) || 0,
-                aseo: parseFloat(document.getElementById('cAseo').value) || 0,
-                regalo: parseFloat(document.getElementById('cRegalo').value) || 0
-            };
-
-            await db.collection('configuracion').doc('costos').set(costosCasa);
-            alert('Configuración de costos guardada exitosamente.');
-            toggleModal('modalCostos');
-        }
-
-        function calcularValores() {
-            const inVal = document.getElementById('checkin').value;
-            const outVal = document.getElementById('checkout').value;
-            const valorDiarioFinal = parseFloat(document.getElementById('valorDiarioFinal').value) || 0;
-            const costoPlataforma = parseFloat(document.getElementById('costoPlataforma').value) || 0;
-            const tipoDoc = document.getElementById('tipoDoc').value;
-
-            let totalBruto = 0;
-            let noches = 0;
-            let dias = 0;
-
-            if (inVal && outVal) {
-                const inDate = new Date(inVal);
-                const outDate = new Date(outVal);
-
-                if (outDate > inDate) {
-                    const diffTime = Math.abs(outDate - inDate);
-                    noches = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    dias = noches + 1;
-                    totalBruto = noches * valorDiarioFinal;
-
-                    document.getElementById('cantDiasMostrar').value = `${dias} días / ${noches} noches`;
-                    document.getElementById('resNoches').innerText = `${dias}d / ${noches}n`;
-                    document.getElementById('resTotalBruto').innerText = `$${totalBruto.toLocaleString('es-CL')}`;
-                    document.getElementById('resCostoPlataforma').innerText = `$${costoPlataforma.toLocaleString('es-CL')}`;
-
-                    const netoCaban = totalBruto - costoPlataforma;
-                    document.getElementById('resNetoCaban').innerText = `$${netoCaban.toLocaleString('es-CL')}`;
-
-                    let baseNeto = 0;
-                    let iva = 0;
-                    if (tipoDoc === 'Factura Afecta') {
-                        baseNeto = Math.round(totalBruto / 1.19);
-                        iva = totalBruto - baseNeto;
-                    }
-
-                    document.getElementById('resNetoImpuesto').innerText = `$${baseNeto.toLocaleString('es-CL')}`;
-                    document.getElementById('resIva').innerText = `$${iva.toLocaleString('es-CL')}`;
-
-                    document.getElementById('btnWsp').disabled = false;
-                }
+        function actualizarUsuarioActivoUI() {
+            const u = usuarios.find(usr => usr.id == usuarioActivoId) || usuarios[0];
+            if(u) {
+                usuarioActivoId = u.id;
+                localStorage.setItem('usr_activo_caban', u.id);
+                document.getElementById('lblUsuarioActivo').innerText = u.nombre;
             }
-
-            const totalAbonado = abonosTemp.reduce((acc, a) => acc + (parseFloat(a.monto) || 0), 0);
-            const saldoPendiente = totalBruto - totalAbonado;
-
-            document.getElementById('resTotalAbonado').innerText = `$${totalAbonado.toLocaleString('es-CL')}`;
-            document.getElementById('resSaldoPendiente').innerText = `$${saldoPendiente.toLocaleString('es-CL')}`;
-
-            reservaCalculada = { dias, noches, totalBruto, costoPlataforma, totalAbonado, saldoPendiente };
         }
 
-        function renderTablaAbonos() {
-            const tbody = document.getElementById('tablaAbonos');
-            if (!tbody) return;
+        function abrirModalUsuarios() {
+            const sel = document.getElementById('selUsuarioActivo');
+            sel.innerHTML = '';
+            usuarios.forEach(u => {
+                sel.innerHTML += `<option value="${u.id}" ${u.id == usuarioActivoId ? 'selected' : ''}>${u.nombre} (${u.email})</option>`;
+            });
+            cancelarEdicionUsuario();
+            renderUsuarios();
+            toggleModal('modalUsuarios');
+        }
 
+        function seleccionarUsuarioActivo(id) {
+            usuarioActivoId = id;
+            localStorage.setItem('usr_activo_caban', id);
+            actualizarUsuarioActivoUI();
+        }
+
+        function renderUsuarios() {
+            const tbody = document.getElementById('tablaUsuarios');
             tbody.innerHTML = '';
-            
-            if (abonosTemp.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="p-2 text-center text-slate-400 italic">No hay abonos registrados</td></tr>`;
-                return;
-            }
-
-            abonosTemp.forEach((a, i) => {
+            usuarios.forEach(u => {
                 tbody.innerHTML += `
-                    <tr class="border-b hover:bg-amber-50/50">
-                        <td class="p-1.5">${formatearFechaChile(a.fecha)}</td>
-                        <td class="p-1.5 font-bold text-emerald-800">$${parseFloat(a.monto).toLocaleString('es-CL')}</td>
-                        <td class="p-1.5 text-center">
-                            <button type="button" onclick="quitarAbono(${i})" class="text-red-600 hover:text-red-800 font-bold px-2 py-0.5 rounded hover:bg-red-50">✕</button>
+                    <tr class="border-b">
+                        <td class="p-2 font-bold">${u.nombre}</td>
+                        <td class="p-2 text-slate-500">${u.email}</td>
+                        <td class="p-2 text-center space-x-1">
+                            <button type="button" onclick="prepararEdicionUsuario(${u.id})" title="Editar" class="text-blue-600 hover:text-blue-800"><i class="fa-solid fa-pen"></i></button>
+                            ${usuarios.length > 1 ? `<button type="button" onclick="eliminarUsuario(${u.id})" title="Eliminar" class="text-red-600 hover:text-red-800"><i class="fa-solid fa-trash"></i></button>` : ''}
                         </td>
                     </tr>
                 `;
             });
         }
 
-        function quitarAbono(index) {
-            abonosTemp.splice(index, 1);
-            renderTablaAbonos();
+        function prepararEdicionUsuario(id) {
+            const u = usuarios.find(item => item.id === id);
+            if (!u) return;
+            document.getElementById('usrEditId').value = u.id;
+            document.getElementById('usrNombre').value = u.nombre;
+            document.getElementById('usrEmail').value = u.email;
+
+            document.getElementById('usrFormTitle').innerText = `Editando: ${u.nombre}`;
+            document.getElementById('btnUsrSubmit').innerText = '💾 Guardar Cambios';
+            document.getElementById('btnUsrSubmit').classList.replace('bg-emerald-700', 'bg-blue-700');
+            document.getElementById('btnCancelarEditUsr').classList.remove('hidden');
+        }
+
+        function cancelarEdicionUsuario() {
+            document.getElementById('formUsuario').reset();
+            document.getElementById('usrEditId').value = '';
+            document.getElementById('usrFormTitle').innerText = 'Registrar Nuevo Usuario (Máx. 5)';
+            document.getElementById('btnUsrSubmit').innerText = '+ Agregar Usuario';
+            document.getElementById('btnUsrSubmit').classList.replace('bg-blue-700', 'bg-emerald-700');
+            document.getElementById('btnCancelarEditUsr').classList.add('hidden');
+        }
+
+        function guardarUsuario(e) {
+            e.preventDefault();
+            const editId = document.getElementById('usrEditId').value;
+            const nombre = document.getElementById('usrNombre').value.trim();
+            const email = document.getElementById('usrEmail').value.trim();
+
+            if (editId) {
+                const idx = usuarios.findIndex(u => u.id == editId);
+                if (idx !== -1) {
+                    usuarios[idx].nombre = nombre;
+                    usuarios[idx].email = email;
+                }
+            } else {
+                if (usuarios.length >= 5) {
+                    return alert('⚠️ LÍMITE ALCANZADO: Solo puedes registrar un máximo de 5 usuarios.');
+                }
+                if (usuarios.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+                    return alert('Ese email/identificador ya existe.');
+                }
+                const nuevo = { id: Date.now(), nombre, email };
+                usuarios.push(nuevo);
+                usuarioActivoId = nuevo.id;
+            }
+
+            localStorage.setItem('usuarios_caban', JSON.stringify(usuarios));
+            actualizarUsuarioActivoUI();
+            abrirModalUsuarios();
+        }
+
+        function eliminarUsuario(id) {
+            if (confirm('¿Eliminar este usuario?')) {
+                usuarios = usuarios.filter(u => u.id !== id);
+                if (usuarioActivoId == id) usuarioActivoId = usuarios[0].id;
+                localStorage.setItem('usuarios_caban', JSON.stringify(usuarios));
+                actualizarUsuarioActivoUI();
+                renderUsuarios();
+            }
+        }
+
+        function validarFechasEnTiempoReal() {
+            const inVal = document.getElementById('checkin').value;
+            const outVal = document.getElementById('checkout').value;
+            const idExistente = document.getElementById('reservaId').value;
+
+            if (inVal && outVal) {
+                if (outVal <= inVal) {
+                    alert('⚠️ La fecha de Check-Out debe ser posterior al Check-In (Mínimo 1 día).');
+                    document.getElementById('checkout').value = '';
+                    return;
+                }
+
+                if (verificarSobreposicionFechas(inVal, outVal, idExistente)) {
+                    alert('⚠️ FECHA OCUPADA: La cabaña ya se encuentra reservada en el rango seleccionado.');
+                    document.getElementById('checkout').value = '';
+                    document.getElementById('cantDiasMostrar').value = '0 días / 0 noches';
+                    calcularValores();
+                    return;
+                }
+            }
             calcularValores();
         }
 
-        document.getElementById('reservaForm').addEventListener('submit', async (e) => {
+        function verificarSobreposicionFechas(checkinStr, checkoutStr, idActual = null) {
+            return reservas.some(r => {
+                if (idActual && r.id === parseInt(idActual)) return false;
+                return (checkinStr < r.checkout && checkoutStr > r.checkin);
+            });
+        }
+
+        function obtenerUltimos4Telefono() {
+            const fono = document.getElementById('telefono').value || '';
+            const soloNumeros = fono.replace(/\D/g, '');
+            return soloNumeros.length >= 4 ? soloNumeros.slice(-4) : '----';
+        }
+
+        function mostrarClaveCerradura() {
+            const clave = obtenerUltimos4Telefono();
+            if (clave === '----') {
+                alert('Ingresa un número de teléfono válido para generar los 4 dígitos.');
+                return;
+            }
+            document.getElementById('textoClaveSugerida').innerText = clave;
+            toggleModal('modalClaveCerradura');
+        }
+
+        function copiarClaveCerradura() {
+            const clave = document.getElementById('textoClaveSugerida').innerText;
+            navigator.clipboard.writeText(clave);
+            alert(`Clave ${clave} copiada al portapapeles.`);
+        }
+
+        function calcularEstadoAutomatico(checkin, checkout, estadoManual) {
+            if (estadoManual === 'Reserva Terminada') return 'Reserva Terminada';
+            
+            const hoyStr = new Date().toISOString().split('T')[0];
+            if (hoyStr > checkout) {
+                return 'Reserva Terminada';
+            } else if (hoyStr >= checkin && hoyStr <= checkout) {
+                return 'Reserva en Curso';
+            } else {
+                return 'Reserva';
+            }
+        }
+
+        function actualizarEstadosAutomaticos() {
+            let modificado = false;
+            reservas.forEach(r => {
+                const nuevoEstado = calcularEstadoAutomatico(r.checkin, r.checkout, r.estadoReserva);
+                if (r.estadoReserva !== nuevoEstado) {
+                    r.estadoReserva = nuevoEstado;
+                    modificado = true;
+                }
+            });
+            if (modificado) {
+                localStorage.setItem('reservas_caban', JSON.stringify(reservas));
+            }
+        }
+
+        function cambiarEstadoManual(id, nuevoEstado) {
+            const r = reservas.find(item => item.id === id);
+            if (r) {
+                r.estadoReserva = nuevoEstado;
+                localStorage.setItem('reservas_caban', JSON.stringify(reservas));
+                renderTabla();
+                renderCalendario();
+                actualizarDashboardResumen();
+            }
+        }
+
+        function calcularValores() {
+            const inDate = new Date(document.getElementById('checkin').value);
+            const outDate = new Date(document.getElementById('checkout').value);
+            const valorDiarioFinal = parseFloat(document.getElementById('valorDiarioFinal').value) || 0;
+            const costoPlataforma = parseFloat(document.getElementById('costoPlataforma').value) || 0;
+            const tipoDoc = document.getElementById('tipoDoc').value;
+
+            if (inDate && outDate && outDate > inDate) {
+                const diffTime = Math.abs(outDate - inDate);
+                const noches = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const dias = noches + 1;
+
+                document.getElementById('cantDiasMostrar').value = `${dias} días / ${noches} noches`;
+                document.getElementById('resNoches').innerText = `${dias}d / ${noches}n`;
+
+                const totalBruto = noches * valorDiarioFinal;
+                const netoCaban = totalBruto - costoPlataforma;
+
+                let netoImpuesto = totalBruto;
+                let iva = 0;
+
+                if (tipoDoc === 'Factura Afecta') {
+                    netoImpuesto = Math.round(totalBruto / 1.19);
+                    iva = totalBruto - netoImpuesto;
+                }
+
+                const totalAbonado = abonosTemp.reduce((sum, a) => sum + parseFloat(a.monto), 0);
+                const saldoPendiente = totalBruto - totalAbonado;
+
+                document.getElementById('resTotalBruto').innerText = `$${totalBruto.toLocaleString('es-CL')}`;
+                document.getElementById('resCostoPlataforma').innerText = `$${costoPlataforma.toLocaleString('es-CL')}`;
+                document.getElementById('resNetoCaban').innerText = `$${Math.round(netoCaban).toLocaleString('es-CL')}`;
+                document.getElementById('resNetoImpuesto').innerText = `$${netoImpuesto.toLocaleString('es-CL')}`;
+                document.getElementById('resIva').innerText = `$${iva.toLocaleString('es-CL')}`;
+                document.getElementById('resTotalAbonado').innerText = `$${totalAbonado.toLocaleString('es-CL')}`;
+                document.getElementById('resSaldoPendiente').innerText = `$${saldoPendiente.toLocaleString('es-CL')}`;
+
+                reservaCalculada = { dias, noches, totalBruto, costoPlataforma, netoCaban, netoImpuesto, iva, totalAbonado, saldoPendiente };
+            }
+        }
+
+        function agregarAbono() {
+            const monto = parseFloat(document.getElementById('montoPago').value);
+            if (!monto || monto <= 0) return alert('Ingresa un monto válido.');
+            
+            const hoyFechaStr = new Date().toISOString().split('T')[0];
+            abonosTemp.push({ fecha: hoyFechaStr, monto });
+            document.getElementById('montoPago').value = '';
+            renderAbonos();
+            calcularValores();
+        }
+
+        function quitarAbono(index) {
+            abonosTemp.splice(index, 1);
+            renderAbonos();
+            calcularValores();
+        }
+
+        function renderAbonos() {
+            const tbody = document.getElementById('tablaAbonos');
+            tbody.innerHTML = '';
+            abonosTemp.forEach((a, index) => {
+                tbody.innerHTML += `
+                    <tr class="border-b">
+                        <td class="p-1 text-slate-500">${formatearFechaChile(a.fecha)}</td>
+                        <td class="p-1 font-semibold text-slate-800">$${parseFloat(a.monto).toLocaleString('es-CL')}</td>
+                        <td class="p-1 text-center"><button type="button" onclick="quitarAbono(${index})" class="text-red-600 hover:text-red-800 font-bold px-2">✕</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        document.getElementById('reservaForm').addEventListener('submit', (e) => {
             e.preventDefault();
+            if (!reservaCalculada.noches || reservaCalculada.noches <= 0) return alert('Revisa las fechas ingresadas.');
+
             const idExistente = document.getElementById('reservaId').value;
+            const checkinVal = document.getElementById('checkin').value;
+            const checkoutVal = document.getElementById('checkout').value;
+
+            if (verificarSobreposicionFechas(checkinVal, checkoutVal, idExistente)) {
+                return alert('⚠️ ERROR DE DISPONIBILIDAD: Ya existe una reserva guardada en las fechas seleccionadas.');
+            }
+
+            const estadoCalculado = calcularEstadoAutomatico(checkinVal, checkoutVal, 'Auto');
 
             const nuevaReserva = {
                 id: idExistente ? parseInt(idExistente) : Date.now(),
-                estadoReserva: 'Reserva',
+                estadoReserva: estadoCalculado,
                 nombre: document.getElementById('nombre').value,
                 rut: document.getElementById('rut').value,
                 email: document.getElementById('email').value,
@@ -749,8 +1023,8 @@
                 reqProtectorEstufa: document.getElementById('reqProtectorEstufa').checked,
                 costoBencinaGenerador: parseFloat(document.getElementById('costoBencinaGenerador').value) || 0,
                 costoImprevistosReserva: parseFloat(document.getElementById('costoImprevistosReserva').value) || 0,
-                checkin: document.getElementById('checkin').value,
-                checkout: document.getElementById('checkout').value,
+                checkin: checkinVal,
+                checkout: checkoutVal,
                 valorDiarioFinal: document.getElementById('valorDiarioFinal').value,
                 costoPlataforma: document.getElementById('costoPlataforma').value,
                 canal: document.getElementById('canal').value,
@@ -760,232 +1034,550 @@
                 ...reservaCalculada
             };
 
-            await db.collection('reservas').doc(String(nuevaReserva.id)).set(nuevaReserva);
-            alert('¡Reserva guardada y sincronizada!');
+            if (idExistente) {
+                const index = reservas.findIndex(r => r.id === parseInt(idExistente));
+                if (index !== -1) reservas[index] = nuevaReserva;
+            } else {
+                reservas.push(nuevaReserva);
+            }
+
+            localStorage.setItem('reservas_caban', JSON.stringify(reservas));
+            document.getElementById('btnWsp').disabled = false;
+            poblarFiltroAnos();
+            renderTabla();
+            renderCalendario();
+            actualizarDashboardResumen();
+            alert('¡Reserva guardada con éxito!');
             limpiarFormulario();
         });
 
-        async function eliminarReserva(id) {
-            if (confirm('¿Eliminar esta reserva?')) {
-                await db.collection('reservas').doc(String(id)).delete();
-            }
+        function limpiarFormulario() {
+            document.getElementById('reservaForm').reset();
+            document.getElementById('reservaId').value = '';
+            document.getElementById('valorDiarioFinal').value = document.getElementById('valorBaseGlobal').value;
+            document.getElementById('reqCuna').checked = false;
+            document.getElementById('reqProtectorEstufa').checked = false;
+            document.getElementById('reqPerro').checked = false;
+            document.getElementById('costoBencinaGenerador').value = 0;
+            document.getElementById('costoImprevistosReserva').value = 0;
+            abonosTemp = [];
+            reservaCalculada = {};
+            document.getElementById('badgeEdit').classList.add('hidden');
+            document.getElementById('formTitulo').innerHTML = `<i class="fa-solid fa-calendar-plus mr-2"></i>Ingresar / Editar Reserva`;
+            renderAbonos();
+            document.getElementById('cantDiasMostrar').value = '0 días / 0 noches';
+            document.getElementById('resNoches').innerText = '0d / 0n';
+            document.getElementById('resTotalBruto').innerText = '$0';
+            document.getElementById('resCostoPlataforma').innerText = '$0';
+            document.getElementById('resNetoCaban').innerText = '$0';
+            document.getElementById('resNetoImpuesto').innerText = '$0';
+            document.getElementById('resIva').innerText = '$0';
+            document.getElementById('resTotalAbonado').innerText = '$0';
+            document.getElementById('resSaldoPendiente').innerText = '$0';
         }
 
         function cargarParaEditar(id) {
-            const r = reservas.find(x => x.id === id);
-            if(!r) return;
+            const r = reservas.find(item => item.id === id);
+            if (!r) return;
 
             document.getElementById('reservaId').value = r.id;
             document.getElementById('nombre').value = r.nombre;
             document.getElementById('rut').value = r.rut || '';
             document.getElementById('email').value = r.email;
             document.getElementById('telefono').value = r.telefono;
-            document.getElementById('canal').value = r.canal;
             document.getElementById('adultos').value = r.adultos;
             document.getElementById('ninos').value = r.ninos;
-            document.getElementById('checkin').value = r.checkin;
-            document.getElementById('checkout').value = r.checkout;
-            document.getElementById('reqCuna').checked = r.reqCuna;
-            document.getElementById('reqProtectorEstufa').checked = r.reqProtectorEstufa;
-            document.getElementById('reqPerro').checked = r.reqPerro;
+            document.getElementById('reqPerro').checked = !!r.reqPerro || r.llevaPerro === 'Sí';
+            document.getElementById('reqCuna').checked = !!r.reqCuna;
+            document.getElementById('reqProtectorEstufa').checked = !!r.reqProtectorEstufa;
             document.getElementById('costoBencinaGenerador').value = r.costoBencinaGenerador || 0;
             document.getElementById('costoImprevistosReserva').value = r.costoImprevistosReserva || 0;
-            document.getElementById('valorDiarioFinal').value = r.valorDiarioFinal || 380000;
+            document.getElementById('checkin').value = r.checkin;
+            document.getElementById('checkout').value = r.checkout;
+            document.getElementById('valorDiarioFinal').value = r.valorDiarioFinal;
             document.getElementById('costoPlataforma').value = r.costoPlataforma || 0;
+            document.getElementById('canal').value = r.canal;
             document.getElementById('tipoDoc').value = r.tipoDoc;
             document.getElementById('anotaciones').value = r.anotaciones || '';
 
             abonosTemp = r.abonos ? [...r.abonos] : [];
-            renderTablaAbonos();
+            renderAbonos();
             calcularValores();
 
             document.getElementById('badgeEdit').classList.remove('hidden');
+            document.getElementById('formTitulo').innerHTML = `<i class="fa-solid fa-pen-to-square mr-2"></i>Editando: ${r.nombre}`;
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function limpiarFormulario() {
-            document.getElementById('reservaForm').reset();
-            document.getElementById('reservaId').value = '';
-            document.getElementById('badgeEdit').classList.add('hidden');
-            abonosTemp = [];
-            renderTablaAbonos();
-            document.getElementById('valorDiarioFinal').value = 380000;
-            calcularValores();
+        function verResultadoEspecial(id) {
+            const r = reservas.find(item => item.id === id);
+            if (!r) return;
+
+            const { diario, costosFijos } = calcularCostoTotalDiarioCasa();
+            const noches = r.noches || 1;
+            const costoDiarioTotal = noches * diario;
+            const costoPlat = parseFloat(r.costoPlataforma) || 0;
+            const extras = (r.costoBencinaGenerador||0) + (r.costoImprevistosReserva||0);
+            
+            const gananciaNeta = r.totalBruto - costoPlat - costoDiarioTotal - costosFijos - extras;
+            const margenPct = r.totalBruto > 0 ? ((gananciaNeta / r.totalBruto) * 100).toFixed(1) : 0;
+
+            const contenedor = document.getElementById('contenidoDetalleEconomico');
+            contenedor.innerHTML = `
+                <div class="bg-slate-50 p-3 rounded border">
+                    <span class="font-bold text-slate-800 text-sm block">${r.nombre}</span>
+                    <span class="text-slate-500 text-xs">${formatearFechaChile(r.checkin)} al ${formatearFechaChile(r.checkout)} (${noches} noches)</span>
+                </div>
+                <div class="space-y-1.5 border-t pt-2">
+                    <div class="flex justify-between font-semibold"><span>Ingreso Bruto Arriendo:</span><span class="text-slate-900">$${r.totalBruto.toLocaleString('es-CL')}</span></div>
+                    <div class="flex justify-between text-red-600"><span>- Costo Plataforma:</span><span>-$${costoPlat.toLocaleString('es-CL')}</span></div>
+                    <div class="flex justify-between text-amber-700"><span>- Costos Diarios Cabaña (${noches}n):</span><span>-$${costoDiarioTotal.toLocaleString('es-CL')}</span></div>
+                    <div class="flex justify-between text-teal-800"><span>- Costos Fijos Base (Aseo + Regalo):</span><span>-$${costosFijos.toLocaleString('es-CL')}</span></div>
+                    <div class="flex justify-between text-purple-800"><span>- Gastos Extras (Bencina Gen + Imprev):</span><span>-$${extras.toLocaleString('es-CL')}</span></div>
+                    <div class="border-t pt-2 flex justify-between font-bold text-sm ${gananciaNeta >= 0 ? 'text-emerald-700' : 'text-red-700'}">
+                        <span>Ganancia Neta Real:</span>
+                        <span>$${gananciaNeta.toLocaleString('es-CL')}</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-slate-600"><span>Margen de Ganancia:</span><span>${margenPct}%</span></div>
+                </div>
+            `;
+            toggleModal('modalDetalleEconomico');
+        }
+
+        function poblarFiltroAnos() {
+            const selectAno = document.getElementById('filtroAno');
+            const valActual = selectAno.value;
+            selectAno.innerHTML = '<option value="">Todos los Años</option>';
+            const annos = [...new Set(reservas.map(r => r.checkin ? r.checkin.substring(0, 4) : ''))].filter(Boolean);
+            annos.sort().reverse().forEach(a => {
+                selectAno.innerHTML += `<option value="${a}">${a}</option>`;
+            });
+            if(valActual) selectAno.value = valActual;
         }
 
         function renderTabla() {
+            actualizarEstadosAutomaticos();
             const tbody = document.getElementById('tablaReservas');
             tbody.innerHTML = '';
 
             const texto = document.getElementById('filtroTexto').value.toLowerCase();
             const estado = document.getElementById('filtroEstado').value;
+            const mes = document.getElementById('filtroMes').value;
+            const ano = document.getElementById('filtroAno').value;
 
-            const filtradas = reservas.filter(r => {
-                const matchTexto = r.nombre.toLowerCase().includes(texto) || (r.telefono && r.telefono.includes(texto));
-                const matchEstado = !estado || r.estadoReserva === estado;
-                return matchTexto && matchEstado;
+            const reservasFiltradas = reservas.filter(r => {
+                const coincideTexto = (r.nombre || '').toLowerCase().includes(texto);
+                const coincideEstado = !estado || r.estadoReserva === estado;
+                const coincideMes = !mes || (r.checkin && r.checkin.substring(5, 7) === mes);
+                const coincideAno = !ano || (r.checkin && r.checkin.substring(0, 4) === ano);
+                return coincideTexto && coincideEstado && coincideMes && coincideAno;
             });
 
-            filtradas.forEach(r => {
+            reservasFiltradas.forEach(r => {
+                let reqsText = [];
+                if(r.reqPerro || r.llevaPerro === 'Sí') reqsText.push('🐾 Perro');
+                if(r.reqCuna) reqsText.push('🍼 Cuna');
+                if(r.reqProtectorEstufa) reqsText.push('🛡️ Prot. Estufa');
+                const reqsHtml = reqsText.length > 0 ? `<div class="text-[11px] text-blue-700 font-semibold mt-0.5">${reqsText.join(' | ')}</div>` : '<div class="text-[11px] text-slate-400">Sin extras</div>';
+
+                const totalAbonado = r.abonos ? r.abonos.reduce((sum, a) => sum + parseFloat(a.monto), 0) : 0;
+                const saldoCalculado = r.totalBruto - totalAbonado;
+
+                let abonosFormatted = '';
+                if (r.abonos && r.abonos.length > 0) {
+                    abonosFormatted = r.abonos.map(a => `• $${parseFloat(a.monto).toLocaleString('es-CL')}`).join('<br>');
+                } else {
+                    abonosFormatted = '<span class="text-slate-400">Sin abonos</span>';
+                }
+
+                const saldoHtml = `<div class="mt-1 pt-1 border-t border-slate-200 font-bold ${saldoCalculado > 0 ? 'text-amber-700' : 'text-emerald-700'}">
+                    Saldo: $${saldoCalculado.toLocaleString('es-CL')}
+                </div>`;
+
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 border-b">
-                        <td class="p-3 font-bold">${r.nombre}<br><span class="text-xs text-green-700">${r.telefono}</span></td>
-                        <td class="p-3">${formatearFechaChile(r.checkin)} al ${formatearFechaChile(r.checkout)}</td>
-                        <td class="p-3">${r.adultos} Ad / ${r.ninos} Niñ</td>
-                        <td class="p-3">${r.canal}</td>
-                        <td class="p-3 font-bold">$${r.totalBruto ? r.totalBruto.toLocaleString('es-CL') : 0}</td>
-                        <td class="p-3 text-xs">$${r.totalAbonado ? r.totalAbonado.toLocaleString('es-CL') : 0} / <span class="text-amber-700 font-bold">$${r.saldoPendiente ? r.saldoPendiente.toLocaleString('es-CL') : 0}</span></td>
-                        <td class="p-3 font-bold">${r.estadoReserva}</td>
-                        <td class="p-3 text-center space-x-2">
-                            <button type="button" onclick="cargarParaEditar(${r.id})" class="text-blue-600 hover:text-blue-800"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button type="button" onclick="eliminarReserva(${r.id})" class="text-red-600 hover:text-red-800"><i class="fa-solid fa-trash"></i></button>
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3">
+                            <button type="button" onclick="cargarParaEditar(${r.id})" class="font-bold text-emerald-800 hover:text-emerald-600 hover:underline text-left text-sm block">
+                                ${r.nombre}
+                            </button>
+                            <button type="button" onclick="abrirChatWsp('${r.telefono}')" title="Abrir Chat de WhatsApp" class="text-xs text-green-700 font-bold hover:underline flex items-center gap-1 mt-0.5">
+                                <i class="fa-brands fa-whatsapp text-green-600"></i> ${r.telefono}
+                            </button>
+                        </td>
+                        <td class="p-3">
+                            <div class="font-semibold text-slate-800">${formatearFechaChile(r.checkin)} al ${formatearFechaChile(r.checkout)}</div>
+                            <div class="font-bold text-xs text-emerald-700 mt-0.5">${r.dias || (r.noches+1)}d / ${r.noches}n</div>
+                        </td>
+                        <td class="p-3">
+                            ${r.adultos} Ad / ${r.ninos} Niñ
+                            ${reqsHtml}
+                        </td>
+                        <td class="p-3"><span class="bg-slate-100 px-2 py-0.5 rounded text-xs">${r.canal}</span></td>
+                        <td class="p-3 font-bold text-slate-900 text-sm">$${r.totalBruto.toLocaleString('es-CL')}</td>
+                        <td class="p-3 text-xs">
+                            ${abonosFormatted}
+                            ${saldoHtml}
+                        </td>
+                        <td class="p-3">
+                            <select onchange="cambiarEstadoManual(${r.id}, this.value)" class="border rounded p-1 text-xs font-bold bg-white outline-none">
+                                <option value="Reserva" ${r.estadoReserva === 'Reserva' ? 'selected' : ''}>🟡 Reserva</option>
+                                <option value="Reserva en Curso" ${r.estadoReserva === 'Reserva en Curso' ? 'selected' : ''}>🟢 En Curso</option>
+                                <option value="Reserva Terminada" ${r.estadoReserva === 'Reserva Terminada' ? 'selected' : ''}>⚪ Terminada</option>
+                            </select>
+                        </td>
+                        <td class="p-3 text-center space-x-1">
+                            <button type="button" onclick="cargarParaEditar(${r.id})" title="Editar / Abrir" class="bg-blue-100 text-blue-800 p-1.5 rounded hover:bg-blue-200"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button type="button" onclick="eliminarReserva(${r.id})" title="Eliminar" class="bg-red-100 text-red-700 p-1.5 rounded hover:bg-red-200"><i class="fa-solid fa-trash"></i></button>
+                            <button type="button" onclick="verResultadoEspecial(${r.id})" title="Ver Resultado Económico" class="bg-emerald-100 text-emerald-800 p-1.5 rounded hover:bg-emerald-200"><i class="fa-solid fa-eye"></i></button>
                         </td>
                     </tr>
                 `;
             });
         }
 
-        function renderDirectorioHuespedes() {
-            const tbody = document.getElementById('tablaDirectorioHuespedes');
-            if(!tbody) return;
-            tbody.innerHTML = '';
-
-            reservas.forEach(r => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="p-2 font-bold">${r.nombre}</td>
-                        <td class="p-2">${r.rut || '-'}</td>
-                        <td class="p-2 text-emerald-700">${r.telefono}</td>
-                        <td class="p-2">${r.email}</td>
-                    </tr>
-                `;
-            });
-        }
-
-        function actualizarDashboardResumen() {
-            const hoy = new Date();
-            const mesActual = hoy.getMonth();
-            const anoActual = hoy.getFullYear();
-
-            const delMes = reservas.filter(r => {
-                if(!r.checkin) return false;
-                const d = new Date(r.checkin);
-                return d.getMonth() === mesActual && d.getFullYear() === anoActual;
-            });
-
-            let noches = 0;
-            let bruto = 0;
-            delMes.forEach(r => {
-                noches += r.noches || 0;
-                bruto += r.totalBruto || 0;
-            });
-
-            document.getElementById('dashResMes').innerText = delMes.length;
-            document.getElementById('dashNochesMes').innerText = noches;
-            document.getElementById('dashBrutoMes').innerText = `$${bruto.toLocaleString('es-CL')}`;
-        }
-
-        function actualizarKPIS() {
-            let totalNoches = 0;
-            let totalBruto = 0;
-            let totalComisiones = 0;
-            let totalBencinaExtras = 0;
-            let canalesMap = {};
-
-            const costoDiarioBase = (costosCasa.parafina || 0) + (costosCasa.gas || 0) + (costosCasa.electricidad || 0) + (costosCasa.lena || 0) + (costosCasa.starlinkDiario || 0) + (costosCasa.masPlagasDiario || 0) + (costosCasa.detergentesPapel || 0);
-            const costoFijoReserva = (costosCasa.aseo || 0) + (costosCasa.regalo || 0);
-
-            let costoOperativoTotal = 0;
-
-            reservas.forEach(r => {
-                const n = r.noches || 0;
-                const b = r.totalBruto || 0;
-                const c = parseFloat(r.costoPlataforma) || 0;
-                const e = (parseFloat(r.costoBencinaGenerador) || 0) + (parseFloat(r.costoImprevistosReserva) || 0);
-
-                totalNoches += n;
-                totalBruto += b;
-                totalComisiones += c;
-                totalBencinaExtras += e;
-
-                costoOperativoTotal += (n * costoDiarioBase) + costoFijoReserva;
-                canalesMap[r.canal] = (canalesMap[r.canal] || 0) + b;
-            });
-
-            const adr = totalNoches > 0 ? Math.round(totalBruto / totalNoches) : 0;
-            const ocupacionPct = ((totalNoches / 365) * 100).toFixed(1);
-            const utilidadNeta = totalBruto - (costoOperativoTotal + totalComisiones + totalBencinaExtras);
-
-            document.getElementById('kpiDiasAno').innerText = `${totalNoches} noches`;
-            document.getElementById('kpiIngresosBrutosAno').innerText = `$${totalBruto.toLocaleString('es-CL')}`;
-            document.getElementById('kpiADR').innerText = `$${adr.toLocaleString('es-CL')} /noche`;
-            document.getElementById('kpiOcupacion').innerText = `${ocupacionPct}%`;
-
-            document.getElementById('kpiCostosOperativos').innerText = `$${costoOperativoTotal.toLocaleString('es-CL')}`;
-            document.getElementById('kpiComisiones').innerText = `$${totalComisiones.toLocaleString('es-CL')}`;
-            document.getElementById('kpiBencinaExtras').innerText = `$${totalBencinaExtras.toLocaleString('es-CL')}`;
-            document.getElementById('kpiUtilidadNeta').innerText = `$${utilidadNeta.toLocaleString('es-CL')}`;
-
-            const contCanales = document.getElementById('kpiCanales');
-            contCanales.innerHTML = '';
-            for (const [canal, monto] of Object.entries(canalesMap)) {
-                contCanales.innerHTML += `<div class="flex justify-between"><span>${canal}:</span><strong>$${monto.toLocaleString('es-CL')}</strong></div>`;
+        function eliminarReserva(id) {
+            if (confirm('¿Eliminar esta reserva?')) {
+                reservas = reservas.filter(r => r.id !== id);
+                localStorage.setItem('reservas_caban', JSON.stringify(reservas));
+                poblarFiltroAnos();
+                renderTabla();
+                renderCalendario();
+                actualizarDashboardResumen();
             }
         }
 
+        function abrirModalHuespedes() {
+            const tbody = document.getElementById('tablaHuespedesBase');
+            tbody.innerHTML = '';
+
+            const mapaHuespedes = {};
+            reservas.forEach(r => {
+                const clave = r.rut ? r.rut.trim() : r.nombre.trim().toLowerCase();
+                if (!mapaHuespedes[clave]) {
+                    mapaHuespedes[clave] = {
+                        nombre: r.nombre,
+                        rut: r.rut || 'Sin RUT',
+                        telefono: r.telefono || 'Sin Fono',
+                        email: r.email || 'Sin Email',
+                        totalVisitas: 1,
+                        ultimaVisita: r.checkin
+                    };
+                } else {
+                    mapaHuespedes[clave].totalVisitas += 1;
+                    if (r.checkin > mapaHuespedes[clave].ultimaVisita) {
+                        mapaHuespedes[clave].ultimaVisita = r.checkin;
+                    }
+                }
+            });
+
+            Object.values(mapaHuespedes).forEach(h => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-indigo-50/50 border-b">
+                        <td class="p-2 font-bold">${h.nombre}</td>
+                        <td class="p-2 font-mono">${h.rut}</td>
+                        <td class="p-2 font-bold text-green-700 cursor-pointer" onclick="abrirChatWsp('${h.telefono}')"><i class="fa-brands fa-whatsapp"></i> ${h.telefono}</td>
+                        <td class="p-2">${h.email}</td>
+                        <td class="p-2 text-center font-bold">${h.totalVisitas}</td>
+                        <td class="p-2 text-slate-600">${formatearFechaChile(h.ultimaVisita)}</td>
+                    </tr>
+                `;
+            });
+
+            toggleModal('modalHuespedes');
+        }
+
+        function imprimirTablaHuespedes() {
+            window.print();
+        }
+
+        function cambiarMesCalendario(offset) {
+            mesCalendarioOffset += offset;
+            renderCalendario();
+        }
+
+        function resetMesCalendario() {
+            mesCalendarioOffset = 0;
+            renderCalendario();
+        }
+
         function renderCalendario() {
-            const cont = document.getElementById('calendarioContenedor');
-            cont.innerHTML = '';
+            const contenedor = document.getElementById('calendarioContenedor');
+            contenedor.innerHTML = '';
 
-            for (let m = 0; m < 2; m++) {
-                const fechaBase = new Date();
-                fechaBase.setMonth(fechaBase.getMonth() + mesCalendarioOffset + m);
+            const hoy = new Date();
+            for (let i = 0; i < 2; i++) {
+                const fechaBase = new Date(hoy.getFullYear(), hoy.getMonth() + mesCalendarioOffset + i, 1);
+                const mesNombre = fechaBase.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
 
-                const ano = fechaBase.getFullYear();
-                const mes = fechaBase.getMonth();
-                const primerDiaMes = new Date(ano, mes, 1).getDay();
-                const totalDias = new Date(ano, mes + 1, 0).getDate();
-                const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-
-                let html = `
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <h3 class="font-bold text-center text-slate-800 mb-3">${nombresMeses[mes]} ${ano}</h3>
+                let htmlMes = `
+                    <div class="border rounded-xl p-4 bg-slate-50/50">
+                        <h3 class="font-bold text-center capitalize text-slate-700 mb-3 text-sm border-b pb-2">${mesNombre}</h3>
                         <div class="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-400 mb-2">
-                            <div>Do</div><div>Lu</div><div>Ma</div><div>Mi</div><div>Ju</div><div>Vi</div><div>Sá</div>
+                            <div>Lu</div><div>Ma</div><div>Mi</div><div>Ju</div><div>Vi</div><div>Sá</div><div>Do</div>
                         </div>
                         <div class="grid grid-cols-7 gap-1 text-xs">
                 `;
 
-                for (let i = 0; i < primerDiaMes; i++) html += `<div></div>`;
+                const primerDiaSemana = (fechaBase.getDay() + 6) % 7;
+                const ultimoDiaMes = new Date(fechaBase.getFullYear(), fechaBase.getMonth() + 1, 0).getDate();
 
-                for (let d = 1; d <= totalDias; d++) {
-                    const diaStr = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                    
-                    let claseEspecial = 'bg-white text-slate-700';
-                    const reservado = reservas.find(r => diaStr >= r.checkin && diaStr < r.checkout);
-
-                    if (reservado) claseEspecial = 'cal-day-reserva';
-
-                    html += `<div class="p-2 text-center rounded-lg border ${claseEspecial} font-semibold">${d}</div>`;
+                for (let empty = 0; empty < primerDiaSemana; empty++) {
+                    htmlMes += `<div></div>`;
                 }
 
-                html += `</div></div>`;
-                cont.innerHTML += html;
+                for (let dia = 1; dia <= ultimoDiaMes; dia++) {
+                    const fechaStr = `${fechaBase.getFullYear()}-${String(fechaBase.getMonth() + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+                    let claseDia = 'bg-white text-slate-700 border hover:bg-slate-100';
+
+                    reservas.forEach(r => {
+                        if (fechaStr >= r.checkin && fechaStr <= r.checkout) {
+                            if (r.estadoReserva === 'Reserva en Curso') claseDia = 'cal-day-curso';
+                            else if (r.estadoReserva === 'Reserva Terminada') claseDia = 'cal-day-terminada';
+                            else claseDia = 'cal-day-reserva';
+                        }
+                    });
+
+                    htmlMes += `<div class="p-2 rounded text-center cursor-default transition-all ${claseDia}">${dia}</div>`;
+                }
+
+                htmlMes += `</div></div>`;
+                contenedor.innerHTML += htmlMes;
             }
         }
 
-        function cambiarMesCalendario(val) { mesCalendarioOffset += val; renderCalendario(); }
-        function resetMesCalendario() { mesCalendarioOffset = 0; renderCalendario(); }
+        function cargarValoresCostosCasa() {
+            document.getElementById('cParafina').value = costosCasa.parafina;
+            document.getElementById('cGas').value = costosCasa.gas;
+            document.getElementById('cElectricidad').value = costosCasa.electricidad;
+            document.getElementById('cLena').value = costosCasa.lena;
+            document.getElementById('cStarlinkDiario').value = costosCasa.starlinkDiario || 1500;
+            document.getElementById('cMasPlagasDiario').value = costosCasa.masPlagasDiario || 1000;
+            document.getElementById('cDetergentesPapel').value = costosCasa.detergentesPapel || 2000;
+            document.getElementById('cRegalo').value = costosCasa.regalo || 1500;
+            document.getElementById('cAseo').value = costosCasa.aseo || 25000;
+            calcularCostoTotalDiarioCasa();
+        }
+
+        function calcularCostoTotalDiarioCasa() {
+            const diario = (parseFloat(document.getElementById('cParafina').value)||0) +
+                           (parseFloat(document.getElementById('cGas').value)||0) +
+                           (parseFloat(document.getElementById('cElectricidad').value)||0) +
+                           (parseFloat(document.getElementById('cLena').value)||0) +
+                           (parseFloat(document.getElementById('cStarlinkDiario').value)||0) +
+                           (parseFloat(document.getElementById('cMasPlagasDiario').value)||0) +
+                           (parseFloat(document.getElementById('cDetergentesPapel').value)||0);
+            
+            const aseoFijo = parseFloat(document.getElementById('cAseo').value)||0;
+            const regaloFijo = parseFloat(document.getElementById('cRegalo').value)||0;
+            const electricidadDiaria = parseFloat(document.getElementById('cElectricidad').value)||0;
+            const costosFijos = aseoFijo + regaloFijo;
+
+            document.getElementById('resCostoDiarioTotal').innerText = `$${diario.toLocaleString('es-CL')}`;
+            document.getElementById('resCostosFijosTotal').innerText = `$${costosFijos.toLocaleString('es-CL')}`;
+
+            return { diario, costosFijos, aseoFijo, regaloFijo, electricidadDiaria };
+        }
+
+        ['cParafina', 'cGas', 'cElectricidad', 'cLena', 'cStarlinkDiario', 'cMasPlagasDiario', 'cDetergentesPapel', 'cRegalo', 'cAseo'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calcularCostoTotalDiarioCasa);
+        });
+
+        function guardarCostosCasa() {
+            const { diario, aseoFijo, regaloFijo } = calcularCostoTotalDiarioCasa();
+            costosCasa = {
+                parafina: parseFloat(document.getElementById('cParafina').value)||0,
+                gas: parseFloat(document.getElementById('cGas').value)||0,
+                electricidad: parseFloat(document.getElementById('cElectricidad').value)||0,
+                lena: parseFloat(document.getElementById('cLena').value)||0,
+                starlinkDiario: parseFloat(document.getElementById('cStarlinkDiario').value)||0,
+                masPlagasDiario: parseFloat(document.getElementById('cMasPlagasDiario').value)||0,
+                detergentesPapel: parseFloat(document.getElementById('cDetergentesPapel').value)||0,
+                regalo: regaloFijo,
+                aseo: aseoFijo
+            };
+            localStorage.setItem('costos_casa_caban', JSON.stringify(costosCasa));
+            alert('¡Estructura de costos guardada con éxito!');
+            toggleModal('modalCostos');
+        }
+
+        function abrirModalRentabilidad() {
+            const tbody = document.getElementById('tablaMargenes');
+            tbody.innerHTML = '';
+            const { diario, costosFijos } = calcularCostoTotalDiarioCasa();
+
+            reservas.forEach(r => {
+                const nochesUso = r.noches || 1;
+                const costoDiarioTotal = nochesUso * diario;
+                const costoPlat = parseFloat(r.costoPlataforma) || 0;
+                const extras = (r.costoBencinaGenerador||0) + (r.costoImprevistosReserva||0);
+                const gananciaNeta = r.totalBruto - costoPlat - costoDiarioTotal - costosFijos - extras;
+                const margenPct = r.totalBruto > 0 ? ((gananciaNeta / r.totalBruto) * 100).toFixed(1) : 0;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-teal-50/50 border-b">
+                        <td class="p-2 font-bold">${r.nombre}</td>
+                        <td class="p-2">${nochesUso} noches</td>
+                        <td class="p-2 font-semibold text-slate-800">$${r.totalBruto.toLocaleString('es-CL')}</td>
+                        <td class="p-2 text-red-600">-$${costoPlat.toLocaleString('es-CL')}</td>
+                        <td class="p-2 text-amber-700">-$${costoDiarioTotal.toLocaleString('es-CL')}</td>
+                        <td class="p-2 text-teal-800 font-bold">-$${costosFijos.toLocaleString('es-CL')}</td>
+                        <td class="p-2 text-purple-800">-$${extras.toLocaleString('es-CL')}</td>
+                        <td class="p-2 font-bold ${gananciaNeta >= 0 ? 'text-emerald-700' : 'text-red-700'}">$${gananciaNeta.toLocaleString('es-CL')}</td>
+                        <td class="p-2 font-bold">${margenPct}%</td>
+                    </tr>
+                `;
+            });
+            toggleModal('modalRentabilidad');
+        }
+
+        function actualizarDashboardResumen() {
+            const hoy = new Date();
+            const mesActualStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+            const reservasMes = reservas.filter(r => r.checkin && r.checkin.startsWith(mesActualStr));
+
+            const nochesTotal = reservasMes.reduce((sum, r) => sum + (r.noches || 0), 0);
+            const brutoTotal = reservasMes.reduce((sum, r) => sum + (r.totalBruto || 0), 0);
+
+            document.getElementById('dashResMes').innerText = reservasMes.length;
+            document.getElementById('dashNochesMes').innerText = nochesTotal;
+            document.getElementById('dashBrutoMes').innerText = `$${brutoTotal.toLocaleString('es-CL')}`;
+        }
+
+        function abrirModalKPIs() {
+            const selectAnno = document.getElementById('kpiAnno');
+            selectAnno.innerHTML = '';
+            const annos = [...new Set(reservas.map(r => r.checkin ? r.checkin.substring(0, 4) : new Date().getFullYear().toString()))];
+            if(annos.length === 0) annos.push(new Date().getFullYear().toString());
+
+            annos.sort().reverse().forEach(a => {
+                selectAnno.innerHTML += `<option value="${a}">${a}</option>`;
+            });
+
+            renderKPIs();
+            toggleModal('modalKPIs');
+        }
+
+        function renderKPIs() {
+            const annoSel = document.getElementById('kpiAnno').value || new Date().getFullYear().toString();
+            const reservasAno = reservas.filter(r => r.checkin && r.checkin.startsWith(annoSel));
+            const { diario, costosFijos, aseoFijo, regaloFijo, electricidadDiaria } = calcularCostoTotalDiarioCasa();
+
+            const diasArrendados = reservasAno.reduce((sum, r) => sum + (r.noches || 1), 0);
+            const ingresosBrutos = reservasAno.reduce((sum, r) => sum + (r.totalBruto || 0), 0);
+
+            let margenes = [];
+            let totalAseoAcumulado = 0;
+            let totalRegaloAcumulado = 0;
+            let totalElectricidadAcumulada = 0;
+            let gananciaNetaTotalAno = 0;
+
+            reservasAno.forEach(r => {
+                const noches = r.noches || 1;
+                const costoDiarioTotal = noches * diario;
+                const costoPlat = parseFloat(r.costoPlataforma) || 0;
+                const extras = (r.costoBencinaGenerador||0) + (r.costoImprevistosReserva||0);
+                
+                const gananciaReserva = r.totalBruto - costoPlat - costoDiarioTotal - costosFijos - extras;
+                const pct = r.totalBruto > 0 ? (gananciaReserva / r.totalBruto) * 100 : 0;
+                
+                margenes.push(pct);
+                totalAseoAcumulado += aseoFijo;
+                totalRegaloAcumulado += regaloFijo;
+                totalElectricidadAcumulada += (noches * electricidadDiaria);
+                gananciaNetaTotalAno += gananciaReserva;
+            });
+
+            const minMargen = margenes.length > 0 ? Math.min(...margenes).toFixed(1) : 0;
+            const maxMargen = margenes.length > 0 ? Math.max(...margenes).toFixed(1) : 0;
+            const promMargen = margenes.length > 0 ? (margenes.reduce((a, b) => a + b, 0) / margenes.length).toFixed(1) : 0;
+
+            const incidenciaElectricidad = ingresosBrutos > 0 ? ((totalElectricidadAcumulada / ingresosBrutos) * 100).toFixed(1) : 0;
+            const incidenciaAseo = ingresosBrutos > 0 ? ((totalAseoAcumulado / ingresosBrutos) * 100).toFixed(1) : 0;
+            const incidenciaRegalo = ingresosBrutos > 0 ? ((totalRegaloAcumulado / ingresosBrutos) * 100).toFixed(1) : 0;
+
+            const costoDiarioAcumulado = reservasAno.reduce((sum, r) => sum + ((r.noches || 1) * diario), 0);
+            const sumaTresNiveles = totalAseoAcumulado + totalRegaloAcumulado + costoDiarioAcumulado;
+            const incidenciaAcumulada = ingresosBrutos > 0 ? ((sumaTresNiveles / ingresosBrutos) * 100).toFixed(1) : 0;
+
+            const gananciaPromedioPorDia = diasArrendados > 0 ? Math.round(gananciaNetaTotalAno / diasArrendados) : 0;
+
+            const costo2Noches = (diario * 2) + costosFijos;
+            const tarifaTotal2Noches = costo2Noches / 0.75;
+            const valorMinimo25 = Math.ceil(tarifaTotal2Noches / 2);
+
+            document.getElementById('kpiDiasAno').innerText = `${diasArrendados} noches`;
+            document.getElementById('kpiIngresosBrutosAno').innerText = `$${ingresosBrutos.toLocaleString('es-CL')}`;
+            document.getElementById('kpiMargenesMinMaxProm').innerText = `${minMargen}% | ${maxMargen}% | ${promMargen}%`;
+            document.getElementById('kpiGananciaPromedioLimpiaDia').innerText = `$${gananciaPromedioPorDia.toLocaleString('es-CL')} /día`;
+            
+            document.getElementById('kpiIncidenciaElectricidadPct').innerText = `${incidenciaElectricidad}%`;
+            document.getElementById('kpiIncidenciaAseoPct').innerText = `${incidenciaAseo}%`;
+            document.getElementById('kpiIncidenciaRegaloPct').innerText = `${incidenciaRegalo}%`;
+            document.getElementById('kpiIncidenciaAcumuladaPct').innerText = `${incidenciaAcumulada}%`;
+            document.getElementById('kpiValorMinimo25').innerText = `$${valorMinimo25.toLocaleString('es-CL')} /día`;
+
+            const mesesIngresos = Array(12).fill(0);
+            const mesesDias = Array(12).fill(0);
+
+            reservasAno.forEach(r => {
+                const mes = parseInt(r.checkin.substring(5, 7)) - 1;
+                mesesIngresos[mes] += (r.totalBruto || 0);
+                mesesDias[mes] += (r.noches || 1);
+            });
+
+            const ctx = document.getElementById('chartIngresosMes').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                    datasets: [
+                        {
+                            label: 'Ingresos Brutos ($)',
+                            data: mesesIngresos,
+                            backgroundColor: '#059669',
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Días Arrendados',
+                            data: mesesDias,
+                            backgroundColor: '#3b82f6',
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { type: 'linear', position: 'left', title: { display: true, text: 'Ingresos ($ CLP)' } },
+                        y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Noches' } }
+                    }
+                }
+            });
+        }
 
         function generarWsp() {
             const nombre = document.getElementById('nombre').value;
             const checkin = formatearFechaChile(document.getElementById('checkin').value);
             const checkout = formatearFechaChile(document.getElementById('checkout').value);
+            const cantDias = document.getElementById('cantDiasMostrar').value;
             const total = document.getElementById('resTotalBruto').innerText;
+            const abonado = document.getElementById('resTotalAbonado').innerText;
+            const saldo = document.getElementById('resSaldoPendiente').innerText;
+            const claveAcceso = obtenerUltimos4Telefono();
 
-            const msg = `¡Hola ${nombre}! Confirmamos tu reserva en Refugio Entre Montañas del ${checkin} al ${checkout}. Total: ${total}. ¡Te esperamos!`;
-            navigator.clipboard.writeText(msg);
-            alert('Mensaje copiado al portapapeles.');
+            let reqsText = [];
+            if(document.getElementById('reqPerro').checked) reqsText.push('🐾 Perro');
+            if(document.getElementById('reqCuna').checked) reqsText.push('🍼 Cuna');
+            if(document.getElementById('reqProtectorEstufa').checked) reqsText.push('🛡️ Protector de Estufa');
+            const reqsStr = reqsText.length > 0 ? reqsText.join(', ') : 'Ninguno';
+
+            const texto = `¡Hola ${nombre}! Confirmamos tu reserva en Refugio Entre Montañas 🏔️.\n\n📅 Entrada: ${checkin}\n📅 Salida: ${checkout}\n⏱️ Estadía: ${cantDias}\n📋 Requerimientos Especiales: ${reqsStr}\n🔑 Clave Cerradura: ${claveAcceso}\n\n💰 Valor Total: ${total}\n💵 Total Abonado: ${abonado}\n📌 Saldo Pendiente: ${saldo}\n\n¡Te esperamos para disfrutar del refugio!`;
+
+            navigator.clipboard.writeText(texto);
+            alert('¡Mensaje para WhatsApp copiado al portapapeles!');
         }
     </script>
 </body>
