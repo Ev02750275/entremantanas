@@ -1190,6 +1190,7 @@
         }
 
         function renderTabla() {
+            function renderTabla() {
             const tbody = document.getElementById('tablaReservas');
             if (!tbody) return;
             tbody.innerHTML = '';
@@ -1199,21 +1200,34 @@
             const mesInput = document.getElementById('filtroMes');
             const anoInput = document.getElementById('filtroAno');
 
-            const texto = textoInput ? textoInput.value.toLowerCase() : '';
+            const texto = textoInput ? textoInput.value.toLowerCase().trim() : '';
             const estado = estadoInput ? estadoInput.value : '';
             const mes = mesInput ? mesInput.value : '';
             const ano = anoInput ? anoInput.value : '';
 
+            // Filtrado realizado en JavaScript para evitar bloqueos de índice en Firestore
             const reservasFiltradas = reservas.filter(r => {
-                const coincideTexto = (r.nombre || '').toLowerCase().includes(texto);
+                const nombreVal = (r.nombre || '').toLowerCase();
+                const coincideTexto = !texto || nombreVal.includes(texto);
                 const coincideEstado = !estado || r.estadoReserva === estado;
-                const coincideMes = !mes || (r.checkin && r.checkin.substring(5, 7) === mes);
-                const coincideAno = !ano || (r.checkin && r.checkin.substring(0, 4) === ano);
+                
+                let coincideMes = true;
+                if (mes && r.checkin) {
+                    const mesCheckin = r.checkin.split('-')[1];
+                    coincideMes = (mesCheckin === mes);
+                }
+
+                let coincideAno = true;
+                if (ano && r.checkin) {
+                    const anoCheckin = r.checkin.split('-')[0];
+                    coincideAno = (anoCheckin === ano);
+                }
+
                 return coincideTexto && coincideEstado && coincideMes && coincideAno;
             });
 
             if (reservasFiltradas.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400">No hay reservas registradas.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400 font-semibold">No se encontraron reservas registradas para los filtros seleccionados.</td></tr>`;
                 return;
             }
 
@@ -1224,7 +1238,7 @@
                 if(r.reqProtectorEstufa) reqsText.push('🛡️ Prot. Estufa');
                 const reqsHtml = reqsText.length > 0 ? `<div class="text-[11px] text-blue-700 font-semibold mt-0.5">${reqsText.join(' | ')}</div>` : '<div class="text-[11px] text-slate-400">Sin extras</div>';
 
-                const totalAbonado = r.abonos ? r.abonos.reduce((sum, a) => sum + parseFloat(a.monto), 0) : 0;
+                const totalAbonado = r.abonos ? r.abonos.reduce((sum, a) => sum + parseFloat(a.monto || 0), 0) : 0;
                 const totalBrutoVal = parseFloat(r.totalBruto) || 0;
                 const saldoCalculado = totalBrutoVal - totalAbonado;
 
@@ -1243,21 +1257,21 @@
                     <tr class="hover:bg-slate-50 border-b">
                         <td class="p-3">
                             <button type="button" onclick="cargarParaEditar('${r.id}')" class="font-bold text-emerald-800 hover:text-emerald-600 hover:underline text-left text-sm block">
-                                ${r.nombre}
+                                ${r.nombre || 'Huésped sin nombre'}
                             </button>
                             <button type="button" onclick="abrirChatWsp('${r.telefono}')" title="Abrir Chat de WhatsApp" class="text-xs text-green-700 font-bold hover:underline flex items-center gap-1 mt-0.5">
-                                <i class="fa-brands fa-whatsapp text-green-600"></i> ${r.telefono}
+                                <i class="fa-brands fa-whatsapp text-green-600"></i> ${r.telefono || 'Sin teléfono'}
                             </button>
                         </td>
                         <td class="p-3">
                             <div class="font-semibold text-slate-800">${formatearFechaChile(r.checkin)} al ${formatearFechaChile(r.checkout)}</div>
-                            <div class="font-bold text-xs text-emerald-700 mt-0.5">${r.dias || (r.noches+1)}d / ${r.noches}n</div>
+                            <div class="font-bold text-xs text-emerald-700 mt-0.5">${r.dias || ((r.noches||0)+1)}d / ${r.noches||0}n</div>
                         </td>
                         <td class="p-3">
-                            ${r.adultos} Ad / ${r.ninos} Niñ
+                            ${r.adultos||0} Ad / ${r.ninos||0} Niñ
                             ${reqsHtml}
                         </td>
-                        <td class="p-3"><span class="bg-slate-100 px-2 py-0.5 rounded text-xs">${r.canal}</span></td>
+                        <td class="p-3"><span class="bg-slate-100 px-2 py-0.5 rounded text-xs">${r.canal || 'Directo'}</span></td>
                         <td class="p-3 font-bold text-slate-900 text-sm">$${totalBrutoVal.toLocaleString('es-CL')}</td>
                         <td class="p-3 text-xs">
                             ${abonosFormatted}
@@ -1279,13 +1293,6 @@
                 `;
             });
         }
-
-        async function eliminarReserva(id) {
-            if (confirm('¿Eliminar esta reserva?')) {
-                await db.collection('reservas').doc(id).delete();
-            }
-        }
-
         function abrirModalHuespedes() {
             const tbody = document.getElementById('tablaHuespedesBase');
             tbody.innerHTML = '';
