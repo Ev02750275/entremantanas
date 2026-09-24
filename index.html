@@ -19,6 +19,13 @@
         .cal-day-reserva { background-color: #fde68a !important; color: #92400e !important; font-weight: bold; }
         .cal-day-curso { background-color: #a7f3d0 !important; color: #065f46 !important; font-weight: bold; }
         .cal-day-terminada { background-color: #e2e8f0 !important; color: #64748b !important; }
+        /* Transición: Un huésped sale y entra otro el mismo día */
+        .cal-day-transicion { 
+            background: linear-gradient(135deg, #fde68a 50%, #a7f3d0 50%) !important; 
+            color: #064e3b !important; 
+            font-weight: font-black; 
+            border: 2px solid #059669 !important;
+        }
         @media print {
             body * { visibility: hidden; }
             #areaImpresionPDF, #areaImpresionPDF * { visibility: visible; }
@@ -38,11 +45,6 @@
 
             <!-- BOTONES Y CONFIGURACIONES -->
             <div class="flex flex-wrap items-center gap-2 md:gap-3">
-                <div class="bg-emerald-900/80 px-3 py-1.5 rounded-lg border border-emerald-700 flex items-center gap-2">
-                    <label class="text-xs uppercase font-bold text-emerald-200">Valor Diario Arriendo ($):</label>
-                    <input type="number" id="valorBaseGlobal" value="75000" class="w-24 bg-emerald-950 text-white font-bold p-1 rounded border border-emerald-600 text-sm text-right outline-none">
-                </div>
-
                 <button type="button" onclick="limpiarFormulario()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs md:text-sm font-bold py-2 px-3 rounded-lg shadow transition-all flex items-center">
                     <i class="fa-solid fa-plus mr-1"></i> Nueva Reserva
                 </button>
@@ -177,7 +179,7 @@
                         </div>
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Valor Diario A Cobrar ($ CLP)</label>
-                            <input type="number" id="valorDiarioFinal" required class="w-full border rounded-lg p-2 text-sm font-bold text-emerald-800">
+                            <input type="number" id="valorDiarioFinal" value="75000" required class="w-full border rounded-lg p-2 text-sm font-bold text-emerald-800">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Costo Plataforma Arriendo ($)</label>
@@ -322,6 +324,7 @@
                 <div class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded cal-day-reserva inline-block"></span> Reserva Confirmada</div>
                 <div class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded cal-day-curso inline-block"></span> Reserva en Curso</div>
                 <div class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded cal-day-terminada inline-block"></span> Reserva Terminada</div>
+                <div class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded cal-day-transicion inline-block"></span> Cambio de Huésped (Mismo Día)</div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="calendarioContenedor"></div>
@@ -533,7 +536,7 @@
                             <th class="p-2">Costos Diarios</th>
                             <th class="p-2">Fijos (Aseo+Reg)</th>
                             <th class="p-2">Extras (Benc+Impr)</th>
-                            <th class="p-2">Ganancia Neta</th>
+                            <th class="p-2">Margen $</th>
                             <th class="p-2">Margen %</th>
                         </tr>
                     </thead>
@@ -601,28 +604,37 @@
                 <button type="button" onclick="toggleModal('modalKPIs')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
 
-            <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-lg border">
-                <label class="text-xs font-bold uppercase text-slate-600">Filtrar Año Analizado:</label>
-                <select id="kpiAnno" onchange="renderKPIs()" class="border rounded p-1 text-sm bg-white font-bold"></select>
+            <!-- FILTROS DE AÑO Y MES -->
+            <div class="flex flex-wrap items-center gap-3 bg-slate-50 p-3 rounded-lg border">
+                <div class="flex items-center gap-2">
+                    <label class="text-xs font-bold uppercase text-slate-600">Año:</label>
+                    <select id="kpiAnno" onchange="renderKPIs()" class="border rounded p-1 text-sm bg-white font-bold"></select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="text-xs font-bold uppercase text-slate-600">Mes:</label>
+                    <select id="kpiMes" onchange="renderKPIs()" class="border rounded p-1 text-sm bg-white font-bold">
+                        <option value="">Todos los Meses</option>
+                        <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+                        <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+                        <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+                        <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                    </select>
+                </div>
             </div>
 
             <!-- TARJETAS PRINCIPALES -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                 <div class="bg-blue-50 border border-blue-100 p-3.5 rounded-xl">
-                    <span class="text-[10px] font-bold text-blue-600 uppercase">Días Arrendados Año</span>
+                    <span class="text-[10px] font-bold text-blue-600 uppercase">Días Arrendados</span>
                     <h4 id="kpiDiasAno" class="text-xl font-black text-blue-900 mt-1">0 noches</h4>
                 </div>
                 <div class="bg-emerald-50 border border-emerald-100 p-3.5 rounded-xl">
                     <span class="text-[10px] font-bold text-emerald-600 uppercase">Dinero Recibido (Bruto)</span>
                     <h4 id="kpiIngresosBrutosAno" class="text-lg font-black text-emerald-900 mt-1">$0</h4>
                 </div>
-                <div class="bg-amber-50 border border-amber-100 p-3.5 rounded-xl">
-                    <span class="text-[10px] font-bold text-amber-600 uppercase">Margen Mín / Máx / Prom</span>
-                    <h4 id="kpiMargenesMinMaxProm" class="text-sm font-black text-amber-900 mt-1">0% | 0% | 0%</h4>
-                </div>
                 <div class="bg-purple-50 border border-purple-100 p-3.5 rounded-xl">
-                    <span class="text-[10px] font-bold text-purple-600 uppercase">Ganancia Promedio / Día Arrendado</span>
-                    <h4 id="kpiGananciaPromedioLimpiaDia" class="text-base font-black text-purple-900 mt-1">$0 /día</h4>
+                    <span class="text-[10px] font-bold text-purple-600 uppercase">Margen promedio dia % y $</span>
+                    <h4 id="kpiGananciaPromedioLimpiaDia" class="text-base font-black text-purple-900 mt-1">$0 /día (0%)</h4>
                 </div>
             </div>
 
@@ -668,7 +680,7 @@
 
             <!-- GRÁFICO MES A MES -->
             <div class="bg-slate-50 p-4 rounded-xl border">
-                <h4 class="font-bold text-xs uppercase text-slate-500 mb-3">Días Arrendados e Ingresos Recibidos por Mes</h4>
+                <h4 class="font-bold text-xs uppercase text-slate-500 mb-3">Balance Mensual: Ingresos Brutos vs. Costos Operativos Totales ($ CLP)</h4>
                 <div class="h-64">
                     <canvas id="chartIngresosMes"></canvas>
                 </div>
@@ -723,14 +735,6 @@
             renderCalendario();
             renderTabla();
 
-            document.getElementById('valorBaseGlobal').addEventListener('input', (e) => {
-                if(!document.getElementById('reservaId').value) {
-                    document.getElementById('valorDiarioFinal').value = e.target.value;
-                    calcularValores();
-                }
-            });
-            document.getElementById('valorDiarioFinal').value = document.getElementById('valorBaseGlobal').value;
-
             ['checkin', 'checkout', 'valorDiarioFinal', 'costoPlataforma', 'tipoDoc'].forEach(id => {
                 document.getElementById(id).addEventListener('input', calcularValores);
             });
@@ -742,7 +746,6 @@
         });
 
         function inicializarSincronizacionCloud() {
-            // Escuchar cambios en Reservas
             db.collection('reservas').onSnapshot(snapshot => {
                 reservas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 actualizarEstadosAutomaticos();
@@ -754,7 +757,6 @@
                 alert("⚠️ Error de conexión con Firebase: " + error.message);
             });
 
-            // Escuchar cambios en Usuarios
             db.collection('usuarios').onSnapshot(snapshot => {
                 usuarios = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 if (usuarios.length === 0) {
@@ -768,7 +770,6 @@
                 }
             });
 
-            // Escuchar cambios en Costos
             db.collection('configuracion').doc('costos_casa').onSnapshot(doc => {
                 if (doc.exists) {
                     costosCasa = doc.data();
@@ -893,7 +894,7 @@
                 }
 
                 if (verificarSobreposicionFechas(inVal, outVal, idExistente)) {
-                    alert('⚠️ FECHA OCUPADA: La cabaña ya se encuentra reservada en el rango seleccionado.');
+                    alert('⚠️ FECHA OCUPADA: Las fechas seleccionadas se solapan con otra reserva existente.');
                     document.getElementById('checkout').value = '';
                     document.getElementById('cantDiasMostrar').value = '0 días / 0 noches';
                     calcularValores();
@@ -903,6 +904,7 @@
             calcularValores();
         }
 
+        // Permite que un checkin coincida con el checkout de otra reserva
         function verificarSobreposicionFechas(checkinStr, checkoutStr, idActual = null) {
             return reservas.some(r => {
                 if (idActual && r.id === idActual) return false;
@@ -1045,7 +1047,6 @@
 
             const estadoCalculado = calcularEstadoAutomatico(checkinVal, checkoutVal, 'Auto');
 
-            // Mapeo seguro para Firebase (Garantiza cadenas de texto y números correctos)
             const nuevaReserva = {
                 estadoReserva: String(estadoCalculado || 'Reserva'),
                 nombre: String(document.getElementById('nombre').value || ''),
@@ -1095,7 +1096,7 @@
         function limpiarFormulario() {
             document.getElementById('reservaForm').reset();
             document.getElementById('reservaId').value = '';
-            document.getElementById('valorDiarioFinal').value = document.getElementById('valorBaseGlobal').value;
+            document.getElementById('valorDiarioFinal').value = 75000;
             document.getElementById('reqCuna').checked = false;
             document.getElementById('reqProtectorEstufa').checked = false;
             document.getElementById('reqPerro').checked = false;
@@ -1135,7 +1136,7 @@
             document.getElementById('costoImprevistosReserva').value = r.costoImprevistosReserva || 0;
             document.getElementById('checkin').value = r.checkin || '';
             document.getElementById('checkout').value = r.checkout || '';
-            document.getElementById('valorDiarioFinal').value = r.valorDiarioFinal || 0;
+            document.getElementById('valorDiarioFinal').value = r.valorDiarioFinal || 75000;
             document.getElementById('costoPlataforma').value = r.costoPlataforma || 0;
             document.getElementById('canal').value = r.canal || 'Directo Web/Wsp';
             document.getElementById('tipoDoc').value = r.tipoDoc || 'Sin Documento';
@@ -1176,7 +1177,7 @@
                     <div class="flex justify-between text-teal-800"><span>- Costos Fijos Base (Aseo + Regalo):</span><span>-$${costosFijos.toLocaleString('es-CL')}</span></div>
                     <div class="flex justify-between text-purple-800"><span>- Gastos Extras (Bencina Gen + Imprev):</span><span>-$${extras.toLocaleString('es-CL')}</span></div>
                     <div class="border-t pt-2 flex justify-between font-bold text-sm ${gananciaNeta >= 0 ? 'text-emerald-700' : 'text-red-700'}">
-                        <span>Ganancia Neta Real:</span>
+                        <span>Margen $:</span>
                         <span>$${gananciaNeta.toLocaleString('es-CL')}</span>
                     </div>
                     <div class="flex justify-between font-bold text-slate-600"><span>Margen de Ganancia:</span><span>${margenPct}%</span></div>
@@ -1360,6 +1361,7 @@
             renderCalendario();
         }
 
+        // Renderizado de Calendario con Detección de Turnaround el Mismo Día
         function renderCalendario() {
             const contenedor = document.getElementById('calendarioContenedor');
             if (!contenedor) return;
@@ -1388,15 +1390,26 @@
 
                 for (let dia = 1; dia <= ultimoDiaMes; dia++) {
                     const fechaStr = `${fechaBase.getFullYear()}-${String(fechaBase.getMonth() + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+                    
+                    let coincidenCheckin = false;
+                    let coincidenCheckout = false;
                     let claseDia = 'bg-white text-slate-700 border hover:bg-slate-100';
 
                     reservas.forEach(r => {
+                        if (fechaStr === r.checkin) coincidenCheckin = true;
+                        if (fechaStr === r.checkout) coincidenCheckout = true;
+
                         if (fechaStr >= r.checkin && fechaStr <= r.checkout) {
                             if (r.estadoReserva === 'Reserva en Curso') claseDia = 'cal-day-curso';
                             else if (r.estadoReserva === 'Reserva Terminada') claseDia = 'cal-day-terminada';
                             else claseDia = 'cal-day-reserva';
                         }
                     });
+
+                    // Si en este día exacto sale una reserva y entra otra, es un día de transición
+                    if (coincidenCheckin && coincidenCheckout) {
+                        claseDia = 'cal-day-transicion';
+                    }
 
                     htmlMes += `<div class="p-2 rounded text-center cursor-default transition-all ${claseDia}">${dia}</div>`;
                 }
@@ -1520,47 +1533,50 @@
 
         function renderKPIs() {
             const annoSel = document.getElementById('kpiAnno').value || new Date().getFullYear().toString();
-            const reservasAno = reservas.filter(r => r.checkin && String(r.checkin).startsWith(annoSel));
+            const mesSel = document.getElementById('kpiMes').value;
+
+            const reservasFiltradas = reservas.filter(r => {
+                if (!r.checkin) return false;
+                const partes = String(r.checkin).split('-');
+                const matchAnno = partes[0] === annoSel;
+                const matchMes = !mesSel || partes[1] === mesSel;
+                return matchAnno && matchMes;
+            });
+
             const { diario, costosFijos, aseoFijo, regaloFijo, electricidadDiaria } = calcularCostoTotalDiarioCasa();
 
-            const diasArrendados = reservasAno.reduce((sum, r) => sum + (r.noches || 1), 0);
-            const ingresosBrutos = reservasAno.reduce((sum, r) => sum + (r.totalBruto || 0), 0);
+            const diasArrendados = reservasFiltradas.reduce((sum, r) => sum + (r.noches || 1), 0);
+            const ingresosBrutos = reservasFiltradas.reduce((sum, r) => sum + (r.totalBruto || 0), 0);
 
-            let margenes = [];
             let totalAseoAcumulado = 0;
             let totalRegaloAcumulado = 0;
             let totalElectricidadAcumulada = 0;
-            let gananciaNetaTotalAno = 0;
+            let gananciaNetaTotal = 0;
 
-            reservasAno.forEach(r => {
+            reservasFiltradas.forEach(r => {
                 const noches = r.noches || 1;
                 const costoDiarioTotal = noches * diario;
                 const costoPlat = parseFloat(r.costoPlataforma) || 0;
                 const extras = (r.costoBencinaGenerador||0) + (r.costoImprevistosReserva||0);
                 
                 const gananciaReserva = r.totalBruto - costoPlat - costoDiarioTotal - costosFijos - extras;
-                const pct = r.totalBruto > 0 ? (gananciaReserva / r.totalBruto) * 100 : 0;
                 
-                margenes.push(pct);
                 totalAseoAcumulado += aseoFijo;
                 totalRegaloAcumulado += regaloFijo;
                 totalElectricidadAcumulada += (noches * electricidadDiaria);
-                gananciaNetaTotalAno += gananciaReserva;
+                gananciaNetaTotal += gananciaReserva;
             });
-
-            const minMargen = margenes.length > 0 ? Math.min(...margenes).toFixed(1) : 0;
-            const maxMargen = margenes.length > 0 ? Math.max(...margenes).toFixed(1) : 0;
-            const promMargen = margenes.length > 0 ? (margenes.reduce((a, b) => a + b, 0) / margenes.length).toFixed(1) : 0;
 
             const incidenciaElectricidad = ingresosBrutos > 0 ? ((totalElectricidadAcumulada / ingresosBrutos) * 100).toFixed(1) : 0;
             const incidenciaAseo = ingresosBrutos > 0 ? ((totalAseoAcumulado / ingresosBrutos) * 100).toFixed(1) : 0;
             const incidenciaRegalo = ingresosBrutos > 0 ? ((totalRegaloAcumulado / ingresosBrutos) * 100).toFixed(1) : 0;
 
-            const costoDiarioAcumulado = reservasAno.reduce((sum, r) => sum + ((r.noches || 1) * diario), 0);
+            const costoDiarioAcumulado = reservasFiltradas.reduce((sum, r) => sum + ((r.noches || 1) * diario), 0);
             const sumaTresNiveles = totalAseoAcumulado + totalRegaloAcumulado + costoDiarioAcumulado;
             const incidenciaAcumulada = ingresosBrutos > 0 ? ((sumaTresNiveles / ingresosBrutos) * 100).toFixed(1) : 0;
 
-            const gananciaPromedioPorDia = diasArrendados > 0 ? Math.round(gananciaNetaTotalAno / diasArrendados) : 0;
+            const gananciaPromedioPorDia = diasArrendados > 0 ? Math.round(gananciaNetaTotal / diasArrendados) : 0;
+            const margenPromedioPorcentaje = ingresosBrutos > 0 ? ((gananciaNetaTotal / ingresosBrutos) * 100).toFixed(1) : 0;
 
             const costo2Noches = (diario * 2) + costosFijos;
             const tarifaTotal2Noches = costo2Noches / 0.75;
@@ -1568,8 +1584,7 @@
 
             document.getElementById('kpiDiasAno').innerText = `${diasArrendados} noches`;
             document.getElementById('kpiIngresosBrutosAno').innerText = `$${ingresosBrutos.toLocaleString('es-CL')}`;
-            document.getElementById('kpiMargenesMinMaxProm').innerText = `${minMargen}% | ${maxMargen}% | ${promMargen}%`;
-            document.getElementById('kpiGananciaPromedioLimpiaDia').innerText = `$${gananciaPromedioPorDia.toLocaleString('es-CL')} /día`;
+            document.getElementById('kpiGananciaPromedioLimpiaDia').innerText = `$${gananciaPromedioPorDia.toLocaleString('es-CL')} /día (${margenPromedioPorcentaje}%)`;
             
             document.getElementById('kpiIncidenciaElectricidadPct').innerText = `${incidenciaElectricidad}%`;
             document.getElementById('kpiIncidenciaAseoPct').innerText = `${incidenciaAseo}%`;
@@ -1577,14 +1592,22 @@
             document.getElementById('kpiIncidenciaAcumuladaPct').innerText = `${incidenciaAcumulada}%`;
             document.getElementById('kpiValorMinimo25').innerText = `$${valorMinimo25.toLocaleString('es-CL')} /día`;
 
+            // Preparación de datos mensuales para el gráfico (ingresos vs costos)
             const mesesIngresos = Array(12).fill(0);
-            const mesesDias = Array(12).fill(0);
+            const mesesCostos = Array(12).fill(0);
 
-            reservasAno.forEach(r => {
-                const mes = parseInt(String(r.checkin).substring(5, 7)) - 1;
-                if (!isNaN(mes) && mes >= 0 && mes < 12) {
-                    mesesIngresos[mes] += (r.totalBruto || 0);
-                    mesesDias[mes] += (r.noches || 1);
+            const reservasDelAno = reservas.filter(r => r.checkin && String(r.checkin).startsWith(annoSel));
+
+            reservasDelAno.forEach(r => {
+                const mesIdx = parseInt(String(r.checkin).substring(5, 7)) - 1;
+                if (!isNaN(mesIdx) && mesIdx >= 0 && mesIdx < 12) {
+                    const noches = r.noches || 1;
+                    const costoPlat = parseFloat(r.costoPlataforma) || 0;
+                    const extras = (r.costoBencinaGenerador||0) + (r.costoImprevistosReserva||0);
+                    const costoTotalReserva = (noches * diario) + costosFijos + costoPlat + extras;
+
+                    mesesIngresos[mesIdx] += (r.totalBruto || 0);
+                    mesesCostos[mesIdx] += costoTotalReserva;
                 }
             });
 
@@ -1597,25 +1620,38 @@
                     labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
                     datasets: [
                         {
-                            label: 'Ingresos Brutos ($)',
+                            label: 'Ingresos Brutos ($ CLP)',
                             data: mesesIngresos,
-                            backgroundColor: '#059669',
-                            yAxisID: 'y'
+                            backgroundColor: '#059669'
                         },
                         {
-                            label: 'Días Arrendados',
-                            data: mesesDias,
-                            backgroundColor: '#3b82f6',
-                            yAxisID: 'y1'
+                            label: 'Costos Totales ($ CLP)',
+                            data: mesesCostos,
+                            backgroundColor: '#dc2626'
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': $' + context.raw.toLocaleString('es-CL');
+                                }
+                            }
+                        }
+                    },
                     scales: {
-                        y: { type: 'linear', position: 'left', title: { display: true, text: 'Ingresos ($ CLP)' } },
-                        y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Noches' } }
+                        y: { 
+                            type: 'linear', 
+                            position: 'left', 
+                            title: { display: true, text: 'Monto ($ CLP)' },
+                            ticks: {
+                                callback: function(value) { return '$' + value.toLocaleString('es-CL'); }
+                            }
+                        }
                     }
                 }
             });
