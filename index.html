@@ -137,7 +137,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Email Contacto</label>
                             <input type="email" id="email" required placeholder="cliente@email.com" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
@@ -149,6 +149,15 @@
                                 <option value="Airbnb">Airbnb</option>
                                 <option value="Booking">Booking.com</option>
                                 <option value="Otro">Otro Canal</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-amber-800 mb-1">
+                                <i class="fa-solid fa-sun-plant-wilt mr-1"></i> Selección Temporada / Tarifa
+                            </label>
+                            <select id="selectTemporadaReserva" class="w-full bg-amber-50 border border-amber-300 rounded-lg px-3 py-2 text-xs font-bold text-amber-900 focus:outline-none focus:border-amber-600">
+                                <option value="Verano">☀️ Verano (Costo Estival)</option>
+                                <option value="Invierno">❄️ Invierno (Costo Invernal)</option>
                             </select>
                         </div>
                     </div>
@@ -443,6 +452,7 @@
                         <tr class="bg-slate-100 text-slate-600 border-b border-slate-200 font-bold uppercase text-[10px] tracking-wider">
                             <th class="p-3">Huésped / Contacto</th>
                             <th class="p-3">Fechas Estadía</th>
+                            <th class="p-3">Temporada</th>
                             <th class="p-3">Pasajeros / Extras</th>
                             <th class="p-3">Canal</th>
                             <th class="p-3">Total Bruto</th>
@@ -591,7 +601,7 @@
                     </div>
                 </div>
 
-                <!-- CONTENEDOR INVIERNO (Prellenado con tus valores reales) -->
+                <!-- CONTENEDOR INVIERNO -->
                 <div id="seccionInvierno" class="space-y-3 hidden">
                     <div class="bg-sky-50 p-2.5 rounded-lg border border-sky-200">
                         <span class="font-bold text-sky-900 block uppercase text-[10px]">Costos Operativos Diarios - Invierno ($/día)</span>
@@ -781,16 +791,6 @@
                         <label class="text-xs font-bold uppercase text-slate-500">Año:</label>
                         <select id="kpiAnno" onchange="renderKPIs()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs text-slate-800 font-bold focus:outline-none focus:border-sky-500"></select>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <label class="text-xs font-bold uppercase text-slate-500">Mes:</label>
-                        <select id="kpiMes" onchange="renderKPIs()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs text-slate-800 font-bold focus:outline-none focus:border-sky-500">
-                            <option value="">Todos los Meses</option>
-                            <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
-                            <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
-                            <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
-                            <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
-                        </select>
-                    </div>
                 </div>
                 <button type="button" onclick="toggleModal('modalRetiros')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1.5 shadow">
                     <i class="fa-solid fa-hand-holding-dollar"></i> Configurar Retiros
@@ -801,7 +801,7 @@
             <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
                 <div class="flex justify-between items-center border-b border-slate-200 pb-2">
                     <h4 class="text-xs font-bold uppercase text-slate-700 tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-chart-line text-emerald-600"></i> FLUJO NETO OPERACIÓN
+                        <i class="fa-solid fa-chart-line text-emerald-600"></i> FLUJO NETO OPERACIÓN ANUAL
                     </h4>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 text-xs">
@@ -863,35 +863,30 @@
                 </div>
             </div>
 
-            <!-- Suggested Offer Pricing Tiers (50% Contribution Margin over Total Costs: Cost * 2) -->
-            <div class="bg-amber-50/50 border border-amber-200 p-4 rounded-xl space-y-3">
-                <span class="text-xs font-bold text-amber-900 uppercase tracking-wider block border-b border-amber-200 pb-2">
-                    💡 Tarifas de Oferta Sugeridas (50% Margen de Contribución sobre Costos Totales $\rightarrow$ Costo Total $\times$ 2)
-                </span>
-
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div class="bg-white p-3 rounded-xl border border-amber-200 text-center space-y-1">
-                        <span class="text-[10px] font-bold uppercase text-amber-700 block">2 Días Estadía</span>
-                        <span id="kpiTarifa2Dias" class="text-sm font-black text-amber-900 block">$0 total</span>
-                    </div>
-                    <div class="bg-white p-3 rounded-xl border border-amber-200 text-center space-y-1">
-                        <span class="text-[10px] font-bold uppercase text-emerald-700 block">3 Días Estadía</span>
-                        <span id="kpiTarifa3Dias" class="text-sm font-black text-emerald-900 block">$0 total</span>
-                    </div>
-                    <div class="bg-white p-3 rounded-xl border border-amber-200 text-center space-y-1">
-                        <span class="text-[10px] font-bold uppercase text-teal-700 block">4 Días Estadía</span>
-                        <span id="kpiTarifa4Dias" class="text-sm font-black text-teal-900 block">$0 total</span>
-                    </div>
-                    <div class="bg-white p-3 rounded-xl border border-amber-200 text-center space-y-1">
-                        <span class="text-[10px] font-bold uppercase text-sky-700 block">5 Días Estadía</span>
-                        <span id="kpiTarifa5Dias" class="text-sm font-black text-sky-900 block">$0 total</span>
-                    </div>
+            <!-- TABLA DE ENERO A DICIEMBRE (INGRESOS, EGRESOS, SUBTOTAL Y ACUMULADO) -->
+            <div class="bg-white border border-slate-200 p-4 rounded-xl space-y-3 shadow-sm">
+                <h4 class="font-bold text-xs uppercase text-slate-700 flex items-center gap-2">
+                    <i class="fa-solid fa-table text-sky-600"></i> Tabla Financiera Mensual (Enero a Diciembre con Acumulado)
+                </h4>
+                <div class="overflow-x-auto rounded-lg border border-slate-200">
+                    <table class="w-full text-xs text-left border-collapse">
+                        <thead class="bg-slate-100 text-slate-700 font-bold uppercase text-[10px]">
+                            <tr>
+                                <th class="p-2.5">Mes</th>
+                                <th class="p-2.5">Ingresos Brutos ($)</th>
+                                <th class="p-2.5">Egresos / Gastos Totales ($)</th>
+                                <th class="p-2.5">Subtotal Mensual ($)</th>
+                                <th class="p-2.5">Acumulado Mensual ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaMesesKPI" class="divide-y divide-slate-100"></tbody>
+                    </table>
                 </div>
             </div>
 
             <!-- Chart Container -->
             <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                <h4 class="font-bold text-xs uppercase text-slate-500 mb-3">Balance Mensual: Ingresos Brutos vs Costos Totales ($ CLP)</h4>
+                <h4 class="font-bold text-xs uppercase text-slate-500 mb-3">Gráfico Mensual: Ingresos Brutos vs Egresos Totales ($ CLP)</h4>
                 <div class="h-64">
                     <canvas id="chartIngresosMes"></canvas>
                 </div>
@@ -971,7 +966,7 @@
         const db = firebase.firestore();
 
         /* ==========================================================================
-            GLOBAL STATE (CON COSTOS PRELLENADOS Y ROBUSTOS)
+            GLOBAL STATE
             ========================================================================== */
         let reservas = [];
         let usuarios = [];
@@ -1090,7 +1085,10 @@
                 if (el) el.addEventListener('input', calcularValores);
             });
 
-            document.getElementById('checkin').addEventListener('change', validarFechasEnTiempoReal);
+            document.getElementById('checkin').addEventListener('change', () => {
+                actualizarSelectorTemporadaAutomatico();
+                validarFechasEnTiempoReal();
+            });
             document.getElementById('checkout').addEventListener('change', validarFechasEnTiempoReal);
 
             ['rPrevired', 'rCredito', 'rGastosComunes', 'rRetirosExtras', 'rOtros'].forEach(id => {
@@ -1100,6 +1098,14 @@
 
             inicializarSincronizacionCloud();
         });
+
+        function actualizarSelectorTemporadaAutomatico() {
+            const checkinVal = document.getElementById('checkin').value;
+            if (checkinVal) {
+                const isVerano = esTemporadaVerano(checkinVal);
+                document.getElementById('selectTemporadaReserva').value = isVerano ? 'Verano' : 'Invierno';
+            }
+        }
 
         /* ==========================================================================
             EXCEL EXPORT FUNCTIONS
@@ -1117,6 +1123,7 @@
                     "Email": r.email || '-',
                     "Check-In": r.checkin || '-',
                     "Check-Out": r.checkout || '-',
+                    "Temporada": r.temporadaReserva || 'Verano',
                     "Noches": r.noches || 0,
                     "Adultos": r.adultos || 0,
                     "Niños": r.ninos || 0,
@@ -1142,7 +1149,7 @@
 
             const datosFormat = reservas.map(r => {
                 const nochesUso = r.noches || 1;
-                const isVerano = esTemporadaVerano(r.checkin);
+                const isVerano = (r.temporadaReserva === 'Verano');
                 const diarioVeranoRef = calcularSumaDiariaTemporada(costosCasa.verano);
                 const diarioInviernoRef = calcularSumaDiariaTemporada(costosCasa.invierno);
                 const diarioUnitario = isVerano ? diarioVeranoRef : diarioInviernoRef;
@@ -1159,6 +1166,7 @@
                     "Huésped": r.nombre || '-',
                     "Check-In": r.checkin || '-',
                     "Check-Out": r.checkout || '-',
+                    "Temporada": r.temporadaReserva || 'Verano',
                     "Noches": nochesUso,
                     "Ingreso Bruto ($)": r.totalBruto || 0,
                     "Comisión Plataforma ($)": costoPlat,
@@ -1208,15 +1216,7 @@
 
         function exportarKPIsExcel() {
             const annoSel = document.getElementById('kpiAnno').value || new Date().getFullYear().toString();
-            const mesSel = document.getElementById('kpiMes').value;
-
-            const reservasFiltradas = reservas.filter(r => {
-                if (!r.checkin) return false;
-                const partes = String(r.checkin).split('-');
-                const matchAnno = partes[0] === annoSel;
-                const matchMes = !mesSel || partes[1] === mesSel;
-                return matchAnno && matchMes;
-            });
+            const reservasFiltradas = reservas.filter(r => r.checkin && String(r.checkin).startsWith(annoSel));
 
             let totalIngresos = 0;
             let totalGastosDiarios = 0;
@@ -1229,7 +1229,7 @@
 
             const detalleReservasKPI = reservasFiltradas.map(r => {
                 const noches = r.noches || 1;
-                const isVerano = esTemporadaVerano(r.checkin);
+                const isVerano = (r.temporadaReserva === 'Verano');
                 const diarioUnitario = isVerano ? diarioVeranoRef : diarioInviernoRef;
                 const costoDiarioTotal = r.costoDiarioAplicado !== undefined ? r.costoDiarioAplicado : (noches * diarioUnitario);
                 const costosFijos = r.costoFijoAplicado !== undefined ? r.costoFijoAplicado : (costoAseoRef + costoRegaloRef);
@@ -1246,6 +1246,7 @@
                     "Reserva ID": r.id,
                     "Huésped": r.nombre || '-',
                     "Check-In": r.checkin || '-',
+                    "Temporada": r.temporadaReserva || 'Verano',
                     "Noches": noches,
                     "Ingreso Bruto ($)": r.totalBruto || 0,
                     "Gastos Diarios ($)": costoDiarioTotal,
@@ -1254,28 +1255,10 @@
                 };
             });
 
-            const totalRetiros = (retirosConfig.previred || 0) + (retirosConfig.credito || 0) + (retirosConfig.gastosComunes || 0) + (retirosConfig.retirosExtras || 0) + (retirosConfig.otros || 0);
-            const resultadoOpTotal = totalIngresos - totalGastosDiarios - totalCostosFijosExtras;
-
-            const resumenGeneral = [
-                { "Métrica": "Año Filtro", "Valor": annoSel },
-                { "Métrica": "Mes Filtro", "Valor": mesSel || 'Todos los Meses' },
-                { "Métrica": "(+) Ingresos Arriendo Bruto", "Valor": totalIngresos },
-                { "Métrica": "(-) Gastos x Día Operativos", "Valor": totalGastosDiarios },
-                { "Métrica": "(-) Costos Fijos + Extras", "Valor": totalCostosFijosExtras },
-                { "Métrica": "(=) Resultado Operacional Neto", "Valor": resultadoOpTotal },
-                { "Métrica": "(-) Total Retiros (Informativo)", "Valor": totalRetiros },
-                { "Métrica": "(=) Flujo Neto Final Cobertura", "Valor": resultadoOpTotal - totalRetiros }
-            ];
-
             const workbook = XLSX.utils.book_new();
-            const wsResumen = XLSX.utils.json_to_sheet(resumenGeneral);
             const wsDetalle = XLSX.utils.json_to_sheet(detalleReservasKPI);
-
-            XLSX.utils.book_append_sheet(workbook, wsResumen, "Resumen_KPIs");
-            XLSX.utils.book_append_sheet(workbook, wsDetalle, "Detalle_Reservas");
-
-            XLSX.writeFile(workbook, `KPIs_RefugioEntreMontanas_${annoSel}_${mesSel || 'Anual'}.xlsx`);
+            XLSX.utils.book_append_sheet(workbook, wsDetalle, `KPIs_Anual_${annoSel}`);
+            XLSX.writeFile(workbook, `KPIs_RefugioEntreMontanas_${annoSel}.xlsx`);
         }
 
         /* ==========================================================================
@@ -1286,6 +1269,7 @@
             if (form) form.reset();
             document.getElementById('reservaId').value = '';
             document.getElementById('valorDiarioFinal').value = 380000;
+            document.getElementById('selectTemporadaReserva').value = 'Verano';
             document.getElementById('reqCuna').checked = false;
             document.getElementById('reqProtectorEstufa').checked = false;
             document.getElementById('reqPerro').checked = false;
@@ -1318,6 +1302,7 @@
             document.getElementById('telefono').value = r.telefono || '';
             document.getElementById('adultos').value = r.adultos || 1;
             document.getElementById('ninos').value = r.ninos || 0;
+            document.getElementById('selectTemporadaReserva').value = r.temporadaReserva || 'Verano';
             document.getElementById('reqPerro').checked = !!r.reqPerro;
             document.getElementById('reqCuna').checked = !!r.reqCuna;
             document.getElementById('reqProtectorEstufa').checked = !!r.reqProtectorEstufa;
@@ -1348,7 +1333,7 @@
             if (!r) return;
 
             const noches = r.noches || 1;
-            const isVerano = esTemporadaVerano(r.checkin);
+            const isVerano = (r.temporadaReserva === 'Verano');
             const diarioVeranoRef = calcularSumaDiariaTemporada(costosCasa.verano);
             const diarioInviernoRef = calcularSumaDiariaTemporada(costosCasa.invierno);
             const diarioUnitario = isVerano ? diarioVeranoRef : diarioInviernoRef;
@@ -1371,8 +1356,8 @@
                 <div class="space-y-2 border-t border-slate-200 pt-2 text-xs">
                     <div class="flex justify-between font-semibold"><span>Ingreso Bruto Arriendo:</span><span class="text-emerald-700">$${(r.totalBruto || 0).toLocaleString('es-CL')}</span></div>
                     <div class="flex justify-between text-rose-600"><span>- Comisión Plataforma:</span><span>-$${costoPlat.toLocaleString('es-CL')}</span></div>
-                    <div class="flex justify-between text-amber-700"><span>- Costos Diarios Cabaña (${noches}n):</span><span>-$${costoDiarioTotal.toLocaleString('es-CL')}</span></div>
-                    <div class="flex justify-between text-teal-800"><span>- Costos Fijos Base (Aseo + Regalo):</span><span>-$${costosFijos.toLocaleString('es-CL')}</span></div>
+                    <div class="flex justify-between text-amber-700"><span>- Costos Diarios Congelados (${noches}n):</span><span>-$${costoDiarioTotal.toLocaleString('es-CL')}</span></div>
+                    <div class="flex justify-between text-teal-800"><span>- Costos Fijos Congelados (Aseo + Regalo):</span><span>-$${costosFijos.toLocaleString('es-CL')}</span></div>
                     <div class="flex justify-between text-purple-700"><span>- Gastos Extras:</span><span>-$${extras.toLocaleString('es-CL')}</span></div>
                     <div class="border-t border-slate-200 pt-2 flex justify-between font-black text-sm ${gananciaNeta >= 0 ? 'text-emerald-700' : 'text-rose-600'}">
                         <span>Margen $ Limpio:</span>
@@ -1385,7 +1370,7 @@
         }
 
         /* ==========================================================================
-            MAIN HISTORICAL TABLE RENDER & CHRONOLOGICAL SORTING
+            MAIN HISTORICAL TABLE RENDER & SEASON ICON
             ========================================================================== */
         function poblarFiltroAnos() {
             const selectAno = document.getElementById('filtroAno');
@@ -1435,7 +1420,7 @@
             });
 
             if (reservasFiltradas.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400 font-medium">No se encontraron reservas con los filtros aplicados.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-slate-400 font-medium">No se encontraron reservas con los filtros aplicados.</td></tr>`;
                 return;
             }
 
@@ -1461,6 +1446,9 @@
                     Saldo: $${saldoCalculado.toLocaleString('es-CL')}
                 </div>`;
 
+                const isVerano = (r.temporadaReserva === 'Verano');
+                const iconoTemp = isVerano ? `<span class="inline-flex items-center px-2 py-0.5 bg-amber-100 text-amber-800 font-bold rounded text-[11px]"><i class="fa-solid fa-sun mr-1"></i> Verano</span>` : `<span class="inline-flex items-center px-2 py-0.5 bg-sky-100 text-sky-800 font-bold rounded text-[11px]"><i class="fa-solid fa-snowflake mr-1"></i> Invierno</span>`;
+
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 border-b border-slate-200 transition">
                         <td class="p-3">
@@ -1475,6 +1463,7 @@
                             <div class="font-medium text-slate-800">${formatearFechaChile(r.checkin)} al ${formatearFechaChile(r.checkout)}</div>
                             <div class="font-bold text-[11px] text-emerald-700 mt-0.5">${r.dias || ((r.noches || 0) + 1)}d / ${r.noches || 0}n</div>
                         </td>
+                        <td class="p-3">${iconoTemp}</td>
                         <td class="p-3">
                             <span class="text-slate-700 font-medium">${r.adultos || 0} Ad / ${r.ninos || 0} Niñ</span>
                             ${reqsHtml}
@@ -1556,7 +1545,7 @@
         }
 
         /* ==========================================================================
-            CALENDAR GENERATION & TURNAROUND GRADIENT
+            CALENDAR GENERATION
             ========================================================================== */
         function cambiarMesCalendario(offset) {
             mesCalendarioOffset += offset;
@@ -1799,7 +1788,8 @@
 
             const estadoCalculado = calcularEstadoAutomatico(checkinVal, checkoutVal, 'Auto');
 
-            const isVerano = esTemporadaVerano(checkinVal);
+            const temporadaElegida = document.getElementById('selectTemporadaReserva').value;
+            const isVerano = (temporadaElegida === 'Verano');
             const diarioVeranoRef = calcularSumaDiariaTemporada(costosCasa.verano);
             const diarioInviernoRef = calcularSumaDiariaTemporada(costosCasa.invierno);
             const diarioVigente = isVerano ? diarioVeranoRef : diarioInviernoRef;
@@ -1816,6 +1806,7 @@
                 telefono: String(document.getElementById('telefono').value || ''),
                 adultos: Number(document.getElementById('adultos').value || 0),
                 ninos: Number(document.getElementById('ninos').value || 0),
+                temporadaReserva: temporadaElegida,
                 reqPerro: Boolean(document.getElementById('reqPerro').checked),
                 reqCuna: Boolean(document.getElementById('reqCuna').checked),
                 reqProtectorEstufa: Boolean(document.getElementById('reqProtectorEstufa').checked),
@@ -1838,8 +1829,7 @@
                 totalAbonado: Number(reservaCalculada.totalAbonado || 0),
                 saldoPendiente: Number(reservaCalculada.saldoPendiente || 0),
                 costoDiarioAplicado: costoDiarioAplicado,
-                costoFijoAplicado: costoFijoAplicado,
-                temporadaReserva: isVerano ? 'Verano' : 'Invierno'
+                costoFijoAplicado: costoFijoAplicado
             };
 
             try {
@@ -2062,7 +2052,7 @@
 
             reservas.forEach(r => {
                 const nochesUso = r.noches || 1;
-                const isVerano = esTemporadaVerano(r.checkin);
+                const isVerano = (r.temporadaReserva === 'Verano');
                 const diarioUnitario = isVerano ? diarioVeranoRef : diarioInviernoRef;
 
                 const costoDiarioTotal = r.costoDiarioAplicado !== undefined ? r.costoDiarioAplicado : (nochesUso * diarioUnitario);
@@ -2076,7 +2066,7 @@
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 border-b border-slate-100">
                         <td class="p-2.5 font-bold text-slate-800">${r.nombre}</td>
-                        <td class="p-2.5 text-slate-500">${nochesUso} noches (${r.temporadaReserva || (isVerano ? 'Verano' : 'Invierno')})</td>
+                        <td class="p-2.5 text-slate-500">${nochesUso} noches (${r.temporadaReserva || 'Verano'})</td>
                         <td class="p-2.5 font-semibold text-emerald-700">$${(r.totalBruto || 0).toLocaleString('es-CL')}</td>
                         <td class="p-2.5 text-rose-600">-$${costoPlat.toLocaleString('es-CL')}</td>
                         <td class="p-2.5 text-amber-700">-$${costoDiarioTotal.toLocaleString('es-CL')}</td>
@@ -2113,7 +2103,7 @@
         }
 
         /* ==========================================================================
-            KPIS & ANALYTICS CENTER WITH CHART.JS & SUGGESTED TARIFFS
+            KPIS & ANALYTICS CENTER (TABLA ENERO A DICIEMBRE CON ACUMULADO)
             ========================================================================== */
         function abrirModalKPIs() {
             const selectAnno = document.getElementById('kpiAnno');
@@ -2131,15 +2121,8 @@
 
         function renderKPIs() {
             const annoSel = document.getElementById('kpiAnno').value || new Date().getFullYear().toString();
-            const mesSel = document.getElementById('kpiMes').value;
 
-            const reservasFiltradas = reservas.filter(r => {
-                if (!r.checkin) return false;
-                const partes = String(r.checkin).split('-');
-                const matchAnno = partes[0] === annoSel;
-                const matchMes = !mesSel || partes[1] === mesSel;
-                return matchAnno && matchMes;
-            });
+            const reservasFiltradas = reservas.filter(r => r.checkin && String(r.checkin).startsWith(annoSel));
 
             const diasArrendados = reservasFiltradas.reduce((sum, r) => sum + (r.noches || 1), 0);
             const ingresosBrutos = reservasFiltradas.reduce((sum, r) => sum + (r.totalBruto || 0), 0);
@@ -2155,7 +2138,7 @@
 
             reservasFiltradas.forEach(r => {
                 const noches = r.noches || 1;
-                const isVerano = esTemporadaVerano(r.checkin);
+                const isVerano = (r.temporadaReserva === 'Verano');
                 const diarioUnitario = isVerano ? diarioVeranoRef : diarioInviernoRef;
 
                 const costoDiarioTotal = r.costoDiarioAplicado !== undefined ? r.costoDiarioAplicado : (noches * diarioUnitario);
@@ -2206,47 +2189,52 @@
             document.getElementById('kpiIngresosBrutosAno').innerText = `$${ingresosBrutos.toLocaleString('es-CL')}`;
             document.getElementById('kpiGananciaPromedioLimpiaDia').innerText = `$${gananciaPromedioPorDia.toLocaleString('es-CL')} /día (${margenPromedioPorcentaje}%)`;
 
-            const baseDiariaRef = diarioInviernoRef;
-            const costosFijosRef = costoAseoRef + costoRegaloRef;
-
-            const costoTotal2D = (baseDiariaRef * 2) + costosFijosRef;
-            const costoTotal3D = (baseDiariaRef * 3) + costosFijosRef;
-            const costoTotal4D = (baseDiariaRef * 4) + costosFijosRef;
-            const costoTotal5D = (baseDiariaRef * 5) + costosFijosRef;
-
-            const tarifa2D = Math.ceil(costoTotal2D * 2);
-            const tarifa3D = Math.ceil(costoTotal3D * 2);
-            const tarifa4D = Math.ceil(costoTotal4D * 2);
-            const tarifa5D = Math.ceil(costoTotal5D * 2);
-
-            document.getElementById('kpiTarifa2Dias').innerText = `$${tarifa2D.toLocaleString('es-CL')} total ($${Math.round(tarifa2D/2).toLocaleString('es-CL')}/n)`;
-            document.getElementById('kpiTarifa3Dias').innerText = `$${tarifa3D.toLocaleString('es-CL')} total ($${Math.round(tarifa3D/3).toLocaleString('es-CL')}/n)`;
-            document.getElementById('kpiTarifa4Dias').innerText = `$${tarifa4D.toLocaleString('es-CL')} total ($${Math.round(tarifa4D/4).toLocaleString('es-CL')}/n)`;
-            document.getElementById('kpiTarifa5Dias').innerText = `$${tarifa5D.toLocaleString('es-CL')} total ($${Math.round(tarifa5D/5).toLocaleString('es-CL')}/n)`;
-
+            // Construcción de Tabla de Enero a Diciembre con Acumulado
+            const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
             const mesesIngresos = Array(12).fill(0);
-            const mesesCostos = Array(12).fill(0);
+            const mesesEgresos = Array(12).fill(0);
 
-            const reservasDelAno = reservas.filter(r => r.checkin && String(r.checkin).startsWith(annoSel));
+            reservasFiltradas.forEach(r => {
+                if (r.checkin) {
+                    const mesIdx = parseInt(String(r.checkin).substring(5, 7)) - 1;
+                    if (!isNaN(mesIdx) && mesIdx >= 0 && mesIdx < 12) {
+                        const noches = r.noches || 1;
+                        const isVerano = (r.temporadaReserva === 'Verano');
+                        const diarioUnitario = isVerano ? diarioVeranoRef : diarioInviernoRef;
 
-            reservasDelAno.forEach(r => {
-                const mesIdx = parseInt(String(r.checkin).substring(5, 7)) - 1;
-                if (!isNaN(mesIdx) && mesIdx >= 0 && mesIdx < 12) {
-                    const noches = r.noches || 1;
-                    const isVerano = esTemporadaVerano(r.checkin);
-                    const diarioUnitario = isVerano ? diarioVeranoRef : diarioInviernoRef;
+                        const costoDiarioReserva = r.costoDiarioAplicado !== undefined ? r.costoDiarioAplicado : (noches * diarioUnitario);
+                        const costosFijosReserva = r.costoFijoAplicado !== undefined ? r.costoFijoAplicado : (costoAseoRef + costoRegaloRef);
+                        
+                        const costoPlat = parseFloat(r.costoPlataforma) || 0;
+                        const extras = (r.costoBencinaGenerador || 0) + (r.costoImprevistosReserva || 0);
+                        const egresoTotalReserva = costoDiarioReserva + costosFijosReserva + costoPlat + extras;
 
-                    const costoDiarioReserva = r.costoDiarioAplicado !== undefined ? r.costoDiarioAplicado : (noches * diarioUnitario);
-                    const costosFijosReserva = r.costoFijoAplicado !== undefined ? r.costoFijoAplicado : (costoAseoRef + costoRegaloRef);
-                    
-                    const costoPlat = parseFloat(r.costoPlataforma) || 0;
-                    const extras = (r.costoBencinaGenerador || 0) + (r.costoImprevistosReserva || 0);
-                    const costoTotalReserva = costoDiarioReserva + costosFijosReserva + costoPlat + extras;
-
-                    mesesIngresos[mesIdx] += (r.totalBruto || 0);
-                    mesesCostos[mesIdx] += costoTotalReserva;
+                        mesesIngresos[mesIdx] += (r.totalBruto || 0);
+                        mesesEgresos[mesIdx] += egresoTotalReserva;
+                    }
                 }
             });
+
+            const tbodyMeses = document.getElementById('tablaMesesKPI');
+            tbodyMeses.innerHTML = '';
+            let acumuladoCorriente = 0;
+
+            for (let i = 0; i < 12; i++) {
+                const ing = mesesIngresos[i];
+                const egr = mesesEgresos[i];
+                const subtotal = ing - egr;
+                acumuladoCorriente += subtotal;
+
+                tbodyMeses.innerHTML += `
+                    <tr class="hover:bg-slate-50 border-b border-slate-100">
+                        <td class="p-2.5 font-bold text-slate-800">${nombresMeses[i]}</td>
+                        <td class="p-2.5 font-semibold text-emerald-700">$${ing.toLocaleString('es-CL')}</td>
+                        <td class="p-2.5 font-semibold text-rose-600">-$${egr.toLocaleString('es-CL')}</td>
+                        <td class="p-2.5 font-extrabold ${subtotal >= 0 ? 'text-emerald-800' : 'text-rose-700'}">$${subtotal.toLocaleString('es-CL')}</td>
+                        <td class="p-2.5 font-black text-indigo-900 bg-indigo-50/40">$${acumuladoCorriente.toLocaleString('es-CL')}</td>
+                    </tr>
+                `;
+            }
 
             const ctx = document.getElementById('chartIngresosMes').getContext('2d');
             if (chartInstance) chartInstance.destroy();
@@ -2263,8 +2251,8 @@
                             borderRadius: 6
                         },
                         {
-                            label: 'Costos Totales ($ CLP)',
-                            data: mesesCostos,
+                            label: 'Egresos Totales ($ CLP)',
+                            data: mesesEgresos,
                             backgroundColor: '#dc2626',
                             borderRadius: 6
                         }
@@ -2298,7 +2286,7 @@
         }
 
         /* ==========================================================================
-            CLOUD REALTIME SYNCHRONIZATION & CHRONOLOGICAL SORTING
+            CLOUD REALTIME SYNCHRONIZATION
             ========================================================================== */
         function inicializarSincronizacionCloud() {
             db.collection('reservas').onSnapshot(snapshot => {
