@@ -677,7 +677,7 @@
         <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-5xl w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b border-slate-200 pb-3">
                 <h3 class="text-sm font-bold text-slate-800 flex items-center">
-                    <i class="fa-solid fa-scale-balanced mr-2 text-teal-600"></i>Márgenes y Ganancia Real Limpia por Reserva (Con Costos Históricos Congelados)
+                    <i class="fa-solid fa-scale-balanced mr-2 text-teal-600"></i>Margen de contribución por arriendo
                 </h3>
                 <div class="flex items-center gap-2">
                     <button type="button" onclick="exportarMargenesExcel()" class="bg-teal-700 hover:bg-teal-600 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center gap-1.5 shadow">
@@ -692,6 +692,7 @@
                     <thead class="bg-teal-50 text-teal-900 border-b border-teal-200 font-bold">
                         <tr>
                             <th class="p-2.5">Huésped</th>
+                            <th class="p-2.5">Fechas Estadía</th>
                             <th class="p-2.5">Noches (Temp)</th>
                             <th class="p-2.5">Bruto</th>
                             <th class="p-2.5">Comisión</th>
@@ -791,6 +792,16 @@
                         <label class="text-xs font-bold uppercase text-slate-500">Año:</label>
                         <select id="kpiAnno" onchange="renderKPIs()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs text-slate-800 font-bold focus:outline-none focus:border-sky-500"></select>
                     </div>
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-bold uppercase text-slate-500">Mes:</label>
+                        <select id="kpiMes" onchange="renderKPIs()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs text-slate-800 font-bold focus:outline-none focus:border-sky-500">
+                            <option value="">Todos los Meses</option>
+                            <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+                            <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+                            <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+                            <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                        </select>
+                    </div>
                 </div>
                 <button type="button" onclick="toggleModal('modalRetiros')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1.5 shadow">
                     <i class="fa-solid fa-hand-holding-dollar"></i> Configurar Retiros
@@ -801,7 +812,7 @@
             <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
                 <div class="flex justify-between items-center border-b border-slate-200 pb-2">
                     <h4 class="text-xs font-bold uppercase text-slate-700 tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-chart-line text-emerald-600"></i> FLUJO NETO OPERACIÓN ANUAL
+                        <i class="fa-solid fa-chart-line text-emerald-600"></i> FLUJO NETO OPERACIÓN
                     </h4>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 text-xs">
@@ -1096,6 +1107,14 @@
                 if (el) el.addEventListener('input', calcularTotalRetirosModal);
             });
 
+            // Establecer fecha de hoy en el Check-in por defecto para que tome la temporada real del sistema
+            const hoyIso = new Date().toISOString().split('T')[0];
+            const inputCheckin = document.getElementById('checkin');
+            if (inputCheckin && !inputCheckin.value) {
+                inputCheckin.value = hoyIso;
+                actualizarSelectorTemporadaAutomatico();
+            }
+
             inicializarSincronizacionCloud();
         });
 
@@ -1180,8 +1199,8 @@
 
             const worksheet = XLSX.utils.json_to_sheet(datosFormat);
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Margenes_Ganancia");
-            XLSX.writeFile(workbook, `Margenes_RefugioEntreMontanas_${new Date().toISOString().split('T')[0]}.xlsx`);
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Margen_Contribucion");
+            XLSX.writeFile(workbook, `MargenContribucion_RefugioEntreMontanas_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
         function exportarHuespedesExcel() {
@@ -1216,7 +1235,15 @@
 
         function exportarKPIsExcel() {
             const annoSel = document.getElementById('kpiAnno').value || new Date().getFullYear().toString();
-            const reservasFiltradas = reservas.filter(r => r.checkin && String(r.checkin).startsWith(annoSel));
+            const mesSel = document.getElementById('kpiMes').value;
+
+            const reservasFiltradas = reservas.filter(r => {
+                if (!r.checkin) return false;
+                const partes = String(r.checkin).split('-');
+                const matchAnno = partes[0] === annoSel;
+                const matchMes = !mesSel || partes[1] === mesSel;
+                return matchAnno && matchMes;
+            });
 
             let totalIngresos = 0;
             let totalGastosDiarios = 0;
@@ -1257,8 +1284,8 @@
 
             const workbook = XLSX.utils.book_new();
             const wsDetalle = XLSX.utils.json_to_sheet(detalleReservasKPI);
-            XLSX.utils.book_append_sheet(workbook, wsDetalle, `KPIs_Anual_${annoSel}`);
-            XLSX.writeFile(workbook, `KPIs_RefugioEntreMontanas_${annoSel}.xlsx`);
+            XLSX.utils.book_append_sheet(workbook, wsDetalle, `KPIs_${annoSel}_${mesSel || 'Anual'}`);
+            XLSX.writeFile(workbook, `KPIs_RefugioEntreMontanas_${annoSel}_${mesSel || 'Anual'}.xlsx`);
         }
 
         /* ==========================================================================
@@ -1269,7 +1296,11 @@
             if (form) form.reset();
             document.getElementById('reservaId').value = '';
             document.getElementById('valorDiarioFinal').value = 380000;
-            document.getElementById('selectTemporadaReserva').value = 'Verano';
+            
+            const hoyIso = new Date().toISOString().split('T')[0];
+            document.getElementById('checkin').value = hoyIso;
+            actualizarSelectorTemporadaAutomatico();
+
             document.getElementById('reqCuna').checked = false;
             document.getElementById('reqProtectorEstufa').checked = false;
             document.getElementById('reqPerro').checked = false;
@@ -1524,18 +1555,23 @@
                 }
             });
 
-            Object.values(mapaHuespedes).forEach(h => {
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 border-b border-slate-100">
-                        <td class="p-2.5 font-bold text-slate-800">${h.nombre}</td>
-                        <td class="p-2.5 font-mono text-slate-500">${h.rut}</td>
-                        <td class="p-2.5 font-semibold text-emerald-600 cursor-pointer" onclick="abrirChatWsp('${h.telefono}')"><i class="fa-brands fa-whatsapp mr-1"></i> ${h.telefono}</td>
-                        <td class="p-2.5 text-slate-700">${h.email}</td>
-                        <td class="p-2.5 text-center font-extrabold text-slate-800">${h.totalVisitas}</td>
-                        <td class="p-2.5 text-slate-500">${formatearFechaChile(h.ultimaVisita)}</td>
-                    </tr>
-                `;
-            });
+            const listaHuespedes = Object.values(mapaHuespedes);
+            if (listaHuespedes.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-medium">No hay huéspedes registrados.</td></tr>`;
+            } else {
+                listaHuespedes.forEach(h => {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 border-b border-slate-100">
+                            <td class="p-2.5 font-bold text-slate-800">${h.nombre}</td>
+                            <td class="p-2.5 font-mono text-slate-500">${h.rut}</td>
+                            <td class="p-2.5 font-semibold text-emerald-600 cursor-pointer" onclick="abrirChatWsp('${h.telefono}')"><i class="fa-brands fa-whatsapp mr-1"></i> ${h.telefono}</td>
+                            <td class="p-2.5 text-slate-700">${h.email}</td>
+                            <td class="p-2.5 text-center font-extrabold text-slate-800">${h.totalVisitas}</td>
+                            <td class="p-2.5 text-slate-500">${formatearFechaChile(h.ultimaVisita)}</td>
+                        </tr>
+                    `;
+                });
+            }
 
             toggleModal('modalHuespedes');
         }
@@ -2062,10 +2098,12 @@
                 const extras = (r.costoBencinaGenerador || 0) + (r.costoImprevistosReserva || 0);
                 const gananciaNeta = r.totalBruto - costoPlat - costoDiarioTotal - costosFijos - extras;
                 const margenPct = r.totalBruto > 0 ? ((gananciaNeta / r.totalBruto) * 100).toFixed(1) : 0;
+                const fechasCortas = `${formatearFechaChile(r.checkin)} al ${formatearFechaChile(r.checkout)}`;
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 border-b border-slate-100">
                         <td class="p-2.5 font-bold text-slate-800">${r.nombre}</td>
+                        <td class="p-2.5 font-medium text-slate-600">${fechasCortas}</td>
                         <td class="p-2.5 text-slate-500">${nochesUso} noches (${r.temporadaReserva || 'Verano'})</td>
                         <td class="p-2.5 font-semibold text-emerald-700">$${(r.totalBruto || 0).toLocaleString('es-CL')}</td>
                         <td class="p-2.5 text-rose-600">-$${costoPlat.toLocaleString('es-CL')}</td>
@@ -2103,7 +2141,7 @@
         }
 
         /* ==========================================================================
-            KPIS & ANALYTICS CENTER (TABLA ENERO A DICIEMBRE CON ACUMULADO)
+            KPIS & ANALYTICS CENTER (TABLA ENERO A DICIEMBRE CON ACUMULADO + FILTRO MES)
             ========================================================================== */
         function abrirModalKPIs() {
             const selectAnno = document.getElementById('kpiAnno');
@@ -2121,8 +2159,15 @@
 
         function renderKPIs() {
             const annoSel = document.getElementById('kpiAnno').value || new Date().getFullYear().toString();
+            const mesSel = document.getElementById('kpiMes').value;
 
-            const reservasFiltradas = reservas.filter(r => r.checkin && String(r.checkin).startsWith(annoSel));
+            const reservasFiltradas = reservas.filter(r => {
+                if (!r.checkin) return false;
+                const partes = String(r.checkin).split('-');
+                const matchAnno = partes[0] === annoSel;
+                const matchMes = !mesSel || partes[1] === mesSel;
+                return matchAnno && matchMes;
+            });
 
             const diasArrendados = reservasFiltradas.reduce((sum, r) => sum + (r.noches || 1), 0);
             const ingresosBrutos = reservasFiltradas.reduce((sum, r) => sum + (r.totalBruto || 0), 0);
@@ -2189,12 +2234,13 @@
             document.getElementById('kpiIngresosBrutosAno').innerText = `$${ingresosBrutos.toLocaleString('es-CL')}`;
             document.getElementById('kpiGananciaPromedioLimpiaDia').innerText = `$${gananciaPromedioPorDia.toLocaleString('es-CL')} /día (${margenPromedioPorcentaje}%)`;
 
-            // Construcción de Tabla de Enero a Diciembre con Acumulado
+            // Construcción de Tabla de Enero a Diciembre con Acumulado (considerando el año seleccionado)
             const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
             const mesesIngresos = Array(12).fill(0);
             const mesesEgresos = Array(12).fill(0);
 
-            reservasFiltradas.forEach(r => {
+            const reservasDelAno = reservas.filter(r => r.checkin && String(r.checkin).startsWith(annoSel));
+            reservasDelAno.forEach(r => {
                 if (r.checkin) {
                     const mesIdx = parseInt(String(r.checkin).substring(5, 7)) - 1;
                     if (!isNaN(mesIdx) && mesIdx >= 0 && mesIdx < 12) {
@@ -2224,6 +2270,12 @@
                 const egr = mesesEgresos[i];
                 const subtotal = ing - egr;
                 acumuladoCorriente += subtotal;
+
+                // Si hay filtro de mes activo, resaltamos o mostramos solo ese mes (o dejamos la tabla completa y destacamos)
+                const mesStrFiltro = String(i + 1).padStart(2, '0');
+                if (mesSel && mesStrFiltro !== mesSel) {
+                    continue; // Ocultar meses que no corresponden al filtro si se desea limpiar
+                }
 
                 tbodyMeses.innerHTML += `
                     <tr class="hover:bg-slate-50 border-b border-slate-100">
