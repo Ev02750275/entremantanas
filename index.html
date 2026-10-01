@@ -22,6 +22,9 @@
     <!-- SheetJS CDN (Excel Export Library) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
+    <!-- ical.js CDN (Para leer el calendario de Airbnb directamente en el navegador) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ical.js/1.5.0/ical.min.js"></script>
+
     <!-- FIREBASE SDKs (v9.23.0 Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -32,6 +35,9 @@
         .cal-day-reserva { background-color: #fef3c7 !important; color: #92400e !important; font-weight: 700; border: 1px solid #fde68a; }
         .cal-day-curso { background-color: #d1fae5 !important; color: #065f46 !important; font-weight: 700; border: 1px solid #a7f3d0; }
         .cal-day-terminada { background-color: #f1f5f9 !important; color: #64748b !important; border: 1px solid #e2e8f0; }
+        .cal-day-airbnb { background-color: #ffe4e6 !important; color: #9f1239 !important; font-weight: 700; border: 1px solid #fecdd3; }
+        .cal-day-airbnb-confirmada { background-color: #dcfce7 !important; color: #14532d !important; font-weight: 800; border: 1.5px solid #86efac; }
+        .cal-day-bloqueo { background-color: #cbd5e1 !important; color: #334155 !important; font-weight: 700; border: 1px solid #94a3b8; }
         
         .cal-day-transicion { 
             background: linear-gradient(135deg, #fde68a 50%, #a7f3d0 50%) !important; 
@@ -72,6 +78,13 @@
             </div>
 
             <div class="flex flex-wrap items-center justify-center gap-2">
+                <button type="button" onclick="sincronizarAirbnbNavegador()" class="inline-flex items-center px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg shadow transition">
+                    <i class="fa-solid fa-rotate mr-1.5"></i> Sincronizar Airbnb
+                </button>
+                <label class="inline-flex items-center px-2.5 py-1.5 bg-rose-900 hover:bg-rose-950 text-rose-100 text-xs font-semibold rounded-lg border border-rose-700 cursor-pointer transition">
+                    <i class="fa-solid fa-file-arrow-up mr-1.5 text-rose-300"></i> Subir .ics
+                    <input type="file" id="inputArchivoIcs" accept=".ics" onchange="cargarArchivoIcsLocal(event)" class="hidden">
+                </label>
                 <button type="button" onclick="limpiarFormulario()" class="inline-flex items-center px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow transition">
                     <i class="fa-solid fa-plus mr-1.5"></i> Nueva Reserva
                 </button>
@@ -117,14 +130,32 @@
                 <form id="reservaForm" class="space-y-4">
                     <input type="hidden" id="reservaId">
 
+                    <!-- CAMPO CÓDIGO AIRBNB / OTA CON BÚSQUEDA AUTOMÁTICA -->
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                                <i class="fa-solid fa-hashtag mr-1.5 text-slate-500"></i>Código Reserva Airbnb / OTA
+                            </label>
+                            <span class="text-[10px] text-slate-500 font-semibold">⚡ Puedes guardar la reserva de inmediato con campos pendientes</span>
+                        </div>
+                        
+                        <div class="flex gap-2 mt-2">
+                            <input type="text" id="codigoOTA" placeholder="Ej: HM12345678 (Pega o escribe el código)" class="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition">
+                            <button type="button" onclick="cargarFechasPorCodigo()" class="bg-slate-800 hover:bg-slate-700 text-white font-semibold px-3 py-1.5 rounded-lg text-xs shadow transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <span>Cargar Datos Airbnb</span>
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Nombre Huésped</label>
-                            <input type="text" id="nombre" required placeholder="Ej: Juan Pérez" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
+                            <input type="text" id="nombre" placeholder="Huésped Pendiente" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
                         </div>
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">RUT / Pasaporte</label>
-                            <input type="text" id="rut" placeholder="12.345.678-9" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
+                            <input type="text" id="rut" placeholder="Pendiente" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
                         </div>
                         <div>
                             <div class="flex justify-between items-center mb-1">
@@ -133,14 +164,14 @@
                                     <i class="fa-solid fa-key mr-0.5"></i> Clave
                                 </button>
                             </div>
-                            <input type="tel" id="telefono" required placeholder="+56912345678" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
+                            <input type="tel" id="telefono" placeholder="Sin Teléfono" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Email Contacto</label>
-                            <input type="email" id="email" required placeholder="cliente@email.com" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
+                            <input type="email" id="email" placeholder="Sin Email" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
                         </div>
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Canal Origen</label>
@@ -156,8 +187,8 @@
                                 <i class="fa-solid fa-sun-plant-wilt mr-1"></i> Selección Temporada / Tarifa
                             </label>
                             <select id="selectTemporadaReserva" class="w-full bg-amber-50 border border-amber-300 rounded-lg px-3 py-2 text-xs font-bold text-amber-900 focus:outline-none focus:border-amber-600">
-                                <option value="Verano">☀️ Verano (Costo Estival)</option>
-                                <option value="Invierno">❄️ Invierno (Costo Invernal)</option>
+                                <option value="Verano">☀ Verano (Costo Estival)</option>
+                                <option value="Invierno">❄ Invierno (Costo Invernal)</option>
                             </select>
                         </div>
                     </div>
@@ -173,11 +204,11 @@
                         </div>
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Check-In</label>
-                            <input type="date" id="checkin" required class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-600">
+                            <input type="date" id="checkin" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-600">
                         </div>
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Check-Out</label>
-                            <input type="date" id="checkout" required class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-600">
+                            <input type="date" id="checkout" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-600">
                         </div>
                     </div>
 
@@ -208,7 +239,7 @@
                         </div>
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Tarifa Noche ($ CLP)</label>
-                            <input type="number" id="valorDiarioFinal" value="380000" required class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-emerald-800 focus:outline-none focus:border-emerald-600">
+                            <input type="number" id="valorDiarioFinal" value="380000" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-emerald-800 focus:outline-none focus:border-emerald-600">
                         </div>
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Comisión Plataforma ($ CLP)</label>
@@ -406,6 +437,9 @@
                 <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-reserva inline-block"></span> <span class="text-slate-700">Reserva Confirmada</span></div>
                 <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-curso inline-block"></span> <span class="text-slate-700">Reserva en Curso</span></div>
                 <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-terminada inline-block"></span> <span class="text-slate-700">Reserva Terminada</span></div>
+                <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-airbnb inline-block"></span> <span class="text-slate-700">Airbnb Pendiente (Rosa - Clic Importar)</span></div>
+                <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-airbnb-confirmada inline-block"></span> <span class="text-slate-700">✓ Airbnb Importado / Guardado (Verde)</span></div>
+                <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-bloqueo inline-block"></span> <span class="text-slate-700">Fecha Bloqueada Airbnb</span></div>
                 <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-transicion inline-block"></span> <span class="text-slate-700">Cambio Huésped (Turnaround Mismo Día)</span></div>
             </div>
 
@@ -425,7 +459,7 @@
                 </div>
 
                 <div class="flex flex-wrap gap-2 w-full lg:w-auto">
-                    <input type="text" id="filtroTexto" oninput="renderTabla()" placeholder="🔍 Buscar por huésped..." class="bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 w-full sm:w-48">
+                    <input type="text" id="filtroTexto" oninput="renderTabla()" placeholder="🔍 Buscar por huésped o código..." class="bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 w-full sm:w-48">
 
                     <select id="filtroEstado" onchange="renderTabla()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 font-semibold focus:outline-none focus:border-emerald-600">
                         <option value="">Todos los Estados</option>
@@ -454,7 +488,7 @@
                             <th class="p-3">Fechas Estadía</th>
                             <th class="p-3">Temporada</th>
                             <th class="p-3">Pasajeros / Extras</th>
-                            <th class="p-3">Canal</th>
+                            <th class="p-3">Canal / Código</th>
                             <th class="p-3">Total Bruto</th>
                             <th class="p-3">Abonos & Saldo</th>
                             <th class="p-3">Estado</th>
@@ -539,7 +573,7 @@
         </div>
     </div>
 
-    <!-- MODAL 3: COSTO CABAÑA (VERANO E INVIERNO CON DETALLE COMPLETO) -->
+    <!-- MODAL 3: COSTO CABAÑA -->
     <div id="modalCostos" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-slate-200 pb-3">
@@ -549,18 +583,16 @@
                 <button type="button" onclick="toggleModal('modalCostos')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
 
-            <!-- Selector de Temporada a Editar -->
             <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
                 <button type="button" id="tabVerano" onclick="cambiarTabTemporadaCostos('verano')" class="flex-1 py-2 text-xs font-bold rounded-lg transition bg-white text-amber-700 shadow-sm">
                     ☀️ Costos Verano (Dic 1 - Mar 31)
                 </button>
                 <button type="button" id="tabInvierno" onclick="cambiarTabTemporadaCostos('invierno')" class="flex-1 py-2 text-xs font-bold rounded-lg transition text-slate-600 hover:text-slate-900">
-                    ❄️ Costos Invierno (Abr 1 - Nov 30)
+                    ❄ Costos Invierno (Abr 1 - Nov 30)
                 </button>
             </div>
 
             <form id="formCostosCasa" class="space-y-4 text-xs">
-                <!-- CONTENEDOR VERANO -->
                 <div id="seccionVerano" class="space-y-3">
                     <div class="bg-amber-50 p-2.5 rounded-lg border border-amber-200">
                         <span class="font-bold text-amber-900 block uppercase text-[10px]">Costos Operativos Diarios - Verano ($/día)</span>
@@ -601,7 +633,6 @@
                     </div>
                 </div>
 
-                <!-- CONTENEDOR INVIERNO -->
                 <div id="seccionInvierno" class="space-y-3 hidden">
                     <div class="bg-sky-50 p-2.5 rounded-lg border border-sky-200">
                         <span class="font-bold text-sky-900 block uppercase text-[10px]">Costos Operativos Diarios - Invierno ($/día)</span>
@@ -642,7 +673,6 @@
                     </div>
                 </div>
 
-                <!-- COSTOS FIJOS POR RESERVA -->
                 <div class="col-span-2 bg-teal-50 p-2.5 rounded-lg border border-teal-200 mt-2">
                     <span class="font-bold text-teal-900 block uppercase text-[10px]">Costos Fijos por Reserva ($/reserva)</span>
                 </div>
@@ -657,7 +687,6 @@
                     </div>
                 </div>
 
-                <!-- TOTALES EN VIVO -->
                 <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl flex justify-between items-center text-xs font-bold text-amber-900">
                     <span>Total Diario Activo (<span id="lblTemporedaActiva">Verano</span>) + Fijo Total:</span>
                     <span id="lblTotalDiarioCalculado" class="text-sm font-black">$28.500</span>
@@ -672,26 +701,35 @@
         </div>
     </div>
 
-    <!-- MODAL 4: MARGINS & PROFITABILITY -->
+    <!-- MODAL 4: MARGINS & PROFITABILITY (CON FILTROS Y COLUMNA HUÉSPED FIJA) -->
     <div id="modalRentabilidad" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-5xl w-full p-6 space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-200 pb-3">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 pb-3 gap-3">
                 <h3 class="text-sm font-bold text-slate-800 flex items-center">
-                    <i class="fa-solid fa-scale-balanced mr-2 text-teal-600"></i>Margen de contribución por arriendo
+                    <i class="fa-solid fa-scale-balanced mr-2 text-teal-600"></i>Margen de Contribución por Arriendo
                 </h3>
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
+                    <select id="filtroMargenAno" onchange="abrirModalRentabilidad()" class="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-xs text-slate-800 font-semibold focus:outline-none focus:border-teal-600"></select>
+                    <select id="filtroMargenMes" onchange="abrirModalRentabilidad()" class="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-xs text-slate-800 font-semibold focus:outline-none focus:border-teal-600">
+                        <option value="">Todos los Meses</option>
+                        <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+                        <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+                        <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+                        <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                    </select>
+
                     <button type="button" onclick="exportarMargenesExcel()" class="bg-teal-700 hover:bg-teal-600 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center gap-1.5 shadow">
-                        <i class="fa-solid fa-file-excel"></i> Exportar Excel
+                        <i class="fa-solid fa-file-excel"></i> Exportar
                     </button>
                     <button type="button" onclick="toggleModal('modalRentabilidad')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
             </div>
 
-            <div class="overflow-x-auto max-h-96 rounded-xl border border-slate-200 bg-white">
+            <div class="overflow-x-auto max-h-96 rounded-xl border border-slate-200 bg-white relative">
                 <table class="w-full text-xs text-left border-collapse">
-                    <thead class="bg-teal-50 text-teal-900 border-b border-teal-200 font-bold">
+                    <thead class="bg-teal-50 text-teal-900 border-b border-teal-200 font-bold sticky top-0 z-20">
                         <tr>
-                            <th class="p-2.5">Huésped</th>
+                            <th class="p-2.5 sticky left-0 bg-teal-50 z-30 min-w-[140px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Huésped</th>
                             <th class="p-2.5">Fechas Estadía</th>
                             <th class="p-2.5">Noches (Temp)</th>
                             <th class="p-2.5">Bruto</th>
@@ -874,7 +912,7 @@
                 </div>
             </div>
 
-            <!-- TABLA DE ENERO A DICIEMBRE (INGRESOS, EGRESOS, SUBTOTAL Y ACUMULADO) -->
+            <!-- TABLA DE ENERO A DICIEMBRE -->
             <div class="bg-white border border-slate-200 p-4 rounded-xl space-y-3 shadow-sm">
                 <h4 class="font-bold text-xs uppercase text-slate-700 flex items-center gap-2">
                     <i class="fa-solid fa-table text-sky-600"></i> Tabla Financiera Mensual (Enero a Diciembre con Acumulado)
@@ -960,7 +998,7 @@
     <script>
         /* ==========================================================================
             FIREBASE CONFIGURATION & INITIALIZATION
-            ========================================================================== */
+           ========================================================================== */
         const firebaseConfig = {
             apiKey: "AIzaSyC6nbWndwjEx00-jvzt-KXDwA6anvg0-5A",
             authDomain: "entremontanas-75305.firebaseapp.com",
@@ -976,10 +1014,16 @@
         }
         const db = firebase.firestore();
 
+        // URL del Cloudflare Worker (Puente directo sin bloqueos CORS)
+        const URL_AIRBNB_WORKER = "https://dry-field-4c22.evicencio.workers.dev/";
+
         /* ==========================================================================
             GLOBAL STATE
-            ========================================================================== */
+           ========================================================================== */
         let reservas = [];
+        let fechasAirbnb = [];
+        let fechasAirbnbReservas = [];
+        let fechasAirbnbBloqueos = [];
         let usuarios = [];
         let usuarioActivoId = localStorage.getItem('usr_activo_caban') || null;
         let abonosTemp = [];
@@ -1004,8 +1048,161 @@
         let chartInstance = null;
 
         /* ==========================================================================
+            AIRBNB ICAL DIRECT FETCH (CLOUDFLARE WORKER)
+           ========================================================================== */
+        async function obtenerContenidoICal() {
+            const resp = await fetch(URL_AIRBNB_WORKER);
+            if (!resp.ok) {
+                throw new Error("No se pudo obtener la respuesta del Worker de Cloudflare.");
+            }
+            const txt = await resp.text();
+            if (txt && txt.includes('BEGIN:VCALENDAR')) {
+                return txt;
+            }
+            throw new Error('El archivo iCal devuelto no es válido.');
+        }
+
+        function procesarTextoICal(dataText) {
+            const jcalData = ICAL.parse(dataText);
+            const comp = new ICAL.Component(jcalData);
+            const vevents = comp.getAllSubcomponents('vevent');
+
+            fechasAirbnbReservas = [];
+            fechasAirbnbBloqueos = [];
+            let contadorReservas = 0;
+            let contadorBloqueos = 0;
+
+            vevents.forEach(event => {
+                const dtstart = event.getFirstPropertyValue('dtstart');
+                const dtend = event.getFirstPropertyValue('dtend');
+                const summary = (event.getFirstPropertyValue('summary') || '').toString().toLowerCase();
+                const description = (event.getFirstPropertyValue('description') || '').toString();
+                const uid = (event.getFirstPropertyValue('uid') || '').toString();
+
+                if (dtstart && dtend) {
+                    let cur = dtstart.toJSDate();
+                    const end = dtend.toJSDate();
+
+                    const checkinIso = cur.toISOString().split('T')[0];
+                    const checkoutIso = end.toISOString().split('T')[0];
+
+                    let codigoExtraido = null;
+                    const matchCodigo = uid.match(/([A-Z0-9]{8,10})/i) || description.match(/HM[A-Z0-9]{8,10}/i);
+                    if (matchCodigo) codigoExtraido = matchCodigo[0];
+
+                    const esReserva = summary.includes('reserved') || 
+                                      summary.includes('reserva') || 
+                                      description.includes('reservation') || 
+                                      (codigoExtraido && !summary.includes('not available'));
+
+                    while (cur < end) {
+                        const yyyy = cur.getFullYear();
+                        const mm = String(cur.getMonth() + 1).padStart(2, '0');
+                        const dd = String(cur.getDate()).padStart(2, '0');
+                        const fechaIso = `${yyyy}-${mm}-${dd}`;
+
+                        if (esReserva) {
+                            fechasAirbnbReservas.push({ 
+                                fecha: fechaIso, 
+                                codigo: codigoExtraido || 'AIRBNB-IMPORT',
+                                checkin: checkinIso,
+                                checkout: checkoutIso
+                            });
+                        } else {
+                            fechasAirbnbBloqueos.push(fechaIso);
+                        }
+
+                        cur.setDate(cur.getDate() + 1);
+                    }
+
+                    if (esReserva) contadorReservas++;
+                    else contadorBloqueos++;
+                }
+            });
+
+            fechasAirbnb = [
+                ...fechasAirbnbReservas.map(f => f.fecha),
+                ...fechasAirbnbBloqueos
+            ];
+
+            renderCalendario();
+            alert(`¡Sincronización Completada con Cloudflare Worker!\n\n• Reservas Airbnb detectadas: ${contadorReservas}\n• Fechas Bloqueadas: ${contadorBloqueos}\n• Total noches ocupadas/bloqueadas: ${fechasAirbnb.length}`);
+        }
+
+        async function sincronizarAirbnbNavegador() {
+            try {
+                const dataText = await obtenerContenidoICal();
+                procesarTextoICal(dataText);
+            } catch (e) {
+                console.error("Error sincronizando Airbnb:", e);
+                const usarArchivo = confirm("Ocurrió un inconveniente al conectar con Cloudflare Worker.\n\n¿Deseas seleccionar el archivo .ics guardado en tu equipo para cargarlo de inmediato?");
+                if (usarArchivo) {
+                    document.getElementById('inputArchivoIcs').click();
+                }
+            }
+        }
+
+        function cargarArchivoIcsLocal(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    procesarTextoICal(e.target.result);
+                } catch (err) {
+                    alert("Error al leer el archivo .ics seleccionado. Verifica que sea un iCal válido.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        /* ==========================================================================
+            BÚSQUEDA Y AUTOCOMPLETADO AUTOMÁTICO POR CÓDIGO
+           ========================================================================== */
+        function cargarFechasPorCodigo() {
+            const codigoBuscado = document.getElementById('codigoOTA').value.trim().toUpperCase();
+            if (!codigoBuscado) {
+                return alert('Por favor, ingresa o pega primero el código de la reserva de Airbnb.');
+            }
+
+            const reservaEncontrada = fechasAirbnbReservas.find(f => f.codigo && f.codigo.toUpperCase().includes(codigoBuscado));
+
+            if (reservaEncontrada) {
+                document.getElementById('canal').value = 'Airbnb';
+                document.getElementById('checkin').value = reservaEncontrada.checkin;
+                document.getElementById('checkout').value = reservaEncontrada.checkout;
+
+                actualizarSelectorTemporadaAutomatico();
+                calcularValores();
+
+                alert(`✅ ¡Datos encontrados para el código ${codigoBuscado}!\n\nCheck-In: ${formatearFechaChile(reservaEncontrada.checkin)}\nCheck-Out: ${formatearFechaChile(reservaEncontrada.checkout)}`);
+            } else {
+                alert(`⚠️ No se encontraron fechas para el código "${codigoBuscado}" en la última sincronización de Airbnb.\n\nVerifica que el código esté correcto o presiona "Sincronizar Airbnb".`);
+            }
+        }
+
+        function autocompletarDesdeAirbnb(codigo, checkin, checkout) {
+            limpiarFormulario();
+
+            document.getElementById('codigoOTA').value = (codigo && codigo !== 'AIRBNB-IMPORT') ? codigo : '';
+            document.getElementById('canal').value = 'Airbnb';
+            document.getElementById('checkin').value = checkin;
+            document.getElementById('checkout').value = checkout;
+
+            if (!document.getElementById('nombre').value) {
+                document.getElementById('nombre').value = codigo && codigo !== 'AIRBNB-IMPORT' ? `Reserva Airbnb (${codigo})` : 'Reserva Airbnb Pendiente';
+            }
+
+            actualizarSelectorTemporadaAutomatico();
+            calcularValores();
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /* ==========================================================================
             SEASONALITY & FORMATTING HELPERS
-            ========================================================================== */
+           ========================================================================== */
         function esTemporadaVerano(fechaStr) {
             if (!fechaStr) return false;
             const mes = parseInt(String(fechaStr).split('-')[1], 10);
@@ -1032,7 +1229,7 @@
         }
 
         function abrirChatWsp(telefono) {
-            if (!telefono) return;
+            if (!telefono || telefono.includes('Sin')) return;
             const soloNumeros = String(telefono).replace(/\D/g, '');
             if (soloNumeros) {
                 window.open(`https://wa.me/${soloNumeros}`, '_blank');
@@ -1107,7 +1304,6 @@
                 if (el) el.addEventListener('input', calcularTotalRetirosModal);
             });
 
-            // Establecer fecha de hoy en el Check-in por defecto para que tome la temporada real del sistema
             const hoyIso = new Date().toISOString().split('T')[0];
             const inputCheckin = document.getElementById('checkin');
             if (inputCheckin && !inputCheckin.value) {
@@ -1116,6 +1312,7 @@
             }
 
             inicializarSincronizacionCloud();
+            sincronizarAirbnbNavegador();
         });
 
         function actualizarSelectorTemporadaAutomatico() {
@@ -1128,7 +1325,7 @@
 
         /* ==========================================================================
             EXCEL EXPORT FUNCTIONS
-            ========================================================================== */
+           ========================================================================== */
         function exportarReservasExcel() {
             if (reservas.length === 0) return alert('No hay reservas para exportar.');
             
@@ -1136,10 +1333,11 @@
                 const totalAbonado = r.abonos ? r.abonos.reduce((sum, a) => sum + parseFloat(a.monto || 0), 0) : 0;
                 const totalBruto = parseFloat(r.totalBruto) || 0;
                 return {
-                    "Huésped": r.nombre || '-',
-                    "RUT / Pasaporte": r.rut || '-',
-                    "Teléfono": r.telefono || '-',
-                    "Email": r.email || '-',
+                    "Código Airbnb/OTA": r.codigoOTA || '-',
+                    "Huésped": r.nombre || 'Pendiente',
+                    "RUT / Pasaporte": r.rut || 'Pendiente',
+                    "Teléfono": r.telefono || 'Sin Teléfono',
+                    "Email": r.email || 'Sin Email',
                     "Check-In": r.checkin || '-',
                     "Check-Out": r.checkout || '-',
                     "Temporada": r.temporadaReserva || 'Verano',
@@ -1182,7 +1380,8 @@
                 const margenPct = r.totalBruto > 0 ? ((gananciaNeta / r.totalBruto) * 100).toFixed(1) : 0;
 
                 return {
-                    "Huésped": r.nombre || '-',
+                    "Código Airbnb/OTA": r.codigoOTA || '-',
+                    "Huésped": r.nombre || 'Pendiente',
                     "Check-In": r.checkin || '-',
                     "Check-Out": r.checkout || '-',
                     "Temporada": r.temporadaReserva || 'Verano',
@@ -1206,12 +1405,12 @@
         function exportarHuespedesExcel() {
             const mapaHuespedes = {};
             reservas.forEach(r => {
-                const clave = r.rut ? String(r.rut).trim() : String(r.nombre || '').trim().toLowerCase();
+                const clave = r.rut && !r.rut.includes('Pendiente') ? String(r.rut).trim() : String(r.nombre || '').trim().toLowerCase();
                 if (!mapaHuespedes[clave]) {
                     mapaHuespedes[clave] = {
-                        "Nombre Completo": r.nombre || 'Sin nombre',
-                        "RUT / Pasaporte": r.rut || 'Sin RUT',
-                        "Teléfono": r.telefono || 'Sin Fono',
+                        "Nombre Completo": r.nombre || 'Pendiente',
+                        "RUT / Pasaporte": r.rut || 'Pendiente',
+                        "Teléfono": r.telefono || 'Sin Teléfono',
                         "Email": r.email || 'Sin Email',
                         "Total Visitas": 1,
                         "Última Visita": r.checkin
@@ -1271,7 +1470,8 @@
 
                 return {
                     "Reserva ID": r.id,
-                    "Huésped": r.nombre || '-',
+                    "Código OTA": r.codigoOTA || '-',
+                    "Huésped": r.nombre || 'Pendiente',
                     "Check-In": r.checkin || '-',
                     "Temporada": r.temporadaReserva || 'Verano',
                     "Noches": noches,
@@ -1290,11 +1490,12 @@
 
         /* ==========================================================================
             FORM MANAGEMENT & EDITING
-            ========================================================================== */
+           ========================================================================== */
         function limpiarFormulario() {
             const form = document.getElementById('reservaForm');
             if (form) form.reset();
             document.getElementById('reservaId').value = '';
+            document.getElementById('codigoOTA').value = '';
             document.getElementById('valorDiarioFinal').value = 380000;
             
             const hoyIso = new Date().toISOString().split('T')[0];
@@ -1327,6 +1528,7 @@
             if (!r) return;
 
             document.getElementById('reservaId').value = r.id;
+            document.getElementById('codigoOTA').value = r.codigoOTA || '';
             document.getElementById('nombre').value = r.nombre || '';
             document.getElementById('rut').value = r.rut || '';
             document.getElementById('email').value = r.email || '';
@@ -1358,7 +1560,7 @@
 
         /* ==========================================================================
             ECONOMIC BREAKDOWN MODAL VIEW
-            ========================================================================== */
+           ========================================================================== */
         function verResultadoEspecial(id) {
             const r = reservas.find(item => item.id === id);
             if (!r) return;
@@ -1381,8 +1583,9 @@
             const contenedor = document.getElementById('contenidoDetalleEconomico');
             contenedor.innerHTML = `
                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                    <span class="font-bold text-slate-800 text-sm block">${r.nombre}</span>
-                    <span class="text-slate-500 text-xs">${formatearFechaChile(r.checkin)} al ${formatearFechaChile(r.checkout)} (${noches} noches) [${isVerano ? '☀️ Verano' : '❄️ Invierno'}]</span>
+                    <span class="font-bold text-slate-800 text-sm block">${r.nombre || 'Huésped Pendiente'}</span>
+                    ${r.codigoOTA ? `<span class="text-[10px] text-slate-400 font-mono block mt-0.5">#${r.codigoOTA}</span>` : ''}
+                    <span class="text-slate-500 text-xs block mt-1">${formatearFechaChile(r.checkin)} al ${formatearFechaChile(r.checkout)} (${noches} noches) [${isVerano ? '☀️ Verano' : '❄️ Invierno'}]</span>
                 </div>
                 <div class="space-y-2 border-t border-slate-200 pt-2 text-xs">
                     <div class="flex justify-between font-semibold"><span>Ingreso Bruto Arriendo:</span><span class="text-emerald-700">$${(r.totalBruto || 0).toLocaleString('es-CL')}</span></div>
@@ -1401,8 +1604,8 @@
         }
 
         /* ==========================================================================
-            MAIN HISTORICAL TABLE RENDER & SEASON ICON
-            ========================================================================== */
+            MAIN HISTORICAL TABLE RENDER
+           ========================================================================== */
         function poblarFiltroAnos() {
             const selectAno = document.getElementById('filtroAno');
             if (!selectAno) return;
@@ -1432,7 +1635,8 @@
 
             const reservasFiltradas = reservas.filter(r => {
                 const nombreVal = String(r.nombre || '').toLowerCase();
-                const coincideTexto = !texto || nombreVal.includes(texto);
+                const otaVal = String(r.codigoOTA || '').toLowerCase();
+                const coincideTexto = !texto || nombreVal.includes(texto) || otaVal.includes(texto);
                 const coincideEstado = !estado || r.estadoReserva === estado;
                 
                 let coincideMes = true;
@@ -1480,14 +1684,16 @@
                 const isVerano = (r.temporadaReserva === 'Verano');
                 const iconoTemp = isVerano ? `<span class="inline-flex items-center px-2 py-0.5 bg-amber-100 text-amber-800 font-bold rounded text-[11px]"><i class="fa-solid fa-sun mr-1"></i> Verano</span>` : `<span class="inline-flex items-center px-2 py-0.5 bg-sky-100 text-sky-800 font-bold rounded text-[11px]"><i class="fa-solid fa-snowflake mr-1"></i> Invierno</span>`;
 
+                const otaBadge = r.codigoOTA ? `<span class="text-[10px] text-slate-400 font-mono block tracking-tight">#${r.codigoOTA}</span>` : '';
+
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 border-b border-slate-200 transition">
                         <td class="p-3">
                             <button type="button" onclick="cargarParaEditar('${r.id}')" class="font-bold text-emerald-800 hover:text-emerald-600 text-left text-xs block">
-                                ${r.nombre || 'Huésped sin nombre'}
+                                ${r.nombre || 'Huésped Pendiente'}
                             </button>
                             <button type="button" onclick="abrirChatWsp('${r.telefono}')" title="Abrir WhatsApp" class="text-[11px] text-emerald-600 font-medium hover:underline flex items-center gap-1 mt-0.5">
-                                <i class="fa-brands fa-whatsapp"></i> ${r.telefono || 'Sin teléfono'}
+                                <i class="fa-brands fa-whatsapp"></i> ${r.telefono || 'Sin Teléfono'}
                             </button>
                         </td>
                         <td class="p-3">
@@ -1499,7 +1705,10 @@
                             <span class="text-slate-700 font-medium">${r.adultos || 0} Ad / ${r.ninos || 0} Niñ</span>
                             ${reqsHtml}
                         </td>
-                        <td class="p-3"><span class="bg-slate-100 border border-slate-200 px-2 py-1 rounded text-[11px] text-slate-700">${r.canal || 'Directo'}</span></td>
+                        <td class="p-3">
+                            <span class="bg-slate-100 border border-slate-200 px-2 py-1 rounded text-[11px] text-slate-700 font-semibold">${r.canal || 'Directo'}</span>
+                            ${otaBadge}
+                        </td>
                         <td class="p-3 font-bold text-slate-900">$${totalBrutoVal.toLocaleString('es-CL')}</td>
                         <td class="p-3 text-[11px]">
                             ${abonosFormatted}
@@ -1530,19 +1739,19 @@
 
         /* ==========================================================================
             GUESTS DATABASE MODAL RENDER & PRINT
-            ========================================================================== */
+           ========================================================================== */
         function abrirModalHuespedes() {
             const tbody = document.getElementById('tablaHuespedesBase');
             tbody.innerHTML = '';
 
             const mapaHuespedes = {};
             reservas.forEach(r => {
-                const clave = r.rut ? String(r.rut).trim() : String(r.nombre || '').trim().toLowerCase();
+                const clave = r.rut && !r.rut.includes('Pendiente') ? String(r.rut).trim() : String(r.nombre || '').trim().toLowerCase();
                 if (!mapaHuespedes[clave]) {
                     mapaHuespedes[clave] = {
-                        nombre: r.nombre || 'Sin nombre',
-                        rut: r.rut || 'Sin RUT',
-                        telefono: r.telefono || 'Sin Fono',
+                        nombre: r.nombre || 'Huésped Pendiente',
+                        rut: r.rut || 'Pendiente',
+                        telefono: r.telefono || 'Sin Teléfono',
                         email: r.email || 'Sin Email',
                         totalVisitas: 1,
                         ultimaVisita: r.checkin
@@ -1582,7 +1791,7 @@
 
         /* ==========================================================================
             CALENDAR GENERATION
-            ========================================================================== */
+           ========================================================================== */
         function cambiarMesCalendario(offset) {
             mesCalendarioOffset += offset;
             renderCalendario();
@@ -1625,23 +1834,53 @@
                     let coincidenCheckin = false;
                     let coincidenCheckout = false;
                     let claseDia = 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100';
+                    let esAirbnbImportadoYGuardado = false;
 
                     reservas.forEach(r => {
                         if (fechaStr === r.checkin) coincidenCheckin = true;
                         if (fechaStr === r.checkout) coincidenCheckout = true;
 
                         if (fechaStr >= r.checkin && fechaStr <= r.checkout) {
+                            if (r.canal === 'Airbnb' || r.codigoOTA) {
+                                esAirbnbImportadoYGuardado = true;
+                            }
                             if (r.estadoReserva === 'Reserva en Curso') claseDia = 'cal-day-curso';
                             else if (r.estadoReserva === 'Reserva Terminada') claseDia = 'cal-day-terminada';
                             else claseDia = 'cal-day-reserva';
                         }
                     });
 
+                    if (esAirbnbImportadoYGuardado && claseDia !== 'cal-day-curso' && claseDia !== 'cal-day-terminada') {
+                        claseDia = 'cal-day-airbnb-confirmada';
+                    }
+
+                    let esReservaAirbnb = false;
+                    let esBloqueoAirbnb = false;
+                    let infoReservaAirbnb = null;
+
+                    if (claseDia === 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100') {
+                        infoReservaAirbnb = fechasAirbnbReservas.find(f => f.fecha === fechaStr);
+                        esReservaAirbnb = !!infoReservaAirbnb;
+                        esBloqueoAirbnb = fechasAirbnbBloqueos.includes(fechaStr);
+
+                        if (esReservaAirbnb) {
+                            claseDia = 'cal-day-airbnb cursor-pointer hover:opacity-80 shadow-sm';
+                        } else if (esBloqueoAirbnb) {
+                            claseDia = 'cal-day-bloqueo';
+                        }
+                    }
+
                     if (coincidenCheckin && coincidenCheckout) {
                         claseDia = 'cal-day-transicion';
                     }
 
-                    htmlMes += `<div class="p-2 rounded-lg text-center font-medium cursor-default transition ${claseDia}">${dia}</div>`;
+                    if (esReservaAirbnb && infoReservaAirbnb) {
+                        htmlMes += `<div onclick="autocompletarDesdeAirbnb('${infoReservaAirbnb.codigo}', '${infoReservaAirbnb.checkin}', '${infoReservaAirbnb.checkout}')" title="Clic para importar esta reserva de Airbnb" class="p-2 rounded-lg text-center font-medium transition ${claseDia}">${dia}</div>`;
+                    } else if (esAirbnbImportadoYGuardado) {
+                        htmlMes += `<div title="Reserva de Airbnb ya guardada en sistema" class="p-2 rounded-lg text-center font-medium transition ${claseDia}">${dia} <span class="text-[9px] block font-black">✓ AIRBNB</span></div>`;
+                    } else {
+                        htmlMes += `<div class="p-2 rounded-lg text-center font-medium transition ${claseDia}">${dia}</div>`;
+                    }
                 }
 
                 htmlMes += `</div></div>`;
@@ -1651,7 +1890,7 @@
 
         /* ==========================================================================
             VALIDATIONS & LOCK CODE HELPERS
-            ========================================================================== */
+           ========================================================================== */
         function validarFechasEnTiempoReal() {
             const inVal = document.getElementById('checkin').value;
             const outVal = document.getElementById('checkout').value;
@@ -1676,10 +1915,31 @@
         }
 
         function verificarSobreposicionFechas(checkinStr, checkoutStr, idActual = null) {
-            return reservas.some(r => {
+            const solapaFirestore = reservas.some(r => {
                 if (idActual && r.id === idActual) return false;
                 return (checkinStr < r.checkout && checkoutStr > r.checkin);
             });
+
+            if (solapaFirestore) return true;
+
+            const canalElegido = document.getElementById('canal').value;
+            const codigoOTAVal = document.getElementById('codigoOTA').value.trim();
+
+            if (canalElegido === 'Airbnb' || codigoOTAVal !== '') {
+                return false;
+            }
+
+            let cur = new Date(checkinStr);
+            const end = new Date(checkoutStr);
+            while (cur < end) {
+                const yyyy = cur.getFullYear();
+                const mm = String(cur.getMonth() + 1).padStart(2, '0');
+                const dd = String(cur.getDate()).padStart(2, '0');
+                if (fechasAirbnbBloqueos.includes(`${yyyy}-${mm}-${dd}`)) return true;
+                cur.setDate(cur.getDate() + 1);
+            }
+
+            return false;
         }
 
         function obtenerUltimos4Telefono() {
@@ -1706,7 +1966,7 @@
 
         /* ==========================================================================
             RESERVATIONS STATUS CALCULATION
-            ========================================================================== */
+           ========================================================================== */
         function calcularEstadoAutomatico(checkin, checkout, estadoManual) {
             if (estadoManual === 'Reserva Terminada') return 'Reserva Terminada';
             
@@ -1736,7 +1996,7 @@
 
         /* ==========================================================================
             FINANCIAL BREAKDOWN COMPUTATIONS
-            ========================================================================== */
+           ========================================================================== */
         function calcularValores() {
             const inDate = new Date(document.getElementById('checkin').value);
             const outDate = new Date(document.getElementById('checkout').value);
@@ -1812,14 +2072,17 @@
 
         document.getElementById('reservaForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!reservaCalculada.noches || reservaCalculada.noches <= 0) return alert('Revisa las fechas ingresadas.');
 
-            const idExistente = document.getElementById('reservaId').value;
             const checkinVal = document.getElementById('checkin').value;
             const checkoutVal = document.getElementById('checkout').value;
 
+            if (!checkinVal || !checkoutVal) {
+                return alert('Por favor selecciona las fechas de Check-In y Check-Out.');
+            }
+
+            const idExistente = document.getElementById('reservaId').value;
             if (verificarSobreposicionFechas(checkinVal, checkoutVal, idExistente)) {
-                return alert('⚠️ ERROR DE DISPONIBILIDAD: Ya existe una reserva guardada en las fechas seleccionadas.');
+                return alert('⚠️ ERROR DE DISPONIBILIDAD: Ya existe una reserva guardada previamente en la base de datos para esas fechas.');
             }
 
             const estadoCalculado = calcularEstadoAutomatico(checkinVal, checkoutVal, 'Auto');
@@ -1830,17 +2093,24 @@
             const diarioInviernoRef = calcularSumaDiariaTemporada(costosCasa.invierno);
             const diarioVigente = isVerano ? diarioVeranoRef : diarioInviernoRef;
 
-            const noches = Number(reservaCalculada.noches || 0);
+            const noches = Number(reservaCalculada.noches || 1);
             const costoDiarioAplicado = noches * diarioVigente;
             const costoFijoAplicado = (costosCasa.aseo || 0) + (costosCasa.regalo || 0);
 
+            const codigoOTAInput = String(document.getElementById('codigoOTA').value || '').trim();
+            const nombreInput = String(document.getElementById('nombre').value || '').trim() || (codigoOTAInput ? `Reserva Airbnb (${codigoOTAInput})` : 'Huésped Pendiente');
+            const rutInput = String(document.getElementById('rut').value || '').trim() || 'Pendiente';
+            const emailInput = String(document.getElementById('email').value || '').trim() || 'Sin Email';
+            const telefonoInput = String(document.getElementById('telefono').value || '').trim() || 'Sin Teléfono';
+
             const nuevaReserva = {
+                codigoOTA: codigoOTAInput,
                 estadoReserva: String(estadoCalculado || 'Reserva'),
-                nombre: String(document.getElementById('nombre').value || ''),
-                rut: String(document.getElementById('rut').value || ''),
-                email: String(document.getElementById('email').value || ''),
-                telefono: String(document.getElementById('telefono').value || ''),
-                adultos: Number(document.getElementById('adultos').value || 0),
+                nombre: nombreInput,
+                rut: rutInput,
+                email: emailInput,
+                telefono: telefonoInput,
+                adultos: Number(document.getElementById('adultos').value || 1),
                 ninos: Number(document.getElementById('ninos').value || 0),
                 temporadaReserva: temporadaElegida,
                 reqPerro: Boolean(document.getElementById('reqPerro').checked),
@@ -1852,11 +2122,11 @@
                 checkout: String(checkoutVal || ''),
                 valorDiarioFinal: Number(document.getElementById('valorDiarioFinal').value || 0),
                 costoPlataforma: Number(document.getElementById('costoPlataforma').value || 0),
-                canal: String(document.getElementById('canal').value || 'Directo Web/Wsp'),
+                canal: String(document.getElementById('canal').value || 'Airbnb'),
                 tipoDoc: String(document.getElementById('tipoDoc').value || 'Sin Documento'),
                 anotaciones: String(document.getElementById('anotaciones').value || ''),
                 abonos: abonosTemp.map(a => ({ fecha: String(a.fecha), monto: Number(a.monto) })),
-                dias: Number(reservaCalculada.dias || 0),
+                dias: Number(reservaCalculada.dias || 1),
                 noches: noches,
                 totalBruto: Number(reservaCalculada.totalBruto || 0),
                 netoCaban: Number(reservaCalculada.netoCaban || 0),
@@ -1876,7 +2146,7 @@
                 }
 
                 document.getElementById('btnWsp').disabled = false;
-                alert('¡Reserva guardada y sincronizada en la nube con costos congelados!');
+                alert('¡Reserva guardada con éxito!');
                 limpiarFormulario();
             } catch (err) {
                 alert("❌ NO SE PUDO GUARDAR EN FIREBASE: " + err.message);
@@ -1885,7 +2155,7 @@
 
         /* ==========================================================================
             USER MANAGEMENT
-            ========================================================================== */
+           ========================================================================== */
         function actualizarUsuarioActivoUI() {
             const u = usuarios.find(usr => usr.id == usuarioActivoId) || usuarios[0];
             if (u) {
@@ -1962,7 +2232,7 @@
                     await db.collection('usuarios').doc(editId).update({ nombre, email });
                 } else {
                     if (usuarios.length >= 5) {
-                        return alert('⚠️ LÍMITE ALCANZADO: Solo puedes registrar un máximo de 5 usuarios.');
+                        return alert('⚠ LÍMITE ALCANZADO: Solo puedes registrar un máximo de 5 usuarios.');
                     }
                     if (usuarios.some(u => u.email.toLowerCase() === email.toLowerCase())) {
                         return alert('Ese email/identificador ya existe.');
@@ -1985,7 +2255,7 @@
 
         /* ==========================================================================
             HOUSE COST COMPUTATION & RETIROS
-            ========================================================================== */
+           ========================================================================== */
         function cargarValoresCostosCasa() {
             const v = costosCasa.verano || {};
             document.getElementById('v_parafina').value = v.parafina || 0;
@@ -2079,14 +2349,42 @@
 
         function abrirModalRentabilidad() {
             const tbody = document.getElementById('tablaMargenes');
+            if (!tbody) return;
             tbody.innerHTML = '';
+
+            const selAno = document.getElementById('filtroMargenAno');
+            if (selAno && selAno.options.length === 0) {
+                const annos = [...new Set(reservas.map(r => r.checkin ? String(r.checkin).substring(0, 4) : ''))].filter(Boolean);
+                if (annos.length === 0) annos.push(new Date().getFullYear().toString());
+                annos.sort().reverse().forEach(a => {
+                    selAno.innerHTML += `<option value="${a}">${a}</option>`;
+                });
+            }
+
+            const anoSel = selAno ? selAno.value : '';
+            const mesSel = document.getElementById('filtroMargenMes') ? document.getElementById('filtroMargenMes').value : '';
+
+            const reservasFiltradas = reservas.filter(r => {
+                if (!r.checkin) return false;
+                const partes = String(r.checkin).split('-');
+                const matchAno = !anoSel || partes[0] === anoSel;
+                const matchMes = !mesSel || partes[1] === mesSel;
+                return matchAno && matchMes;
+            });
+
+            if (reservasFiltradas.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" class="p-6 text-center text-slate-400 font-medium">No hay registros de margen para el período seleccionado.</td></tr>`;
+                const elModal = document.getElementById('modalRentabilidad');
+                if (elModal.classList.contains('hidden')) toggleModal('modalRentabilidad');
+                return;
+            }
 
             const diarioVeranoRef = calcularSumaDiariaTemporada(costosCasa.verano);
             const diarioInviernoRef = calcularSumaDiariaTemporada(costosCasa.invierno);
             const costoAseoRef = costosCasa.aseo || 0;
             const costoRegaloRef = costosCasa.regalo || 0;
 
-            reservas.forEach(r => {
+            reservasFiltradas.forEach(r => {
                 const nochesUso = r.noches || 1;
                 const isVerano = (r.temporadaReserva === 'Verano');
                 const diarioUnitario = isVerano ? diarioVeranoRef : diarioInviernoRef;
@@ -2102,20 +2400,25 @@
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 border-b border-slate-100">
-                        <td class="p-2.5 font-bold text-slate-800">${r.nombre}</td>
-                        <td class="p-2.5 font-medium text-slate-600">${fechasCortas}</td>
-                        <td class="p-2.5 text-slate-500">${nochesUso} noches (${r.temporadaReserva || 'Verano'})</td>
-                        <td class="p-2.5 font-semibold text-emerald-700">$${(r.totalBruto || 0).toLocaleString('es-CL')}</td>
-                        <td class="p-2.5 text-rose-600">-$${costoPlat.toLocaleString('es-CL')}</td>
-                        <td class="p-2.5 text-amber-700">-$${costoDiarioTotal.toLocaleString('es-CL')}</td>
-                        <td class="p-2.5 text-teal-800 font-bold">-$${costosFijos.toLocaleString('es-CL')}</td>
-                        <td class="p-2.5 text-purple-700">-$${extras.toLocaleString('es-CL')}</td>
-                        <td class="p-2.5 font-bold ${gananciaNeta >= 0 ? 'text-emerald-700' : 'text-rose-600'}">$${gananciaNeta.toLocaleString('es-CL')}</td>
-                        <td class="p-2.5 font-bold text-slate-800">${margenPct}%</td>
+                        <td class="p-2.5 font-bold text-slate-800 sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
+                            ${r.nombre || 'Huésped Pendiente'}
+                            ${r.codigoOTA ? `<span class="block text-[10px] text-slate-400 font-mono font-normal">#${r.codigoOTA}</span>` : ''}
+                        </td>
+                        <td class="p-2.5 font-medium text-slate-600 whitespace-nowrap">${fechasCortas}</td>
+                        <td class="p-2.5 text-slate-500 whitespace-nowrap">${nochesUso}n (${r.temporadaReserva || 'Verano'})</td>
+                        <td class="p-2.5 font-semibold text-emerald-700 whitespace-nowrap">$${(r.totalBruto || 0).toLocaleString('es-CL')}</td>
+                        <td class="p-2.5 text-rose-600 whitespace-nowrap">-$${costoPlat.toLocaleString('es-CL')}</td>
+                        <td class="p-2.5 text-amber-700 whitespace-nowrap">-$${costoDiarioTotal.toLocaleString('es-CL')}</td>
+                        <td class="p-2.5 text-teal-800 font-bold whitespace-nowrap">-$${costosFijos.toLocaleString('es-CL')}</td>
+                        <td class="p-2.5 text-purple-700 whitespace-nowrap">-$${extras.toLocaleString('es-CL')}</td>
+                        <td class="p-2.5 font-bold ${gananciaNeta >= 0 ? 'text-emerald-700' : 'text-rose-600'} whitespace-nowrap">$${gananciaNeta.toLocaleString('es-CL')}</td>
+                        <td class="p-2.5 font-bold text-slate-800 whitespace-nowrap">${margenPct}%</td>
                     </tr>
                 `;
             });
-            toggleModal('modalRentabilidad');
+
+            const elModal = document.getElementById('modalRentabilidad');
+            if (elModal.classList.contains('hidden')) toggleModal('modalRentabilidad');
         }
 
         function actualizarDashboardResumen() {
@@ -2141,8 +2444,8 @@
         }
 
         /* ==========================================================================
-            KPIS & ANALYTICS CENTER (TABLA ENERO A DICIEMBRE CON ACUMULADO + FILTRO MES)
-            ========================================================================== */
+            KPIS & ANALYTICS CENTER
+           ========================================================================== */
         function abrirModalKPIs() {
             const selectAnno = document.getElementById('kpiAnno');
             selectAnno.innerHTML = '';
@@ -2234,7 +2537,6 @@
             document.getElementById('kpiIngresosBrutosAno').innerText = `$${ingresosBrutos.toLocaleString('es-CL')}`;
             document.getElementById('kpiGananciaPromedioLimpiaDia').innerText = `$${gananciaPromedioPorDia.toLocaleString('es-CL')} /día (${margenPromedioPorcentaje}%)`;
 
-            // Construcción de Tabla de Enero a Diciembre con Acumulado (considerando el año seleccionado)
             const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
             const mesesIngresos = Array(12).fill(0);
             const mesesEgresos = Array(12).fill(0);
@@ -2271,10 +2573,9 @@
                 const subtotal = ing - egr;
                 acumuladoCorriente += subtotal;
 
-                // Si hay filtro de mes activo, resaltamos o mostramos solo ese mes (o dejamos la tabla completa y destacamos)
                 const mesStrFiltro = String(i + 1).padStart(2, '0');
                 if (mesSel && mesStrFiltro !== mesSel) {
-                    continue; // Ocultar meses que no corresponden al filtro si se desea limpiar
+                    continue;
                 }
 
                 tbodyMeses.innerHTML += `
@@ -2339,7 +2640,7 @@
 
         /* ==========================================================================
             CLOUD REALTIME SYNCHRONIZATION
-            ========================================================================== */
+           ========================================================================== */
         function inicializarSincronizacionCloud() {
             db.collection('reservas').onSnapshot(snapshot => {
                 reservas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -2352,7 +2653,7 @@
                 actualizarDashboardResumen();
             }, error => {
                 console.error("Firebase Error:", error);
-                alert("⚠️ Error de conexión con Firebase: " + error.message);
+                alert("⚠ Error de conexión con Firebase: " + error.message);
             });
 
             db.collection('usuarios').onSnapshot(snapshot => {
@@ -2389,9 +2690,9 @@
 
         /* ==========================================================================
             WHATSAPP MESSAGE GENERATOR
-            ========================================================================== */
+           ========================================================================== */
         function generarWsp() {
-            const nombre = document.getElementById('nombre').value;
+            const nombre = document.getElementById('nombre').value || 'Huésped';
             const checkin = formatearFechaChile(document.getElementById('checkin').value);
             const checkout = formatearFechaChile(document.getElementById('checkout').value);
             const cantDias = document.getElementById('cantDiasMostrar').value;
@@ -2403,7 +2704,7 @@
             let reqsText = [];
             if (document.getElementById('reqPerro').checked) reqsText.push('🐾 Perro');
             if (document.getElementById('reqCuna').checked) reqsText.push('🍼 Cuna');
-            if (document.getElementById('reqProtectorEstufa').checked) reqsText.push('🛡️ Protector de Estufa');
+            if (document.getElementById('reqProtectorEstufa').checked) reqsText.push('🛡 Protector de Estufa');
             const reqsStr = reqsText.length > 0 ? reqsText.join(', ') : 'Ninguno';
 
             const texto = `¡Hola ${nombre}! Confirmamos tu reserva en Refugio Entre Montañas 🏔️.\n\n📅 Entrada: ${checkin}\n📅 Salida: ${checkout}\n⏱️ Estadía: ${cantDias}\n📋 Requerimientos Especiales: ${reqsStr}\n🔑 Clave Cerradura: ${claveAcceso}\n\n💰 Valor Total: ${total}\n💵 Total Abonado: ${abonado}\n📌 Saldo Pendiente: ${saldo}\n\n¡Te esperamos para disfrutar del refugio!`;
