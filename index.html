@@ -22,7 +22,7 @@
     <!-- SheetJS CDN (Excel Export Library) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-    <!-- ical.js CDN (Para leer el calendario de Airbnb directamente en el navegador) -->
+    <!-- ical.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ical.js/1.5.0/ical.min.js"></script>
 
     <!-- FIREBASE SDKs (v9.23.0 Compat) -->
@@ -35,8 +35,14 @@
         .cal-day-reserva { background-color: #fef3c7 !important; color: #92400e !important; font-weight: 700; border: 1px solid #fde68a; }
         .cal-day-curso { background-color: #d1fae5 !important; color: #065f46 !important; font-weight: 700; border: 1px solid #a7f3d0; }
         .cal-day-terminada { background-color: #f1f5f9 !important; color: #64748b !important; border: 1px solid #e2e8f0; }
+        
+        /* Pendientes Importadas: Rosa */
         .cal-day-airbnb { background-color: #ffe4e6 !important; color: #9f1239 !important; font-weight: 700; border: 1px solid #fecdd3; }
-        .cal-day-airbnb-confirmada { background-color: #dcfce7 !important; color: #14532d !important; font-weight: 800; border: 1.5px solid #86efac; }
+        .cal-day-booking { background-color: #ffe4e6 !important; color: #1e3a8a !important; font-weight: 700; border: 1px solid #fecdd3; }
+
+        /* Guardadas / Confirmadas: Amarillo */
+        .cal-day-confirmada { background-color: #fef3c7 !important; color: #92400e !important; font-weight: 800; border: 1.5px solid #fde68a; }
+        
         .cal-day-bloqueo { background-color: #cbd5e1 !important; color: #334155 !important; font-weight: 700; border: 1px solid #94a3b8; }
         
         .cal-day-transicion { 
@@ -78,8 +84,11 @@
             </div>
 
             <div class="flex flex-wrap items-center justify-center gap-2">
-                <button type="button" onclick="sincronizarAirbnbNavegador()" class="inline-flex items-center px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg shadow transition">
+                <button type="button" onclick="sincronizarNavegador('airbnb')" class="inline-flex items-center px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg shadow transition">
                     <i class="fa-solid fa-rotate mr-1.5"></i> Sincronizar Airbnb
+                </button>
+                <button type="button" onclick="sincronizarNavegador('booking')" class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg shadow transition">
+                    <i class="fa-solid fa-rotate mr-1.5"></i> Sincronizar Booking
                 </button>
                 <label class="inline-flex items-center px-2.5 py-1.5 bg-rose-900 hover:bg-rose-950 text-rose-100 text-xs font-semibold rounded-lg border border-rose-700 cursor-pointer transition">
                     <i class="fa-solid fa-file-arrow-up mr-1.5 text-rose-300"></i> Subir .ics
@@ -130,20 +139,24 @@
                 <form id="reservaForm" class="space-y-4">
                     <input type="hidden" id="reservaId">
 
-                    <!-- CAMPO CÓDIGO AIRBNB / OTA CON BÚSQUEDA AUTOMÁTICA -->
+                    <!-- CAMPO CÓDIGO AIRBNB / BOOKING / OTA -->
                     <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
-                                <i class="fa-solid fa-hashtag mr-1.5 text-slate-500"></i>Código Reserva Airbnb / OTA
+                                <i class="fa-solid fa-hashtag mr-1.5 text-slate-500"></i>Código Reserva Airbnb / Booking
                             </label>
                             <span class="text-[10px] text-slate-500 font-semibold">⚡ Puedes guardar la reserva de inmediato con campos pendientes</span>
                         </div>
                         
-                        <div class="flex gap-2 mt-2">
-                            <input type="text" id="codigoOTA" placeholder="Ej: HM12345678 (Pega o escribe el código)" class="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition">
-                            <button type="button" onclick="cargarFechasPorCodigo()" class="bg-slate-800 hover:bg-slate-700 text-white font-semibold px-3 py-1.5 rounded-lg text-xs shadow transition flex items-center gap-1.5">
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <input type="text" id="codigoOTA" placeholder="Ej: HM12345678 o 4839201" class="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition min-w-[200px]">
+                            <button type="button" onclick="cargarFechasPorCodigo('Airbnb')" class="bg-rose-700 hover:bg-rose-600 text-white font-semibold px-3 py-1.5 rounded-lg text-xs shadow transition flex items-center gap-1.5">
                                 <i class="fa-solid fa-magnifying-glass"></i>
-                                <span>Cargar Datos Airbnb</span>
+                                <span>Cargar Airbnb</span>
+                            </button>
+                            <button type="button" onclick="cargarFechasPorCodigo('Booking')" class="bg-blue-700 hover:bg-blue-600 text-white font-semibold px-3 py-1.5 rounded-lg text-xs shadow transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <span>Cargar Booking</span>
                             </button>
                         </div>
                     </div>
@@ -175,14 +188,15 @@
                         </div>
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Canal Origen</label>
-                            <select id="canal" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
-                                <option value="Directo Web/Wsp">Directo Web / WhatsApp</option>
+                            <select id="canal" onchange="evaluarModoFamilia()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 font-bold focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition">
+                                <option value="Directo">Directa</option>
                                 <option value="Airbnb">Airbnb</option>
                                 <option value="Booking">Booking.com</option>
+                                <option value="Familia">Familia (Uso Personal)</option>
                                 <option value="Otro">Otro Canal</option>
                             </select>
                         </div>
-                        <div>
+                        <div id="wrapperTemporada">
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-amber-800 mb-1">
                                 <i class="fa-solid fa-sun-plant-wilt mr-1"></i> Selección Temporada / Tarifa
                             </label>
@@ -193,26 +207,26 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
-                        <div>
+                    <div id="seccionPasajerosFechas" class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                        <div id="wrapperAdultos">
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Adultos</label>
                             <input type="number" id="adultos" min="1" value="2" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-800 font-semibold focus:outline-none focus:border-emerald-600">
                         </div>
-                        <div>
+                        <div id="wrapperNinos">
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Niños</label>
                             <input type="number" id="ninos" min="0" value="0" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-800 font-semibold focus:outline-none focus:border-emerald-600">
                         </div>
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Check-In</label>
-                            <input type="date" id="checkin" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-600">
+                            <input type="date" id="checkin" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-600 font-bold">
                         </div>
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Check-Out</label>
-                            <input type="date" id="checkout" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-600">
+                            <input type="date" id="checkout" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-600 font-bold">
                         </div>
                     </div>
 
-                    <div class="bg-indigo-50/70 p-3.5 rounded-xl border border-indigo-100">
+                    <div id="wrapperRequerimientos" class="bg-indigo-50/70 p-3.5 rounded-xl border border-indigo-100">
                         <label class="block font-bold text-xs uppercase tracking-wider text-indigo-900 mb-2">
                             <i class="fa-solid fa-list-check mr-1 text-indigo-600"></i> Requerimientos Especiales
                         </label>
@@ -232,7 +246,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div id="seccionCostosPrecios" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Duración Calculada</label>
                             <input type="text" id="cantDiasMostrar" readonly value="0 días / 0 noches" class="w-full bg-slate-100 border border-slate-300 font-bold text-slate-700 rounded-lg px-3 py-2 text-xs">
@@ -247,7 +261,7 @@
                         </div>
                     </div>
 
-                    <div>
+                    <div id="wrapperDocTributario">
                         <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Documento Tributario</label>
                         <select id="tipoDoc" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-600">
                             <option value="Sin Documento">Sin Documento / Registro Interno</option>
@@ -256,7 +270,7 @@
                         </select>
                     </div>
 
-                    <div class="bg-amber-50/60 p-3.5 rounded-xl border border-amber-200/80 space-y-2">
+                    <div id="seccionAbonos" class="bg-amber-50/60 p-3.5 rounded-xl border border-amber-200/80 space-y-2">
                         <label class="block font-bold text-xs uppercase tracking-wider text-amber-900">
                             <i class="fa-solid fa-money-bill-transfer mr-1"></i> Registro de Abonos & Pagos
                         </label>
@@ -294,7 +308,7 @@
                         </button>
                     </div>
 
-                    <div class="bg-slate-100/80 p-3.5 rounded-xl border border-slate-300/80 space-y-2 mt-4">
+                    <div id="seccionGastosExtras" class="bg-slate-100/80 p-3.5 rounded-xl border border-slate-300/80 space-y-2 mt-4">
                         <div class="flex justify-between items-center">
                             <label class="block font-bold text-xs uppercase tracking-wider text-slate-700">
                                 <i class="fa-solid fa-receipt mr-1.5 text-slate-600"></i> Gastos Adicionales Específicos (Cierre / Post-Estadía)
@@ -317,7 +331,7 @@
                 </form>
             </section>
 
-            <!-- FINANCIAL SUMMARY PANEL (1 COL) -->
+            <!-- FINANCIAL SUMMARY PANEL (HOMOLOGADO A RESUMEN MENSUAL/ANUAL CON FONDO NEGRO) -->
             <section class="bg-slate-900 text-white border border-slate-800 p-5 rounded-2xl shadow-xl flex flex-col justify-between space-y-4">
                 <div class="space-y-4">
                     <div>
@@ -327,28 +341,33 @@
                         <span class="text-xs text-slate-400 font-medium block mt-0.5 border-b border-slate-800 pb-2">Presente reserva</span>
                     </div>
 
-                    <div class="space-y-2 text-xs">
-                        <div class="flex justify-between py-1 border-b border-slate-800/60">
+                    <div class="bg-slate-800/80 border border-slate-700/80 p-3.5 rounded-xl space-y-2 text-xs shadow-inner">
+                        <span class="font-extrabold text-emerald-400 uppercase text-[10px] tracking-wider block border-b border-slate-700 pb-1 flex items-center justify-between">
+                            <span>📊 Valores Estimados</span>
+                            <span class="text-[9px] font-bold bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-800">Cálculo Local</span>
+                        </span>
+
+                        <div class="flex justify-between py-1 border-b border-slate-700/50">
                             <span class="text-slate-400">Estadía:</span>
                             <span id="resNoches" class="font-bold text-white">0d / 0n</span>
                         </div>
-                        <div class="flex justify-between py-1 border-b border-slate-800/60">
+                        <div class="flex justify-between py-1 border-b border-slate-700/50">
                             <span class="text-slate-400">Total Bruto:</span>
                             <span id="resTotalBruto" class="font-bold text-emerald-400">$0</span>
                         </div>
-                        <div class="flex justify-between py-1 border-b border-slate-800/60 text-rose-400">
+                        <div class="flex justify-between py-1 border-b border-slate-700/50 text-rose-400">
                             <span>- Comisión Plataforma:</span>
                             <span id="resCostoPlataforma">$0</span>
                         </div>
-                        <div class="flex justify-between py-1 border-b border-slate-800/60 text-slate-200">
+                        <div class="flex justify-between py-1 border-b border-slate-700/50 text-slate-200">
                             <span>Ingreso Neto Cabaña:</span>
                             <span id="resNetoCaban" class="font-semibold text-white">$0</span>
                         </div>
-                        <div class="flex justify-between py-1 border-b border-slate-800/60 text-amber-300">
+                        <div class="flex justify-between py-1 border-b border-slate-700/50 text-amber-300">
                             <span>Base Neta Factura:</span>
                             <span id="resNetoImpuesto">$0</span>
                         </div>
-                        <div class="flex justify-between py-1 border-b border-slate-800/60 text-amber-300">
+                        <div class="flex justify-between py-1 border-b border-slate-700/50 text-amber-300">
                             <span>IVA (19%):</span>
                             <span id="resIva">$0</span>
                         </div>
@@ -358,7 +377,7 @@
                                 <span>Total Abonado:</span>
                                 <span id="resTotalAbonado">$0</span>
                             </div>
-                            <div class="flex justify-between text-amber-400 font-extrabold text-sm bg-amber-950/40 p-2 rounded-lg border border-amber-900/50">
+                            <div class="flex justify-between text-amber-400 font-extrabold text-sm bg-amber-950/60 p-2 rounded-lg border border-amber-900/80">
                                 <span>Saldo Pendiente:</span>
                                 <span id="resSaldoPendiente">$0</span>
                             </div>
@@ -366,7 +385,7 @@
                     </div>
 
                     <!-- MONTHLY & ANNUAL DASHBOARD COUNTERS -->
-                    <div class="space-y-3 text-xs pt-2">
+                    <div class="space-y-3 text-xs pt-1">
                         <div class="bg-white text-slate-800 border-2 border-emerald-500 p-3 rounded-xl space-y-1.5 shadow-md">
                             <span class="font-extrabold text-emerald-800 uppercase text-[10px] tracking-wider block border-b border-emerald-100 pb-1 flex items-center justify-between">
                                 <span>⚡ Resumen Mes en Curso</span>
@@ -434,12 +453,11 @@
             </div>
 
             <div class="flex flex-wrap gap-4 text-xs font-semibold bg-slate-50 p-3 rounded-xl border border-slate-200">
-                <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-reserva inline-block"></span> <span class="text-slate-700">Reserva Confirmada</span></div>
-                <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-curso inline-block"></span> <span class="text-slate-700">Reserva en Curso</span></div>
+                <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-confirmada inline-block"></span> <span class="text-slate-700">Reserva Confirmada / Importada</span></div>
+                <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-curso inline-block"></span> <span class="text-slate-700">Reserva en Curso (Verde)</span></div>
                 <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-terminada inline-block"></span> <span class="text-slate-700">Reserva Terminada</span></div>
-                <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-airbnb inline-block"></span> <span class="text-slate-700">Airbnb Pendiente (Rosa - Clic Importar)</span></div>
-                <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-airbnb-confirmada inline-block"></span> <span class="text-slate-700">✓ Airbnb Importado / Guardado (Verde)</span></div>
-                <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-bloqueo inline-block"></span> <span class="text-slate-700">Fecha Bloqueada Airbnb</span></div>
+                <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-airbnb inline-block"></span> <span class="text-slate-700">Airbnb / Booking Pendiente (Rosa - Clic Importar)</span></div>
+                <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-bloqueo inline-block"></span> <span class="text-slate-700">Fecha bloqueada</span></div>
                 <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-transicion inline-block"></span> <span class="text-slate-700">Cambio Huésped (Turnaround Mismo Día)</span></div>
             </div>
 
@@ -701,7 +719,7 @@
         </div>
     </div>
 
-    <!-- MODAL 4: MARGINS & PROFITABILITY (CON FILTROS Y COLUMNA HUÉSPED FIJA) -->
+    <!-- MODAL 4: MARGINS & PROFITABILITY (CON AÑO EN CURSO 2026 POR DEFECTO) -->
     <div id="modalRentabilidad" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-5xl w-full p-6 space-y-4">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 pb-3 gap-3">
@@ -709,7 +727,7 @@
                     <i class="fa-solid fa-scale-balanced mr-2 text-teal-600"></i>Margen de Contribución por Arriendo
                 </h3>
                 <div class="flex flex-wrap items-center gap-2">
-                    <select id="filtroMargenAno" onchange="abrirModalRentabilidad()" class="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-xs text-slate-800 font-semibold focus:outline-none focus:border-teal-600"></select>
+                    <select id="filtroMargenAno" onchange="abrirModalRentabilidad()" class="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-xs text-slate-800 font-bold focus:outline-none focus:border-teal-600"></select>
                     <select id="filtroMargenMes" onchange="abrirModalRentabilidad()" class="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-xs text-slate-800 font-semibold focus:outline-none focus:border-teal-600">
                         <option value="">Todos los Meses</option>
                         <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
@@ -1014,8 +1032,8 @@
         }
         const db = firebase.firestore();
 
-        // URL del Cloudflare Worker (Puente directo sin bloqueos CORS)
-        const URL_AIRBNB_WORKER = "https://dry-field-4c22.evicencio.workers.dev/";
+        // URL del Cloudflare Worker Proxy
+        const URL_WORKER_PROXY = "https://dry-field-4c22.evicencio.workers.dev/";
 
         /* ==========================================================================
             GLOBAL STATE
@@ -1024,6 +1042,10 @@
         let fechasAirbnb = [];
         let fechasAirbnbReservas = [];
         let fechasAirbnbBloqueos = [];
+        
+        let fechasBooking = [];
+        let fechasBookingReservas = [];
+        
         let usuarios = [];
         let usuarioActivoId = localStorage.getItem('usr_activo_caban') || null;
         let abonosTemp = [];
@@ -1048,27 +1070,28 @@
         let chartInstance = null;
 
         /* ==========================================================================
-            AIRBNB ICAL DIRECT FETCH (CLOUDFLARE WORKER)
+            DUAL ICAL FETCH & PARSER (AIRBNB + BOOKING)
            ========================================================================== */
-        async function obtenerContenidoICal() {
-            const resp = await fetch(URL_AIRBNB_WORKER);
+        async function obtenerContenidoICal(source = 'airbnb') {
+            const queryUrl = `${URL_WORKER_PROXY}?source=${source}`;
+            const resp = await fetch(queryUrl);
             if (!resp.ok) {
-                throw new Error("No se pudo obtener la respuesta del Worker de Cloudflare.");
+                throw new Error(`No se pudo obtener la respuesta del Worker de Cloudflare para ${source}.`);
             }
             const txt = await resp.text();
             if (txt && txt.includes('BEGIN:VCALENDAR')) {
                 return txt;
             }
-            throw new Error('El archivo iCal devuelto no es válido.');
+            throw new Error(`El archivo iCal devuelto de ${source} no es válido.`);
         }
 
-        function procesarTextoICal(dataText) {
+        function procesarTextoICal(dataText, origen = 'airbnb') {
             const jcalData = ICAL.parse(dataText);
             const comp = new ICAL.Component(jcalData);
             const vevents = comp.getAllSubcomponents('vevent');
 
-            fechasAirbnbReservas = [];
-            fechasAirbnbBloqueos = [];
+            let tempReservas = [];
+            let tempBloqueos = [];
             let contadorReservas = 0;
             let contadorBloqueos = 0;
 
@@ -1087,11 +1110,12 @@
                     const checkoutIso = end.toISOString().split('T')[0];
 
                     let codigoExtraido = null;
-                    const matchCodigo = uid.match(/([A-Z0-9]{8,10})/i) || description.match(/HM[A-Z0-9]{8,10}/i);
+                    const matchCodigo = uid.match(/([A-Z0-9]{8,10})/i) || description.match(/HM[A-Z0-9]{8,10}/i) || summary.match(/([0-9]{7,12})/i);
                     if (matchCodigo) codigoExtraido = matchCodigo[0];
 
                     const esReserva = summary.includes('reserved') || 
                                       summary.includes('reserva') || 
+                                      summary.includes('booking') || 
                                       description.includes('reservation') || 
                                       (codigoExtraido && !summary.includes('not available'));
 
@@ -1102,14 +1126,15 @@
                         const fechaIso = `${yyyy}-${mm}-${dd}`;
 
                         if (esReserva) {
-                            fechasAirbnbReservas.push({ 
+                            tempReservas.push({ 
                                 fecha: fechaIso, 
-                                codigo: codigoExtraido || 'AIRBNB-IMPORT',
+                                codigo: codigoExtraido || `${origen.toUpperCase()}-IMPORT`,
                                 checkin: checkinIso,
-                                checkout: checkoutIso
+                                checkout: checkoutIso,
+                                canal: origen === 'booking' ? 'Booking' : 'Airbnb'
                             });
                         } else {
-                            fechasAirbnbBloqueos.push(fechaIso);
+                            tempBloqueos.push(fechaIso);
                         }
 
                         cur.setDate(cur.getDate() + 1);
@@ -1120,22 +1145,26 @@
                 }
             });
 
-            fechasAirbnb = [
-                ...fechasAirbnbReservas.map(f => f.fecha),
-                ...fechasAirbnbBloqueos
-            ];
+            if (origen === 'booking') {
+                fechasBookingReservas = tempReservas;
+                fechasBooking = tempReservas.map(f => f.fecha);
+            } else {
+                fechasAirbnbReservas = tempReservas;
+                fechasAirbnbBloqueos = tempBloqueos;
+                fechasAirbnb = [...tempReservas.map(f => f.fecha), ...tempBloqueos];
+            }
 
             renderCalendario();
-            alert(`¡Sincronización Completada con Cloudflare Worker!\n\n• Reservas Airbnb detectadas: ${contadorReservas}\n• Fechas Bloqueadas: ${contadorBloqueos}\n• Total noches ocupadas/bloqueadas: ${fechasAirbnb.length}`);
+            alert(`¡Sincronización de ${origen.toUpperCase()} Completada!\n\n• Reservas detectadas: ${contadorReservas}\n• Fechas Bloqueadas/Totales: ${origen === 'booking' ? tempReservas.length : tempBloqueos.length}`);
         }
 
-        async function sincronizarAirbnbNavegador() {
+        async function sincronizarNavegador(origen = 'airbnb') {
             try {
-                const dataText = await obtenerContenidoICal();
-                procesarTextoICal(dataText);
+                const dataText = await obtenerContenidoICal(origen);
+                procesarTextoICal(dataText, origen);
             } catch (e) {
-                console.error("Error sincronizando Airbnb:", e);
-                const usarArchivo = confirm("Ocurrió un inconveniente al conectar con Cloudflare Worker.\n\n¿Deseas seleccionar el archivo .ics guardado en tu equipo para cargarlo de inmediato?");
+                console.error(`Error sincronizando ${origen}:`, e);
+                const usarArchivo = confirm(`Ocurrió un inconveniente al conectar iCal para ${origen.toUpperCase()}.\n\n¿Deseas seleccionar un archivo .ics local de tu equipo?`);
                 if (usarArchivo) {
                     document.getElementById('inputArchivoIcs').click();
                 }
@@ -1149,55 +1178,110 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    procesarTextoICal(e.target.result);
+                    procesarTextoICal(e.target.result, 'airbnb');
                 } catch (err) {
-                    alert("Error al leer el archivo .ics seleccionado. Verifica que sea un iCal válido.");
+                    alert("Error al leer el archivo .ics seleccionado.");
                 }
             };
             reader.readAsText(file);
         }
 
         /* ==========================================================================
-            BÚSQUEDA Y AUTOCOMPLETADO AUTOMÁTICO POR CÓDIGO
+            CÓDIGO DE BÚSQUEDA Y IMPORTACIÓN DESDE AMBAS OTAS
            ========================================================================== */
-        function cargarFechasPorCodigo() {
+        function cargarFechasPorCodigo(plataforma = 'Airbnb') {
             const codigoBuscado = document.getElementById('codigoOTA').value.trim().toUpperCase();
             if (!codigoBuscado) {
-                return alert('Por favor, ingresa o pega primero el código de la reserva de Airbnb.');
+                return alert(`Por favor, ingresa o pega el código de reserva de ${plataforma}.`);
             }
 
-            const reservaEncontrada = fechasAirbnbReservas.find(f => f.codigo && f.codigo.toUpperCase().includes(codigoBuscado));
+            const conjunto = plataforma === 'Booking' ? fechasBookingReservas : fechasAirbnbReservas;
+            const reservaEncontrada = conjunto.find(f => f.codigo && f.codigo.toUpperCase().includes(codigoBuscado));
 
             if (reservaEncontrada) {
-                document.getElementById('canal').value = 'Airbnb';
+                document.getElementById('canal').value = plataforma === 'Booking' ? 'Booking' : 'Airbnb';
                 document.getElementById('checkin').value = reservaEncontrada.checkin;
                 document.getElementById('checkout').value = reservaEncontrada.checkout;
 
+                evaluarModoFamilia();
                 actualizarSelectorTemporadaAutomatico();
                 calcularValores();
 
-                alert(`✅ ¡Datos encontrados para el código ${codigoBuscado}!\n\nCheck-In: ${formatearFechaChile(reservaEncontrada.checkin)}\nCheck-Out: ${formatearFechaChile(reservaEncontrada.checkout)}`);
+                alert(`✅ ¡Datos encontrados para el código ${codigoBuscado} (${plataforma})!\n\nCheck-In: ${formatearFechaChile(reservaEncontrada.checkin)}\nCheck-Out: ${formatearFechaChile(reservaEncontrada.checkout)}`);
             } else {
-                alert(`⚠️ No se encontraron fechas para el código "${codigoBuscado}" en la última sincronización de Airbnb.\n\nVerifica que el código esté correcto o presiona "Sincronizar Airbnb".`);
+                alert(`⚠️ No se encontraron fechas para el código "${codigoBuscado}" en ${plataforma}.\n\nRevisa la clave o presiona "Sincronizar ${plataforma}".`);
             }
         }
 
-        function autocompletarDesdeAirbnb(codigo, checkin, checkout) {
+        function autocompletarDesdeOTA(codigo, checkin, checkout, canal = 'Airbnb') {
             limpiarFormulario();
 
-            document.getElementById('codigoOTA').value = (codigo && codigo !== 'AIRBNB-IMPORT') ? codigo : '';
-            document.getElementById('canal').value = 'Airbnb';
+            document.getElementById('codigoOTA').value = (codigo && !codigo.includes('IMPORT')) ? codigo : '';
+            document.getElementById('canal').value = canal;
             document.getElementById('checkin').value = checkin;
             document.getElementById('checkout').value = checkout;
 
             if (!document.getElementById('nombre').value) {
-                document.getElementById('nombre').value = codigo && codigo !== 'AIRBNB-IMPORT' ? `Reserva Airbnb (${codigo})` : 'Reserva Airbnb Pendiente';
+                document.getElementById('nombre').value = codigo && !codigo.includes('IMPORT') ? `Reserva ${canal} (${codigo})` : `Reserva ${canal} Pendiente`;
             }
 
+            evaluarModoFamilia();
             actualizarSelectorTemporadaAutomatico();
             calcularValores();
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /* ==========================================================================
+            LÓGICA MODO FAMILIA / USO PERSONAL
+           ========================================================================== */
+        function evaluarModoFamilia() {
+            const canal = document.getElementById('canal').value;
+            const esFamilia = (canal === 'Familia');
+
+            const nombreInput = document.getElementById('nombre');
+            if (esFamilia) {
+                nombreInput.value = 'reserva familia';
+            }
+
+            // Ocultar / Mostrar secciones financieras
+            const secCostos = document.getElementById('seccionCostosPrecios');
+            const secAbonos = document.getElementById('seccionAbonos');
+            const wrapperDoc = document.getElementById('wrapperDocTributario');
+            const secExtras = document.getElementById('seccionGastosExtras');
+            const wrapperTemp = document.getElementById('wrapperTemporada');
+            const wrapperAdultos = document.getElementById('wrapperAdultos');
+            const wrapperNinos = document.getElementById('wrapperNinos');
+            const wrapperReqs = document.getElementById('wrapperRequerimientos');
+
+            if (esFamilia) {
+                if (secCostos) secCostos.classList.add('hidden');
+                if (secAbonos) secAbonos.classList.add('hidden');
+                if (wrapperDoc) wrapperDoc.classList.add('hidden');
+                if (secExtras) secExtras.classList.add('hidden');
+                if (wrapperTemp) wrapperTemp.classList.add('hidden');
+                if (wrapperAdultos) wrapperAdultos.classList.add('hidden');
+                if (wrapperNinos) wrapperNinos.classList.add('hidden');
+                if (wrapperReqs) wrapperReqs.classList.add('hidden');
+
+                // Forzar tarifa cero
+                document.getElementById('valorDiarioFinal').value = 0;
+                document.getElementById('costoPlataforma').value = 0;
+            } else {
+                if (secCostos) secCostos.classList.remove('hidden');
+                if (secAbonos) secAbonos.classList.remove('hidden');
+                if (wrapperDoc) wrapperDoc.classList.remove('hidden');
+                if (secExtras) secExtras.classList.remove('hidden');
+                if (wrapperTemp) wrapperTemp.classList.remove('hidden');
+                if (wrapperAdultos) wrapperAdultos.classList.remove('hidden');
+                if (wrapperNinos) wrapperNinos.classList.remove('hidden');
+                if (wrapperReqs) wrapperReqs.classList.remove('hidden');
+
+                if (parseFloat(document.getElementById('valorDiarioFinal').value) === 0) {
+                    document.getElementById('valorDiarioFinal').value = 380000;
+                }
+            }
+            calcularValores();
         }
 
         /* ==========================================================================
@@ -1312,7 +1396,8 @@
             }
 
             inicializarSincronizacionCloud();
-            sincronizarAirbnbNavegador();
+            sincronizarNavegador('airbnb');
+            sincronizarNavegador('booking');
         });
 
         function actualizarSelectorTemporadaAutomatico() {
@@ -1333,7 +1418,7 @@
                 const totalAbonado = r.abonos ? r.abonos.reduce((sum, a) => sum + parseFloat(a.monto || 0), 0) : 0;
                 const totalBruto = parseFloat(r.totalBruto) || 0;
                 return {
-                    "Código Airbnb/OTA": r.codigoOTA || '-',
+                    "Código OTA": r.codigoOTA || '-',
                     "Huésped": r.nombre || 'Pendiente',
                     "RUT / Pasaporte": r.rut || 'Pendiente',
                     "Teléfono": r.telefono || 'Sin Teléfono',
@@ -1380,7 +1465,7 @@
                 const margenPct = r.totalBruto > 0 ? ((gananciaNeta / r.totalBruto) * 100).toFixed(1) : 0;
 
                 return {
-                    "Código Airbnb/OTA": r.codigoOTA || '-',
+                    "Código OTA": r.codigoOTA || '-',
                     "Huésped": r.nombre || 'Pendiente',
                     "Check-In": r.checkin || '-',
                     "Check-Out": r.checkout || '-',
@@ -1497,7 +1582,10 @@
             document.getElementById('reservaId').value = '';
             document.getElementById('codigoOTA').value = '';
             document.getElementById('valorDiarioFinal').value = 380000;
+            document.getElementById('canal').value = 'Directo';
             
+            evaluarModoFamilia();
+
             const hoyIso = new Date().toISOString().split('T')[0];
             document.getElementById('checkin').value = hoyIso;
             actualizarSelectorTemporadaAutomatico();
@@ -1543,11 +1631,13 @@
             document.getElementById('costoImprevistosReserva').value = r.costoImprevistosReserva || 0;
             document.getElementById('checkin').value = r.checkin || '';
             document.getElementById('checkout').value = r.checkout || '';
-            document.getElementById('valorDiarioFinal').value = r.valorDiarioFinal || 380000;
+            document.getElementById('valorDiarioFinal').value = r.valorDiarioFinal || 0;
             document.getElementById('costoPlataforma').value = r.costoPlataforma || 0;
-            document.getElementById('canal').value = r.canal || 'Directo Web/Wsp';
+            document.getElementById('canal').value = r.canal || 'Directo';
             document.getElementById('tipoDoc').value = r.tipoDoc || 'Sin Documento';
             document.getElementById('anotaciones').value = r.anotaciones || '';
+
+            evaluarModoFamilia();
 
             abonosTemp = r.abonos ? [...r.abonos] : [];
             renderAbonos();
@@ -1790,7 +1880,7 @@
         }
 
         /* ==========================================================================
-            CALENDAR GENERATION
+            CALENDAR GENERATION CON ETIQUETAS Y COLORES
            ========================================================================== */
         function cambiarMesCalendario(offset) {
             mesCalendarioOffset += offset;
@@ -1834,38 +1924,45 @@
                     let coincidenCheckin = false;
                     let coincidenCheckout = false;
                     let claseDia = 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100';
-                    let esAirbnbImportadoYGuardado = false;
+                    let etiquetaPlataforma = '';
 
                     reservas.forEach(r => {
                         if (fechaStr === r.checkin) coincidenCheckin = true;
                         if (fechaStr === r.checkout) coincidenCheckout = true;
 
                         if (fechaStr >= r.checkin && fechaStr <= r.checkout) {
-                            if (r.canal === 'Airbnb' || r.codigoOTA) {
-                                esAirbnbImportadoYGuardado = true;
+                            etiquetaPlataforma = r.canal ? r.canal.toUpperCase() : 'DIRECTA';
+                            if (r.estadoReserva === 'Reserva en Curso') {
+                                claseDia = 'cal-day-curso';
+                            } else if (r.estadoReserva === 'Reserva Terminada') {
+                                claseDia = 'cal-day-terminada';
+                            } else {
+                                claseDia = 'cal-day-confirmada'; // Amarillo
                             }
-                            if (r.estadoReserva === 'Reserva en Curso') claseDia = 'cal-day-curso';
-                            else if (r.estadoReserva === 'Reserva Terminada') claseDia = 'cal-day-terminada';
-                            else claseDia = 'cal-day-reserva';
                         }
                     });
 
-                    if (esAirbnbImportadoYGuardado && claseDia !== 'cal-day-curso' && claseDia !== 'cal-day-terminada') {
-                        claseDia = 'cal-day-airbnb-confirmada';
-                    }
-
                     let esReservaAirbnb = false;
-                    let esBloqueoAirbnb = false;
-                    let infoReservaAirbnb = null;
+                    let esReservaBooking = false;
+                    let esBloqueo = false;
+                    let infoReservaOTA = null;
 
                     if (claseDia === 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100') {
-                        infoReservaAirbnb = fechasAirbnbReservas.find(f => f.fecha === fechaStr);
-                        esReservaAirbnb = !!infoReservaAirbnb;
-                        esBloqueoAirbnb = fechasAirbnbBloqueos.includes(fechaStr);
+                        infoReservaOTA = fechasAirbnbReservas.find(f => f.fecha === fechaStr);
+                        if (infoReservaOTA) {
+                            esReservaAirbnb = true;
+                        } else {
+                            infoReservaOTA = fechasBookingReservas.find(f => f.fecha === fechaStr);
+                            if (infoReservaOTA) esReservaBooking = true;
+                        }
+
+                        esBloqueo = fechasAirbnbBloqueos.includes(fechaStr);
 
                         if (esReservaAirbnb) {
                             claseDia = 'cal-day-airbnb cursor-pointer hover:opacity-80 shadow-sm';
-                        } else if (esBloqueoAirbnb) {
+                        } else if (esReservaBooking) {
+                            claseDia = 'cal-day-booking cursor-pointer hover:opacity-80 shadow-sm';
+                        } else if (esBloqueo) {
                             claseDia = 'cal-day-bloqueo';
                         }
                     }
@@ -1874,10 +1971,13 @@
                         claseDia = 'cal-day-transicion';
                     }
 
-                    if (esReservaAirbnb && infoReservaAirbnb) {
-                        htmlMes += `<div onclick="autocompletarDesdeAirbnb('${infoReservaAirbnb.codigo}', '${infoReservaAirbnb.checkin}', '${infoReservaAirbnb.checkout}')" title="Clic para importar esta reserva de Airbnb" class="p-2 rounded-lg text-center font-medium transition ${claseDia}">${dia}</div>`;
-                    } else if (esAirbnbImportadoYGuardado) {
-                        htmlMes += `<div title="Reserva de Airbnb ya guardada en sistema" class="p-2 rounded-lg text-center font-medium transition ${claseDia}">${dia} <span class="text-[9px] block font-black">✓ AIRBNB</span></div>`;
+                    if ((esReservaAirbnb || esReservaBooking) && infoReservaOTA) {
+                        const plat = esReservaBooking ? 'Booking' : 'Airbnb';
+                        htmlMes += `<div onclick="autocompletarDesdeOTA('${infoReservaOTA.codigo}', '${infoReservaOTA.checkin}', '${infoReservaOTA.checkout}', '${plat}')" title="Clic para importar esta reserva de ${plat}" class="p-2 rounded-lg text-center font-medium transition ${claseDia}">${dia} <span class="text-[8px] block font-extrabold uppercase">${plat}</span></div>`;
+                    } else if (etiquetaPlataforma) {
+                        htmlMes += `<div title="Reserva guardada en sistema" class="p-2 rounded-lg text-center font-medium transition ${claseDia}">${dia} <span class="text-[8px] block font-extrabold">${etiquetaPlataforma}</span></div>`;
+                    } else if (esBloqueo) {
+                        htmlMes += `<div title="Fecha bloqueada" class="p-2 rounded-lg text-center font-medium transition ${claseDia}">${dia} <span class="text-[8px] block font-bold">Fecha bloqueada</span></div>`;
                     } else {
                         htmlMes += `<div class="p-2 rounded-lg text-center font-medium transition ${claseDia}">${dia}</div>`;
                     }
@@ -1925,7 +2025,7 @@
             const canalElegido = document.getElementById('canal').value;
             const codigoOTAVal = document.getElementById('codigoOTA').value.trim();
 
-            if (canalElegido === 'Airbnb' || codigoOTAVal !== '') {
+            if (canalElegido === 'Airbnb' || canalElegido === 'Booking' || codigoOTAVal !== '') {
                 return false;
             }
 
@@ -2082,7 +2182,7 @@
 
             const idExistente = document.getElementById('reservaId').value;
             if (verificarSobreposicionFechas(checkinVal, checkoutVal, idExistente)) {
-                return alert('⚠️ ERROR DE DISPONIBILIDAD: Ya existe una reserva guardada previamente en la base de datos para esas fechas.');
+                return alert('⚠️️ ERROR DE DISPONIBILIDAD: Ya existe una reserva guardada previamente en la base de datos para esas fechas.');
             }
 
             const estadoCalculado = calcularEstadoAutomatico(checkinVal, checkoutVal, 'Auto');
@@ -2098,7 +2198,15 @@
             const costoFijoAplicado = (costosCasa.aseo || 0) + (costosCasa.regalo || 0);
 
             const codigoOTAInput = String(document.getElementById('codigoOTA').value || '').trim();
-            const nombreInput = String(document.getElementById('nombre').value || '').trim() || (codigoOTAInput ? `Reserva Airbnb (${codigoOTAInput})` : 'Huésped Pendiente');
+            const canalInput = String(document.getElementById('canal').value || 'Directo');
+            
+            let nombreInput = String(document.getElementById('nombre').value || '').trim();
+            if (!nombreInput) {
+                if (canalInput === 'Familia') nombreInput = 'reserva familia';
+                else if (codigoOTAInput) nombreInput = `Reserva ${canalInput} (${codigoOTAInput})`;
+                else nombreInput = 'Huésped Pendiente';
+            }
+
             const rutInput = String(document.getElementById('rut').value || '').trim() || 'Pendiente';
             const emailInput = String(document.getElementById('email').value || '').trim() || 'Sin Email';
             const telefonoInput = String(document.getElementById('telefono').value || '').trim() || 'Sin Teléfono';
@@ -2122,7 +2230,7 @@
                 checkout: String(checkoutVal || ''),
                 valorDiarioFinal: Number(document.getElementById('valorDiarioFinal').value || 0),
                 costoPlataforma: Number(document.getElementById('costoPlataforma').value || 0),
-                canal: String(document.getElementById('canal').value || 'Airbnb'),
+                canal: canalInput,
                 tipoDoc: String(document.getElementById('tipoDoc').value || 'Sin Documento'),
                 anotaciones: String(document.getElementById('anotaciones').value || ''),
                 abonos: abonosTemp.map(a => ({ fecha: String(a.fecha), monto: Number(a.monto) })),
@@ -2355,13 +2463,14 @@
             const selAno = document.getElementById('filtroMargenAno');
             if (selAno && selAno.options.length === 0) {
                 const annos = [...new Set(reservas.map(r => r.checkin ? String(r.checkin).substring(0, 4) : ''))].filter(Boolean);
-                if (annos.length === 0) annos.push(new Date().getFullYear().toString());
-                annos.sort().reverse().forEach(a => {
-                    selAno.innerHTML += `<option value="${a}">${a}</option>`;
+                if (!annos.includes('2026')) annos.push('2026');
+                annos.sort().reverse();
+                annos.forEach(a => {
+                    selAno.innerHTML += `<option value="${a}" ${a === '2026' ? 'selected' : ''}>${a}</option>`;
                 });
             }
 
-            const anoSel = selAno ? selAno.value : '';
+            const anoSel = selAno ? selAno.value : '2026';
             const mesSel = document.getElementById('filtroMargenMes') ? document.getElementById('filtroMargenMes').value : '';
 
             const reservasFiltradas = reservas.filter(r => {
@@ -2449,11 +2558,11 @@
         function abrirModalKPIs() {
             const selectAnno = document.getElementById('kpiAnno');
             selectAnno.innerHTML = '';
-            const annos = [...new Set(reservas.map(r => r.checkin ? String(r.checkin).substring(0, 4) : new Date().getFullYear().toString()))];
-            if (annos.length === 0) annos.push(new Date().getFullYear().toString());
+            const annos = [...new Set(reservas.map(r => r.checkin ? String(r.checkin).substring(0, 4) : '2026'))];
+            if (!annos.includes('2026')) annos.push('2026');
 
             annos.sort().reverse().forEach(a => {
-                selectAnno.innerHTML += `<option value="${a}">${a}</option>`;
+                selectAnno.innerHTML += `<option value="${a}" ${a === '2026' ? 'selected' : ''}>${a}</option>`;
             });
 
             renderKPIs();
@@ -2461,7 +2570,7 @@
         }
 
         function renderKPIs() {
-            const annoSel = document.getElementById('kpiAnno').value || new Date().getFullYear().toString();
+            const annoSel = document.getElementById('kpiAnno').value || '2026';
             const mesSel = document.getElementById('kpiMes').value;
 
             const reservasFiltradas = reservas.filter(r => {
