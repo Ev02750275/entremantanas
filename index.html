@@ -84,10 +84,10 @@
             </div>
 
             <div class="flex flex-wrap items-center justify-center gap-2">
-                <button type="button" onclick="sincronizarNavegador('airbnb')" class="inline-flex items-center px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg shadow transition">
+                <button type="button" onclick="sincronizarNavegador('airbnb', true)" class="inline-flex items-center px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg shadow transition">
                     <i class="fa-solid fa-rotate mr-1.5"></i> Sincronizar Airbnb
                 </button>
-                <button type="button" onclick="sincronizarNavegador('booking')" class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg shadow transition">
+                <button type="button" onclick="sincronizarNavegador('booking', true)" class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg shadow transition">
                     <i class="fa-solid fa-rotate mr-1.5"></i> Sincronizar Booking
                 </button>
                 <label class="inline-flex items-center px-2.5 py-1.5 bg-rose-900 hover:bg-rose-950 text-rose-100 text-xs font-semibold rounded-lg border border-rose-700 cursor-pointer transition">
@@ -331,7 +331,7 @@
                 </form>
             </section>
 
-            <!-- FINANCIAL SUMMARY PANEL (HOMOLOGADO A RESUMEN MENSUAL/ANUAL CON FONDO NEGRO) -->
+            <!-- FINANCIAL SUMMARY PANEL -->
             <section class="bg-slate-900 text-white border border-slate-800 p-5 rounded-2xl shadow-xl flex flex-col justify-between space-y-4">
                 <div class="space-y-4">
                     <div>
@@ -719,7 +719,7 @@
         </div>
     </div>
 
-    <!-- MODAL 4: MARGINS & PROFITABILITY (CON AÑO EN CURSO 2026 POR DEFECTO) -->
+    <!-- MODAL 4: MARGINS & PROFITABILITY -->
     <div id="modalRentabilidad" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-5xl w-full p-6 space-y-4">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 pb-3 gap-3">
@@ -1085,7 +1085,7 @@
             throw new Error(`El archivo iCal devuelto de ${source} no es válido.`);
         }
 
-        function procesarTextoICal(dataText, origen = 'airbnb') {
+        function procesarTextoICal(dataText, origen = 'airbnb', esManual = false) {
             const jcalData = ICAL.parse(dataText);
             const comp = new ICAL.Component(jcalData);
             const vevents = comp.getAllSubcomponents('vevent');
@@ -1155,18 +1155,25 @@
             }
 
             renderCalendario();
-            alert(`¡Sincronización de ${origen.toUpperCase()} Completada!\n\n• Reservas detectadas: ${contadorReservas}\n• Fechas Bloqueadas/Totales: ${origen === 'booking' ? tempReservas.length : tempBloqueos.length}`);
+
+            if (esManual) {
+                alert(`¡Sincronización de ${origen.toUpperCase()} Completada!\n\n• Reservas detectadas: ${contadorReservas}\n• Fechas Bloqueadas/Totales: ${origen === 'booking' ? tempReservas.length : tempBloqueos.length}`);
+            }
         }
 
-        async function sincronizarNavegador(origen = 'airbnb') {
+        async function sincronizarNavegador(origen = 'airbnb', esManual = false) {
             try {
                 const dataText = await obtenerContenidoICal(origen);
-                procesarTextoICal(dataText, origen);
+                procesarTextoICal(dataText, origen, esManual);
             } catch (e) {
-                console.error(`Error sincronizando ${origen}:`, e);
-                const usarArchivo = confirm(`Ocurrió un inconveniente al conectar iCal para ${origen.toUpperCase()}.\n\n¿Deseas seleccionar un archivo .ics local de tu equipo?`);
-                if (usarArchivo) {
-                    document.getElementById('inputArchivoIcs').click();
+                console.warn(`[Sincronización Silenciosa] Inconveniente al sincronizar ${origen}:`, e.message);
+                
+                // Únicamente solicitar confirmación/alerta si el usuario presionó el botón manualmente
+                if (esManual) {
+                    const usarArchivo = confirm(`Ocurrió un inconveniente al conectar iCal para ${origen.toUpperCase()}.\n\n¿Deseas seleccionar un archivo .ics local de tu equipo?`);
+                    if (usarArchivo) {
+                        document.getElementById('inputArchivoIcs').click();
+                    }
                 }
             }
         }
@@ -1178,7 +1185,7 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    procesarTextoICal(e.target.result, 'airbnb');
+                    procesarTextoICal(e.target.result, 'airbnb', true);
                 } catch (err) {
                     alert("Error al leer el archivo .ics seleccionado.");
                 }
@@ -1396,8 +1403,10 @@
             }
 
             inicializarSincronizacionCloud();
-            sincronizarNavegador('airbnb');
-            sincronizarNavegador('booking');
+            
+            // Sincronización silenciosa en la carga inicial
+            sincronizarNavegador('airbnb', false);
+            sincronizarNavegador('booking', false);
         });
 
         function actualizarSelectorTemporadaAutomatico() {
