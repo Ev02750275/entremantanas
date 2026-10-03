@@ -2182,7 +2182,7 @@
 
             const idExistente = document.getElementById('reservaId').value;
             if (verificarSobreposicionFechas(checkinVal, checkoutVal, idExistente)) {
-                return alert('⚠️️ ERROR DE DISPONIBILIDAD: Ya existe una reserva guardada previamente en la base de datos para esas fechas.');
+                return alert('⚠ ERROR DE DISPONIBILIDAD: Ya existe una reserva guardada previamente en la base de datos para esas fechas.');
             }
 
             const estadoCalculado = calcularEstadoAutomatico(checkinVal, checkoutVal, 'Auto');
