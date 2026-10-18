@@ -14,12 +14,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- FontAwesome CDN -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-fontawesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-    <!-- SheetJS CDN (Excel Export Library) -->
+    <!-- SheetJS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <!-- ical.js CDN -->
@@ -40,7 +40,6 @@
         .cal-day-booking { background-color: #ffe4e6 !important; color: #1e3a8a !important; font-weight: 700; border: 1px solid #fecdd3; cursor: pointer; }
 
         .cal-day-confirmada { background-color: #fef3c7 !important; color: #92400e !important; font-weight: 800; border: 1.5px solid #fde68a; cursor: pointer; }
-        
         .cal-day-bloqueo { background-color: #cbd5e1 !important; color: #334155 !important; font-weight: 700; border: 1px solid #94a3b8; }
         
         .cal-day-transicion { 
@@ -62,8 +61,8 @@
 
         @media print {
             body * { visibility: hidden; }
-            #areaImpresionPDF, #areaImpresionPDF * { visibility: visible; }
-            #areaImpresionPDF { position: absolute; left: 0; top: 0; width: 100%; color: #000; }
+            #areaImpresion, #areaImpresion * { visibility: visible; }
+            #areaImpresion { position: absolute; left: 0; top: 0; width: 100%; color: #000; }
         }
     </style>
 </head>
@@ -169,7 +168,8 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <!-- DATOS DE HUÉSPED -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Nombre Huésped</label>
                             <input type="text" id="nombre" placeholder="Huésped Pendiente" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition">
@@ -186,6 +186,10 @@
                                 </button>
                             </div>
                             <input type="tel" id="telefono" placeholder="Sin Teléfono" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Dirección / Ciudad</label>
+                            <input type="text" id="direccion" placeholder="Ej: Víctor Lamas 1273, Concepción" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition">
                         </div>
                     </div>
 
@@ -278,14 +282,19 @@
                         </div>
                     </div>
 
-                    <div id="seccionCostosPrecios" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <!-- SECCIÓN COSTOS Y PRECIOS -->
+                    <div id="seccionCostosPrecios" class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Duración Calculada</label>
                             <input type="text" id="cantDiasMostrar" readonly value="0 días / 0 noches" class="w-full bg-slate-100 border border-slate-300 font-bold text-slate-700 rounded-lg px-3 py-2 text-xs">
                         </div>
                         <div>
-                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Tarifa Noche ($ CLP)</label>
-                            <input type="number" id="valorDiarioFinal" value="380000" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-emerald-800 focus:outline-none focus:border-emerald-600">
+                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Tarifa Noche ($ CLP) *</label>
+                            <input type="number" id="valorDiarioFinal" value="270000" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-emerald-800 focus:outline-none focus:border-emerald-600">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Fee de Aseo ($ CLP)</label>
+                            <input type="number" id="feeAseo" value="0" min="0" class="w-full bg-emerald-50/50 border border-emerald-300 rounded-lg px-3 py-2 text-xs font-bold text-emerald-900 focus:outline-none focus:border-emerald-600">
                         </div>
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Comisión Plataforma ($ CLP)</label>
@@ -458,10 +467,13 @@
                     </div>
                 </div>
 
-                <button id="btnWsp" disabled onclick="generarWsp()" class="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow">
-                    <i class="fa-brands fa-whatsapp text-sm"></i>
-                    <span>Copiar Confirmación</span>
-                </button>
+                <!-- BOTÓN DE ACCIÓN EXCLUSIVO WHATSAPP -->
+                <div class="pt-2">
+                    <button type="button" onclick="enviarConfirmacionWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-3 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow active:scale-95">
+                        <i class="fa-brands fa-whatsapp text-lg"></i>
+                        <span>Enviar Confirmación por WhatsApp</span>
+                    </button>
+                </div>
             </section>
         </div>
 
@@ -746,17 +758,18 @@
                 </h3>
                 <div class="flex items-center gap-2">
                     <button type="button" onclick="exportarHuespedesExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center gap-1.5 shadow"><i class="fa-solid fa-file-excel"></i> Exportar Excel</button>
-                    <button type="button" onclick="imprimirTablaHuespedes()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center gap-1.5 shadow"><i class="fa-solid fa-print"></i> Imprimir / PDF</button>
+                    <button type="button" onclick="imprimirTablaHuespedes()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center gap-1.5 shadow"><i class="fa-solid fa-print"></i> Imprimir</button>
                     <button type="button" onclick="toggleModal('modalHuespedes')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
             </div>
-            <div id="areaImpresionPDF" class="overflow-x-auto max-h-96 rounded-xl border border-slate-200 bg-white">
+            <div id="areaImpresion" class="overflow-x-auto max-h-96 rounded-xl border border-slate-200 bg-white">
                 <table class="w-full text-xs text-left border-collapse">
                     <thead class="bg-indigo-50 text-indigo-900 border-b border-indigo-200 font-bold">
                         <tr>
                             <th class="p-2.5">Nombre</th>
                             <th class="p-2.5">RUT / Pasaporte</th>
                             <th class="p-2.5">Teléfono</th>
+                            <th class="p-2.5">Dirección</th>
                             <th class="p-2.5">Email</th>
                             <th class="p-2.5 text-center">Visitas</th>
                             <th class="p-2.5">Última Visita</th>
@@ -907,6 +920,7 @@
         </div>
     </div>
 
+    <!-- SCRIPTS LÓGICA GENERAL -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyC6nbWndwjEx00-jvzt-KXDwA6anvg0-5A",
@@ -924,6 +938,7 @@
         const db = firebase.firestore();
 
         const URL_WORKER_PROXY = "https://dry-field-4c22.evicencio.workers.dev/";
+        const URL_WEB_APP = "https://refugio-entremontanas.netlify.app";
 
         let reservas = [];
         let fechasAirbnb = [];
@@ -953,7 +968,25 @@
         let seleccionTempCheckin = null;
         let seleccionTempCheckout = null;
 
-        // INICIALIZADOR Y LISTENERS DE FIREBASE
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCalendario();
+            renderTabla();
+
+            ['valorDiarioFinal', 'feeAseo', 'costoPlataforma', 'tipoDoc'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', calcularValores);
+            });
+
+            ['rPrevired', 'rCredito', 'rGastosComunes', 'rRetirosExtras', 'rOtros'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', calcularTotalRetirosModal);
+            });
+
+            inicializarSincronizacionCloud();
+            sincronizarNavegador('airbnb', false);
+            sincronizarNavegador('booking', false);
+        });
+
         function inicializarSincronizacionCloud() {
             db.collection('reservas').onSnapshot(snapshot => {
                 reservas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -1242,6 +1275,7 @@
                 if (wrapperReqs) wrapperReqs.classList.add('hidden');
 
                 document.getElementById('valorDiarioFinal').value = 0;
+                document.getElementById('feeAseo').value = 0;
                 document.getElementById('costoPlataforma').value = 0;
             } else {
                 if (secCostos) secCostos.classList.remove('hidden');
@@ -1254,7 +1288,7 @@
                 if (wrapperReqs) wrapperReqs.classList.remove('hidden');
 
                 if (parseFloat(document.getElementById('valorDiarioFinal').value) === 0) {
-                    document.getElementById('valorDiarioFinal').value = 380000;
+                    document.getElementById('valorDiarioFinal').value = 270000;
                 }
             }
             calcularValores();
@@ -1344,25 +1378,6 @@
             document.getElementById('lblTotalDiarioCalculado').innerText = `$${sumaDiaria.toLocaleString('es-CL')} /día  (Fijos: $${totalFijosReserva.toLocaleString('es-CL')})`;
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            inicializarSincronizacionCloud();
-            renderCalendario();
-            renderTabla();
-
-            ['valorDiarioFinal', 'costoPlataforma', 'tipoDoc'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.addEventListener('input', calcularValores);
-            });
-
-            ['rPrevired', 'rCredito', 'rGastosComunes', 'rRetirosExtras', 'rOtros'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.addEventListener('input', calcularTotalRetirosModal);
-            });
-
-            sincronizarNavegador('airbnb', false);
-            sincronizarNavegador('booking', false);
-        });
-
         function actualizarSelectorTemporadaAutomatico() {
             const checkinVal = document.getElementById('checkin').value;
             if (checkinVal) {
@@ -1382,6 +1397,7 @@
                     "Huésped": r.nombre || 'Pendiente',
                     "RUT / Pasaporte": r.rut || 'Pendiente',
                     "Teléfono": r.telefono || 'Sin Teléfono',
+                    "Dirección": r.direccion || 'Sin Dirección',
                     "Email": r.email || 'Sin Email',
                     "Check-In": r.checkin || '-',
                     "Check-Out": r.checkout || '-',
@@ -1391,6 +1407,8 @@
                     "Niños": r.ninos || 0,
                     "Canal": r.canal || 'Directo',
                     "Estado": r.estadoReserva || '-',
+                    "Valor Diario ($)": r.valorDiarioFinal || 0,
+                    "Fee Aseo ($)": r.feeAseo || 0,
                     "Total Bruto ($)": totalBruto,
                     "Comisión Plataforma ($)": r.costoPlataforma || 0,
                     "Total Abonado ($)": totalAbonado,
@@ -1457,6 +1475,7 @@
                         "Nombre Completo": r.nombre || 'Pendiente',
                         "RUT / Pasaporte": r.rut || 'Pendiente',
                         "Teléfono": r.telefono || 'Sin Teléfono',
+                        "Dirección": r.direccion || 'Sin Dirección',
                         "Email": r.email || 'Sin Email',
                         "Total Visitas": 1,
                         "Última Visita": r.checkin
@@ -1540,7 +1559,9 @@
             if (form) form.reset();
             document.getElementById('reservaId').value = '';
             document.getElementById('codigoOTA').value = '';
-            document.getElementById('valorDiarioFinal').value = 380000;
+            document.getElementById('direccion').value = '';
+            document.getElementById('valorDiarioFinal').value = 270000;
+            document.getElementById('feeAseo').value = 0;
             document.getElementById('canal').value = 'Directo';
             document.getElementById('adultos').value = 2;
             document.getElementById('ninos').value = 0;
@@ -1582,6 +1603,7 @@
             document.getElementById('rut').value = r.rut || '';
             document.getElementById('email').value = r.email || '';
             document.getElementById('telefono').value = r.telefono || '';
+            document.getElementById('direccion').value = r.direccion || '';
             document.getElementById('adultos').value = r.adultos || 1;
             document.getElementById('ninos').value = r.ninos || 0;
             document.getElementById('selectTemporadaReserva').value = r.temporadaReserva || 'Verano';
@@ -1598,6 +1620,7 @@
             document.getElementById('lblRangoFechasSeleccionado').innerText = `${formatearFechaChile(r.checkin)} ➔ ${formatearFechaChile(r.checkout)}`;
 
             document.getElementById('valorDiarioFinal').value = r.valorDiarioFinal || 0;
+            document.getElementById('feeAseo').value = r.feeAseo || 0;
             document.getElementById('costoPlataforma').value = r.costoPlataforma || 0;
             document.getElementById('canal').value = r.canal || 'Directo';
             document.getElementById('tipoDoc').value = r.tipoDoc || 'Sin Documento';
@@ -1822,6 +1845,7 @@
                         nombre: r.nombre || 'Huésped Pendiente',
                         rut: r.rut || 'Pendiente',
                         telefono: r.telefono || 'Sin Teléfono',
+                        direccion: r.direccion || 'Sin Dirección',
                         email: r.email || 'Sin Email',
                         totalVisitas: 1,
                         ultimaVisita: r.checkin
@@ -1836,7 +1860,7 @@
 
             const listaHuespedes = Object.values(mapaHuespedes);
             if (listaHuespedes.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-medium">No hay huéspedes registrados.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400 font-medium">No hay huéspedes registrados.</td></tr>`;
             } else {
                 listaHuespedes.forEach(h => {
                     tbody.innerHTML += `
@@ -1844,6 +1868,7 @@
                             <td class="p-2.5 font-bold text-slate-800">${h.nombre}</td>
                             <td class="p-2.5 font-mono text-slate-500">${h.rut}</td>
                             <td class="p-2.5 font-semibold text-emerald-600 cursor-pointer" onclick="abrirChatWsp('${h.telefono}')"><i class="fa-brands fa-whatsapp mr-1"></i> ${h.telefono}</td>
+                            <td class="p-2.5 text-slate-700">${h.direccion}</td>
                             <td class="p-2.5 text-slate-700">${h.email}</td>
                             <td class="p-2.5 text-center font-extrabold text-slate-800">${h.totalVisitas}</td>
                             <td class="p-2.5 text-slate-500">${formatearFechaChile(h.ultimaVisita)}</td>
@@ -2074,43 +2099,49 @@
         }
 
         function calcularValores() {
-            const inDate = new Date(document.getElementById('checkin').value);
-            const outDate = new Date(document.getElementById('checkout').value);
+            const inVal = document.getElementById('checkin').value;
+            const outVal = document.getElementById('checkout').value;
             const valorDiarioFinal = parseFloat(document.getElementById('valorDiarioFinal').value) || 0;
+            const feeAseoVal = parseFloat(document.getElementById('feeAseo').value) || 0;
             const costoPlataforma = parseFloat(document.getElementById('costoPlataforma').value) || 0;
             const tipoDoc = document.getElementById('tipoDoc').value;
 
-            if (inDate && outDate && outDate > inDate) {
-                const diffTime = Math.abs(outDate - inDate);
-                const noches = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                const dias = noches + 1;
+            if (inVal && outVal) {
+                const inDate = new Date(inVal);
+                const outDate = new Date(outVal);
+                
+                if (outDate > inDate) {
+                    const diffTime = Math.abs(outDate - inDate);
+                    const noches = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    const dias = noches + 1;
 
-                document.getElementById('cantDiasMostrar').value = `${dias} días / ${noches} noches`;
-                document.getElementById('resNoches').innerText = `${dias}d / ${noches}n`;
+                    document.getElementById('cantDiasMostrar').value = `${dias} días / ${noches} noches`;
+                    document.getElementById('resNoches').innerText = `${dias}d / ${noches}n`;
 
-                const totalBruto = noches * valorDiarioFinal;
-                const netoCaban = totalBruto - costoPlataforma;
+                    const totalBruto = (noches * valorDiarioFinal) + feeAseoVal;
+                    const netoCaban = totalBruto - costoPlataforma;
 
-                let netoImpuesto = totalBruto;
-                let iva = 0;
+                    let netoImpuesto = totalBruto;
+                    let iva = 0;
 
-                if (tipoDoc === 'Factura Afecta') {
-                    netoImpuesto = Math.round(totalBruto / 1.19);
-                    iva = totalBruto - netoImpuesto;
+                    if (tipoDoc === 'Factura Afecta') {
+                        netoImpuesto = Math.round(totalBruto / 1.19);
+                        iva = totalBruto - netoImpuesto;
+                    }
+
+                    const totalAbonado = abonosTemp.reduce((sum, a) => sum + parseFloat(a.monto || 0), 0);
+                    const saldoPendiente = totalBruto - totalAbonado;
+
+                    document.getElementById('resTotalBruto').innerText = `$${totalBruto.toLocaleString('es-CL')}`;
+                    document.getElementById('resCostoPlataforma').innerText = `$${costoPlataforma.toLocaleString('es-CL')}`;
+                    document.getElementById('resNetoCaban').innerText = `$${Math.round(netoCaban).toLocaleString('es-CL')}`;
+                    document.getElementById('resNetoImpuesto').innerText = `$${netoImpuesto.toLocaleString('es-CL')}`;
+                    document.getElementById('resIva').innerText = `$${iva.toLocaleString('es-CL')}`;
+                    document.getElementById('resTotalAbonado').innerText = `$${totalAbonado.toLocaleString('es-CL')}`;
+                    document.getElementById('resSaldoPendiente').innerText = `$${saldoPendiente.toLocaleString('es-CL')}`;
+
+                    reservaCalculada = { dias, noches, totalBruto, feeAseo: feeAseoVal, costoPlataforma, netoCaban, netoImpuesto, iva, totalAbonado, saldoPendiente };
                 }
-
-                const totalAbonado = abonosTemp.reduce((sum, a) => sum + parseFloat(a.monto || 0), 0);
-                const saldoPendiente = totalBruto - totalAbonado;
-
-                document.getElementById('resTotalBruto').innerText = `$${totalBruto.toLocaleString('es-CL')}`;
-                document.getElementById('resCostoPlataforma').innerText = `$${costoPlataforma.toLocaleString('es-CL')}`;
-                document.getElementById('resNetoCaban').innerText = `$${Math.round(netoCaban).toLocaleString('es-CL')}`;
-                document.getElementById('resNetoImpuesto').innerText = `$${netoImpuesto.toLocaleString('es-CL')}`;
-                document.getElementById('resIva').innerText = `$${iva.toLocaleString('es-CL')}`;
-                document.getElementById('resTotalAbonado').innerText = `$${totalAbonado.toLocaleString('es-CL')}`;
-                document.getElementById('resSaldoPendiente').innerText = `$${saldoPendiente.toLocaleString('es-CL')}`;
-
-                reservaCalculada = { dias, noches, totalBruto, costoPlataforma, netoCaban, netoImpuesto, iva, totalAbonado, saldoPendiente };
             }
         }
 
@@ -2146,19 +2177,26 @@
             });
         }
 
+        // GUARDADO EN FIREBASE
         document.getElementById('reservaForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const checkinVal = document.getElementById('checkin').value;
             const checkoutVal = document.getElementById('checkout').value;
+            const valorDiarioVal = parseFloat(document.getElementById('valorDiarioFinal').value);
+            const feeAseoVal = parseFloat(document.getElementById('feeAseo').value) || 0;
 
             if (!checkinVal || !checkoutVal) {
-                return alert('Por favor selecciona las fechas de Check-In y Check-Out utilizando el botón o el calendario.');
+                return alert('⚠️ Campo obligatorio: Por favor selecciona las fechas de Check-In y Check-Out.');
+            }
+
+            if (isNaN(valorDiarioVal) || valorDiarioVal <= 0) {
+                return alert('⚠️ Campo obligatorio: Debe ingresar un Valor Diario válido mayor a $0.');
             }
 
             const idExistente = document.getElementById('reservaId').value;
             if (verificarSobreposicionFechas(checkinVal, checkoutVal, idExistente)) {
-                return alert('⚠ ERROR DE DISPONIBILIDAD: Ya existe una reserva guardada previamente en la base de datos para esas fechas.');
+                return alert('⚠️ ERROR DE DISPONIBILIDAD: Ya existe una reserva guardada previamente en la base de datos para esas fechas.');
             }
 
             const estadoCalculado = calcularEstadoAutomatico(checkinVal, checkoutVal, 'Auto');
@@ -2189,6 +2227,7 @@
             const rutInput = String(document.getElementById('rut').value || '').trim() || 'Pendiente';
             const emailInput = String(document.getElementById('email').value || '').trim() || 'Sin Email';
             const telefonoInput = String(document.getElementById('telefono').value || '').trim() || 'Sin Teléfono';
+            const direccionInput = String(document.getElementById('direccion').value || '').trim() || 'Sin Dirección';
 
             const nuevaReserva = {
                 codigoOTA: codigoOTAInput,
@@ -2197,6 +2236,7 @@
                 rut: rutInput,
                 email: emailInput,
                 telefono: telefonoInput,
+                direccion: direccionInput,
                 adultos: Number(document.getElementById('adultos').value || 1),
                 ninos: Number(document.getElementById('ninos').value || 0),
                 temporadaReserva: temporadaElegida,
@@ -2207,7 +2247,8 @@
                 costoImprevistosReserva: Number(document.getElementById('costoImprevistosReserva').value || 0),
                 checkin: String(checkinVal || ''),
                 checkout: String(checkoutVal || ''),
-                valorDiarioFinal: Number(document.getElementById('valorDiarioFinal').value || 0),
+                valorDiarioFinal: valorDiarioVal,
+                feeAseo: feeAseoVal,
                 costoPlataforma: Number(document.getElementById('costoPlataforma').value || 0),
                 canal: canalInput,
                 tipoDoc: String(document.getElementById('tipoDoc').value || 'Sin Documento'),
@@ -2232,13 +2273,61 @@
                     await db.collection('reservas').add(nuevaReserva);
                 }
 
-                document.getElementById('btnWsp').disabled = false;
                 alert('¡Reserva guardada con éxito!');
                 limpiarFormulario();
             } catch (err) {
                 alert("❌ NO SE PUDO GUARDAR EN FIREBASE: " + err.message);
             }
         });
+
+        // LÓGICA EXCLUSIVA WHATSAPP CON ENLACE WEB
+        function enviarConfirmacionWhatsApp() {
+            const inVal = document.getElementById('checkin').value;
+            const outVal = document.getElementById('checkout').value;
+            const valorDiario = parseFloat(document.getElementById('valorDiarioFinal').value) || 0;
+            const feeAseoVal = parseFloat(document.getElementById('feeAseo').value) || 0;
+
+            if (!inVal || !outVal || valorDiario <= 0) {
+                return alert('⚠️ Selecciona primero las fechas de estadía y el Valor Diario.');
+            }
+
+            const nombre = document.getElementById('nombre').value || 'Huésped';
+            const fono = document.getElementById('telefono').value || '';
+            const checkin = formatearFechaChile(inVal);
+            const checkout = formatearFechaChile(outVal);
+
+            const inDate = new Date(inVal);
+            const outDate = new Date(outVal);
+            const noches = Math.ceil(Math.abs(outDate - inDate) / (1000 * 60 * 60 * 24)) || 1;
+            
+            const totalBruto = (noches * valorDiario) + feeAseoVal;
+            const totalAbonado = abonosTemp.reduce((sum, a) => sum + parseFloat(a.monto || 0), 0);
+            const saldoPendiente = totalBruto - totalAbonado;
+
+            const soloNumerosFono = String(fono).replace(/\D/g, '');
+            const claveCerradura = soloNumerosFono.length >= 4 ? soloNumerosFono.slice(-4) : '----';
+
+            const msg = `🏔️ *CONFIRMACIÓN DE RESERVA - REFUGIO ENTRE MONTAÑAS* 🏔️\n\n` +
+                        `¡Hola ${nombre}! Te enviamos el detalle de tu reserva:\n\n` +
+                        `📅 *Check-In:* ${checkin} (15:00 hrs)\n` +
+                        `📅 *Check-Out:* ${checkout} (12:00 hrs)\n` +
+                        `🌙 *Estadía:* ${noches} noches\n` +
+                        `🔑 *Clave Cerradura Digital:* ${claveCerradura}\n\n` +
+                        `💰 *Monto Total:* $${totalBruto.toLocaleString('es-CL')} CLP\n` +
+                        `✅ *Monto Abonado:* $${totalAbonado.toLocaleString('es-CL')} CLP\n` +
+                        `📌 *Saldo Pendiente:* $${saldoPendiente.toLocaleString('es-CL')} CLP\n\n` +
+                        `🌐 *Ver Ficha / Estado de Reserva Online:*\n${URL_WEB_APP}\n\n` +
+                        `¡Te esperamos en Malalcahuello! 🌲❄️`;
+
+            navigator.clipboard.writeText(msg);
+
+            if (soloNumerosFono.length >= 8) {
+                const numCompleto = soloNumerosFono.startsWith('56') ? soloNumerosFono : `56${soloNumerosFono}`;
+                window.open(`https://wa.me/${numCompleto}?text=${encodeURIComponent(msg)}`, '_blank');
+            } else {
+                alert('¡Mensaje copiado al portapapeles con el enlace incluido! (Ingresa un teléfono válido para abrir el chat de WhatsApp automáticamente).');
+            }
+        }
 
         function actualizarUsuarioActivoUI() {
             const u = usuarios.find(usr => usr.id == usuarioActivoId) || usuarios[0];
@@ -2539,7 +2628,6 @@
             const pctMargenLimpio = totalIngresosBrutos > 0 ? ((resultadoOp / totalIngresosBrutos) * 100).toFixed(1) : 0;
             document.getElementById('kpiGananciaPromedioLimpiaDia').innerText = `$${promedioDiarioLimpio.toLocaleString('es-CL')} /día (${pctMargenLimpio}%)`;
 
-            // Incidencias
             const calcPct = (monto) => totalIngresosBrutos > 0 ? ((monto / totalIngresosBrutos) * 100).toFixed(1) + '%' : '0%';
             document.getElementById('kpiIncAseoMonto').innerText = `$${incAseo.toLocaleString('es-CL')}`;
             document.getElementById('kpiIncAseoPct').innerText = calcPct(incAseo);
@@ -2732,33 +2820,6 @@
             document.getElementById('dashResAno').innerText = resAno;
             document.getElementById('dashNochesAno').innerText = `${nochesAno}n`;
             document.getElementById('dashBrutoAno').innerText = `$${brutoAno.toLocaleString('es-CL')}`;
-        }
-
-        function generarWsp() {
-            if (!reservaCalculada || !document.getElementById('checkin').value) return;
-
-            const nombre = document.getElementById('nombre').value || 'Huésped';
-            const checkin = formatearFechaChile(document.getElementById('checkin').value);
-            const checkout = formatearFechaChile(document.getElementById('checkout').value);
-            const noches = reservaCalculada.noches || 0;
-            const totalBruto = (reservaCalculada.totalBruto || 0).toLocaleString('es-CL');
-            const totalAbonado = (reservaCalculada.totalAbonado || 0).toLocaleString('es-CL');
-            const saldoPendiente = (reservaCalculada.saldoPendiente || 0).toLocaleString('es-CL');
-            const claveCerradura = obtenerUltimos4Telefono();
-
-            const msg = `🏔️ *CONFIRMACIÓN DE RESERVA - REFUGIO ENTRE MONTAÑAS* 🏔️\n\n` +
-                        `¡Hola ${nombre}! Confirmamos tu reserva:\n\n` +
-                        `📅 *Check-In:* ${checkin} (16:00 hrs)\n` +
-                        `📅 *Check-Out:* ${checkout} (12:00 hrs)\n` +
-                        `🌙 *Estadía:* ${noches} noches\n` +
-                        `🔑 *Clave Cerradura Digital:* ${claveCerradura}\n\n` +
-                        `💰 *Monto Total:* $${totalBruto} CLP\n` +
-                        `✅ *Monto Abonado:* $${totalAbonado} CLP\n` +
-                        `📌 *Saldo Pendiente:* $${saldoPendiente} CLP\n\n` +
-                        `¡Te esperamos en Malalcahuello para una excelente estadía! 🌲❄️`;
-
-            navigator.clipboard.writeText(msg);
-            alert('¡Mensaje de confirmación copiado al portapapeles! Puedes pegarlo directamente en WhatsApp.');
         }
     </script>
 </body>
