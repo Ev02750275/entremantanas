@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión & KPIs - Refugio Entre Montañas</title>
 
-    <!-- Google Fonts: Inter & Montserrat -->
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- FontAwesome CDN -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-fontawesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -24,6 +24,10 @@
 
     <!-- ical.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ical.js/1.5.0/ical.min.js"></script>
+
+    <!-- pdfMake CDN (Formulario PDF Dinámico) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 
     <!-- FIREBASE SDKs (v9.23.0 Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -40,6 +44,7 @@
         .cal-day-booking { background-color: #ffe4e6 !important; color: #1e3a8a !important; font-weight: 700; border: 1px solid #fecdd3; cursor: pointer; }
 
         .cal-day-confirmada { background-color: #fef3c7 !important; color: #92400e !important; font-weight: 800; border: 1.5px solid #fde68a; cursor: pointer; }
+        
         .cal-day-bloqueo { background-color: #cbd5e1 !important; color: #334155 !important; font-weight: 700; border: 1px solid #94a3b8; }
         
         .cal-day-transicion { 
@@ -57,15 +62,13 @@
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* ESTILOS DE LA FICHA DE RESERVA INTEGRADA (ESTILO HTML 9) */
-        .ficha-body {
-            font-family: 'Montserrat', sans-serif;
-            color: #2c3b42;
-            background: #ffffff;
+        @media print {
+            body * { visibility: hidden; }
+            #areaImpresionPDF, #areaImpresionPDF * { visibility: visible; }
+            #areaImpresionPDF { position: absolute; left: 0; top: 0; width: 100%; color: #000; }
         }
-        .ficha-brand-orange { background-color: #e89c7c; color: #2c3b42; }
-        .ficha-border { border: 1px solid #2c3b42; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white pb-12">
@@ -170,7 +173,7 @@
                         </div>
                     </div>
 
-                    <!-- DATOS DE HUÉSPED -->
+                    <!-- DATOS DE HUÉSPED (INCLUYE DIRECCIÓN) -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Nombre Huésped</label>
@@ -284,19 +287,14 @@
                         </div>
                     </div>
 
-                    <!-- SECCIÓN COSTOS Y PRECIOS -->
-                    <div id="seccionCostosPrecios" class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                    <div id="seccionCostosPrecios" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Duración Calculada</label>
                             <input type="text" id="cantDiasMostrar" readonly value="0 días / 0 noches" class="w-full bg-slate-100 border border-slate-300 font-bold text-slate-700 rounded-lg px-3 py-2 text-xs">
                         </div>
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Tarifa Noche ($ CLP) *</label>
-                            <input type="number" id="valorDiarioFinal" value="270000" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-emerald-800 focus:outline-none focus:border-emerald-600">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Fee de Aseo ($ CLP)</label>
-                            <input type="number" id="feeAseo" value="0" min="0" class="w-full bg-emerald-50/50 border border-emerald-300 rounded-lg px-3 py-2 text-xs font-bold text-emerald-900 focus:outline-none focus:border-emerald-600">
+                            <input type="number" id="valorDiarioFinal" value="380000" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-emerald-800 focus:outline-none focus:border-emerald-600">
                         </div>
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Comisión Plataforma ($ CLP)</label>
@@ -469,15 +467,15 @@
                     </div>
                 </div>
 
-                <!-- ACCIONES WHATSAPP Y VER FICHA EN VIVO -->
-                <div class="pt-2 space-y-2">
-                    <button type="button" onclick="enviarConfirmacionWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-3 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow active:scale-95">
-                        <i class="fa-brands fa-whatsapp text-lg"></i>
-                        <span>Enviar Confirmación por WhatsApp</span>
-                    </button>
-                    <button type="button" onclick="generarYMostrarFichaModal()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow">
+                <!-- BOTONES PDF Y WHATSAPP -->
+                <div class="flex flex-col gap-2 pt-2">
+                    <button id="btnGenerarPDF" onclick="generarEnviarFormularioPDF()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow">
                         <i class="fa-solid fa-file-pdf text-sm"></i>
-                        <span>Ver / Imprimir Ficha Huésped (2 Págs)</span>
+                        <span>Enviar Formulario Reserva (PDF)</span>
+                    </button>
+                    <button type="button" onclick="generarWsp()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-1.5 px-3 rounded-lg text-[11px] transition flex items-center justify-center gap-1.5 border border-slate-700">
+                        <i class="fa-brands fa-whatsapp text-emerald-400"></i>
+                        <span>Copiar Confirmación (WhatsApp)</span>
                     </button>
                 </div>
             </section>
@@ -516,29 +514,7 @@
 
     </main>
 
-    <!-- MODAL VISTA PREVIA E IMPRESIÓN FICHA RESERVA (FORMATO ARCHIVO 9) -->
-    <div id="modalFichaVistaPrevia" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
-        <div class="bg-slate-200 border border-slate-400 rounded-2xl shadow-2xl max-w-4xl w-full p-4 sm:p-6 space-y-4 my-4 max-h-[95vh] overflow-y-auto relative">
-            <div class="sticky -top-4 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-3 pb-3 bg-slate-800 text-white z-30 flex justify-between items-center shadow rounded-t-2xl">
-                <h3 class="text-sm sm:text-base font-bold flex items-center gap-2">
-                    <i class="fa-solid fa-file-invoice text-amber-400"></i> Ficha Oficial de Reserva y Políticas (Formulario 9)
-                </h3>
-                <div class="flex items-center gap-2">
-                    <button type="button" onclick="imprimirFichaOficial()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow">
-                        <i class="fa-solid fa-print"></i> Imprimir / Guardar PDF
-                    </button>
-                    <button type="button" onclick="toggleModal('modalFichaVistaPrevia')" class="bg-slate-700 hover:bg-rose-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition">
-                        <i class="fa-solid fa-xmark"></i> Cerrar
-                    </button>
-                </div>
-            </div>
-
-            <!-- CONTENEDOR DINÁMICO FICHA 2 PÁGINAS -->
-            <div id="contenedorFichaImprimible" class="bg-white p-2 rounded shadow-inner"></div>
-        </div>
-    </div>
-
-    <!-- MODALES ADICIONALES -->
+    <!-- MODALES -->
     <div id="modalHistorialReservas" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
         <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-6xl w-full p-4 sm:p-6 space-y-4 my-4 max-h-[92vh] overflow-y-auto relative">
             <div class="sticky -top-4 sm:-top-6 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-3 pb-3 bg-white border-b border-slate-200 z-30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm rounded-t-2xl">
@@ -614,7 +590,341 @@
         </div>
     </div>
 
-    <!-- SCRIPTS UNIFICADOS & GENERADOR DE FICHA EN VIVO -->
+    <div id="modalUsuarios" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-200 pb-3">
+                <h3 class="text-sm font-bold text-slate-800 flex items-center">
+                    <i class="fa-solid fa-users-gear mr-2 text-emerald-700"></i>Gestión de Usuarios Operativos
+                </h3>
+                <button type="button" onclick="toggleModal('modalUsuarios')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-200 text-xs space-y-1">
+                <label class="block font-bold text-emerald-900">Usuario Activo en Sesión:</label>
+                <select id="selUsuarioActivo" onchange="seleccionarUsuarioActivo(this.value)" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-slate-800 font-bold outline-none focus:border-emerald-600"></select>
+            </div>
+            <form id="formUsuario" onsubmit="guardarUsuario(event)" class="space-y-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
+                <div class="flex justify-between items-center border-b border-slate-200 pb-1.5">
+                    <span id="usrFormTitle" class="font-bold text-slate-700">Registrar Usuario (Máx. 5)</span>
+                    <button type="button" id="btnCancelarEditUsr" onclick="cancelarEdicionUsuario()" class="hidden text-[10px] text-rose-600 font-bold hover:underline">Cancelar Edición</button>
+                </div>
+                <input type="hidden" id="usrEditId">
+                <div>
+                    <label class="block text-slate-600 font-semibold mb-1">Nombre Completo</label>
+                    <input type="text" id="usrNombre" required placeholder="Ej: Eduardo Vicencio" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-slate-800 focus:outline-none focus:border-emerald-600">
+                </div>
+                <div>
+                    <label class="block text-slate-600 font-semibold mb-1">Email / Identificador</label>
+                    <input type="email" id="usrEmail" required placeholder="usuario@refugio.cl" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-slate-800 focus:outline-none focus:border-emerald-600">
+                </div>
+                <button type="submit" id="btnUsrSubmit" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2 rounded-lg transition">+ Agregar Usuario</button>
+            </form>
+            <div class="overflow-y-auto max-h-36 rounded-xl border border-slate-200 bg-white">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-slate-100 text-slate-600 border-b border-slate-200 font-bold">
+                        <tr>
+                            <th class="p-2.5">Nombre</th>
+                            <th class="p-2.5">Email</th>
+                            <th class="p-2.5 text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaUsuarios" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalCostos" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-200 pb-3">
+                <h3 class="text-sm font-bold text-slate-800 flex items-center">
+                    <i class="fa-solid fa-house-chimney-crack mr-2 text-amber-600"></i>Estructura Costos Operativos (Verano e Invierno)
+                </h3>
+                <button type="button" onclick="toggleModal('modalCostos')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+                <button type="button" id="tabVerano" onclick="cambiarTabTemporadaCostos('verano')" class="flex-1 py-2 text-xs font-bold rounded-lg transition bg-white text-amber-700 shadow-sm">
+                    ☀️ Costos Verano (Dic 1 - Mar 31)
+                </button>
+                <button type="button" id="tabInvierno" onclick="cambiarTabTemporadaCostos('invierno')" class="flex-1 py-2 text-xs font-bold rounded-lg transition text-slate-600 hover:text-slate-900">
+                    ❄ Costos Invierno (Abr 1 - Nov 30)
+                </button>
+            </div>
+            <form id="formCostosCasa" class="space-y-4 text-xs">
+                <div id="seccionVerano" class="space-y-3">
+                    <div class="bg-amber-50 p-2.5 rounded-lg border border-amber-200">
+                        <span class="font-bold text-amber-900 block uppercase text-[10px]">Costos Operativos Diarios - Verano ($/día)</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div><label class="text-slate-600 font-semibold block mb-1">Parafina ($/día)</label><input type="number" id="v_parafina" value="0" min="0" oninput="calcularTotalTemporalCostos()" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold"></div>
+                        <div><label class="text-slate-600 font-semibold block mb-1">Gas ($/día)</label><input type="number" id="v_gas" value="3000" min="0" oninput="calcularTotalTemporalCostos()" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold"></div>
+                        <div><label class="text-slate-600 font-semibold block mb-1">Electricidad ($/día)</label><input type="number" id="v_electricidad" value="15000" min="0" oninput="calcularTotalTemporalCostos()" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold"></div>
+                        <div><label class="text-slate-600 font-semibold block mb-1">Leña ($/día)</label><input type="number" id="v_lena" value="1000" min="0" oninput="calcularTotalTemporalCostos()" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold"></div>
+                        <div><label class="text-slate-600 font-semibold block mb-1">Starlink ($/día)</label><input type="number" id="v_starlink" value="5000" min="0" oninput="calcularTotalTemporalCostos()" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold"></div>
+                        <div><label class="text-slate-600 font-semibold block mb-1">Control Plagas ($/día)</label><input type="number" id="v_plagas" value="1000" min="0" oninput="calcularTotalTemporalCostos()" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold"></div>
+                        <div><label class="text-slate-600 font-semibold block mb-1">Jardinero ($/día)</label><input type="number" id="v_jardinero" value="1000" min="0" oninput="calcularTotalTemporalCostos()" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold"></div>
+                        <div><label class="text-slate-600 font-semibold block mb-1">Insumos & Aseo Diario ($/día)</label><input type="number" id="v_insumos" value="1500" min="0" oninput="calcularTotalTemporalCostos()" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold"></div>
+                    </div>
+                </div>
+                <div id="seccionInvierno" class="space-y-3 hidden">
+                    <div class="bg-sky-50 p-2.5 rounded-lg border border-sky-200">
+                        <span class="font-bold text-sky-900 block uppercase text-[10px]">Costos Operativos Diarios - Invierno ($/día)</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div><label class="text-slate-600 font-semibold block mb-1">Parafina ($/día)</label><input type="number" id="i_parafina" value="5000" min="0" oninput="calcularTotalTemporalCostos()" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold"></div>
+                        <div><label class="text-slate-600 font-semibold block mb-1">Gas ($/día)</label><input type="number" id="i_gas" value="3000" min="0" oninput="calcularTotalTemporalCostos()" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold"></div>
+                        <div><label class="text-slate-600 font-semibold block mb-1">Electricidad ($/día)</label><input type="number" id="i_electricidad" value="32000" min="0" oninput="calcularTotalTemporalCostos()" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold"></div>
+                        <div><label class="text-slate-600 font-semibold block mb-1">Leña ($/día)</label><input type="number" id="i_lena" value="4000" min="0" oninput="calcularTotalTemporalCostos()" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold"></div>
+                        <div><label class="text-slate-600 font-semibold block mb-1">Starlink ($/día)</label><input type="number" id="i_starlink" value="5000" min="0" oninput="calcularTotalTemporalCostos()" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold"></div>
+                        <div><label class="text-slate-600 font-semibold block mb-1">Control Plagas ($/día)</label><input type="number" id="i_plagas" value="5000" min="0" oninput="calcularTotalTemporalCostos()" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold"></div>
+                        <div><label class="text-slate-600 font-semibold block mb-1">Jardinero ($/día)</label><input type="number" id="i_jardinero" value="1000" min="0" oninput="calcularTotalTemporalCostos()" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold"></div>
+                        <div><label class="text-slate-600 font-semibold block mb-1">Insumos & Aseo Diario ($/día)</label><input type="number" id="i_insumos" value="1500" min="0" oninput="calcularTotalTemporalCostos()" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold"></div>
+                    </div>
+                </div>
+                <div class="col-span-2 bg-teal-50 p-2.5 rounded-lg border border-teal-200 mt-2">
+                    <span class="font-bold text-teal-900 block uppercase text-[10px]">Costos Fijos por Reserva ($/reserva)</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-teal-900 font-semibold block mb-1">Aseo Cabaña ($/fijo)</label><input type="number" id="cAseo" value="110000" oninput="calcularTotalTemporalCostos()" class="w-full bg-teal-50/30 border border-slate-300 rounded-lg p-2 text-teal-900 font-bold"></div>
+                    <div><label class="text-teal-900 font-semibold block mb-1">Regalo Bienvenida ($/fijo)</label><input type="number" id="cRegalo" value="10000" oninput="calcularTotalTemporalCostos()" class="w-full bg-teal-50/30 border border-slate-300 rounded-lg p-2 text-teal-900 font-bold"></div>
+                </div>
+                <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl flex justify-between items-center text-xs font-bold text-amber-900">
+                    <span>Total Diario Activo (<span id="lblTemporedaActiva">Verano</span>) + Fijo Total:</span>
+                    <span id="lblTotalDiarioCalculado" class="text-sm font-black">$28.500</span>
+                </div>
+            </form>
+            <div class="flex justify-end gap-2 border-t border-slate-200 pt-3">
+                <button type="button" onclick="guardarCostosCasa()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-4 rounded-xl text-xs transition">Guardar Configuración</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalRentabilidad" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-5xl w-full p-6 space-y-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 pb-3 gap-3">
+                <h3 class="text-sm font-bold text-slate-800 flex items-center">
+                    <i class="fa-solid fa-scale-balanced mr-2 text-teal-600"></i>Margen de Contribución por Arriendo
+                </h3>
+                <div class="flex flex-wrap items-center gap-2">
+                    <select id="filtroMargenAno" onchange="renderRentabilidad()" class="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-xs text-slate-800 font-bold focus:outline-none focus:border-teal-600"></select>
+                    <select id="filtroMargenMes" onchange="renderRentabilidad()" class="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-xs text-slate-800 font-semibold focus:outline-none focus:border-teal-600">
+                        <option value="">Todos los Meses</option>
+                        <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+                        <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+                        <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+                        <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                    </select>
+                    <button type="button" onclick="exportarMargenesExcel()" class="bg-teal-700 hover:bg-teal-600 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center gap-1.5 shadow"><i class="fa-solid fa-file-excel"></i> Exportar</button>
+                    <button type="button" onclick="toggleModal('modalRentabilidad')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+            </div>
+            <div class="overflow-x-auto max-h-96 rounded-xl border border-slate-200 bg-white relative">
+                <table class="w-full text-xs text-left border-collapse">
+                    <thead class="bg-teal-50 text-teal-900 border-b border-teal-200 font-bold sticky top-0 z-20">
+                        <tr>
+                            <th class="p-2.5 sticky left-0 bg-teal-50 z-30 min-w-[140px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Huésped</th>
+                            <th class="p-2.5">Fechas Estadía</th>
+                            <th class="p-2.5">Noches (Temp)</th>
+                            <th class="p-2.5">Bruto</th>
+                            <th class="p-2.5">Comisión</th>
+                            <th class="p-2.5">Costos Diarios</th>
+                            <th class="p-2.5">Costos Fijos</th>
+                            <th class="p-2.5">Extras</th>
+                            <th class="p-2.5">Margen $</th>
+                            <th class="p-2.5">Margen %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaMargenes" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalDetalleEconomico" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-200 pb-3">
+                <h3 class="text-sm font-bold text-slate-800 flex items-center">
+                    <i class="fa-solid fa-chart-line mr-2 text-emerald-700"></i>Resultado Económico de Reserva
+                </h3>
+                <button type="button" onclick="toggleModal('modalDetalleEconomico')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="contenidoDetalleEconomico" class="space-y-3 text-xs"></div>
+            <div class="flex justify-end border-t border-slate-200 pt-3">
+                <button type="button" onclick="toggleModal('modalDetalleEconomico')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-1.5 px-4 rounded-xl text-xs">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalHuespedes" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-4xl w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-200 pb-3">
+                <h3 class="text-sm font-bold text-slate-800 flex items-center">
+                    <i class="fa-solid fa-users mr-2 text-indigo-600"></i>Base de Datos de Huéspedes
+                </h3>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="exportarHuespedesExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center gap-1.5 shadow"><i class="fa-solid fa-file-excel"></i> Exportar Excel</button>
+                    <button type="button" onclick="imprimirTablaHuespedes()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center gap-1.5 shadow"><i class="fa-solid fa-print"></i> Imprimir / PDF</button>
+                    <button type="button" onclick="toggleModal('modalHuespedes')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+            </div>
+            <div id="areaImpresionPDF" class="overflow-x-auto max-h-96 rounded-xl border border-slate-200 bg-white">
+                <table class="w-full text-xs text-left border-collapse">
+                    <thead class="bg-indigo-50 text-indigo-900 border-b border-indigo-200 font-bold">
+                        <tr>
+                            <th class="p-2.5">Nombre</th>
+                            <th class="p-2.5">RUT / Pasaporte</th>
+                            <th class="p-2.5">Teléfono</th>
+                            <th class="p-2.5">Dirección</th>
+                            <th class="p-2.5">Email</th>
+                            <th class="p-2.5 text-center">Visitas</th>
+                            <th class="p-2.5">Última Visita</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaHuespedesBase" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ANALYTICS Y KPIS -->
+    <div id="modalKPIs" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-5xl w-full p-4 sm:p-6 space-y-5 my-4 sm:my-8 max-h-[92vh] overflow-y-auto relative">
+            <div class="sticky -top-4 sm:-top-6 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-3 pb-3 bg-white border-b border-slate-200 z-30 flex justify-between items-center shadow-sm rounded-t-2xl">
+                <h3 class="text-base sm:text-lg font-bold text-slate-800 flex items-center">
+                    <i class="fa-solid fa-chart-pie mr-2 text-sky-600"></i>Centro Analytics & KPIs de Negocio
+                </h3>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="exportarKPIsExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow-sm"><i class="fa-solid fa-file-excel"></i> Exportar Excel</button>
+                    <button type="button" onclick="toggleModal('modalKPIs')" class="bg-slate-100 hover:bg-rose-600 hover:text-white text-slate-700 font-bold px-3 py-1.5 rounded-xl border border-slate-300 text-xs transition flex items-center gap-1.5 shadow-sm"><i class="fa-solid fa-xmark text-sm"></i><span>Cerrar</span></button>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-bold uppercase text-slate-500">Año:</label>
+                        <select id="kpiAnno" onchange="renderKPIs()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs text-slate-800 font-bold focus:outline-none focus:border-sky-500"></select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-bold uppercase text-slate-500">Mes:</label>
+                        <select id="kpiMes" onchange="renderKPIs()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs text-slate-800 font-bold focus:outline-none focus:border-sky-500">
+                            <option value="">Todos los Meses</option>
+                            <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+                            <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+                            <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+                            <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" onclick="toggleModal('modalRetiros')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1.5 shadow">
+                    <i class="fa-solid fa-hand-holding-dollar"></i> Configurar Retiros
+                </button>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+                    <h4 class="text-xs font-bold uppercase text-slate-700 tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-emerald-600"></i> FLUJO NETO OPERACIÓN
+                    </h4>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 text-xs">
+                    <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-2 bg-white p-3 rounded-xl border border-slate-200">
+                        <div><span class="text-[10px] text-slate-500 font-semibold block uppercase">(+) Ingresos Arriendo</span><span id="kpiFlujoIngresos" class="font-bold text-emerald-700 text-sm">$0</span></div>
+                        <div><span class="text-[10px] text-slate-500 font-semibold block uppercase">(-) Gastos x Día</span><span id="kpiFlujoGastosDia" class="font-bold text-amber-700 text-sm">$0</span></div>
+                        <div><span class="text-[10px] text-slate-500 font-semibold block uppercase">(-) Costos Fijos + Extras</span><span id="kpiFlujoCostosFijos" class="font-bold text-rose-600 text-sm">$0</span></div>
+                        <div class="bg-emerald-50/60 p-2 rounded-lg border border-emerald-100"><span class="text-[10px] text-emerald-900 font-bold block uppercase">(=) Resultado Operacional</span><span id="kpiFlujoResultadoOp" class="font-black text-emerald-800 text-sm">$0</span></div>
+                    </div>
+                    <div class="bg-indigo-50/70 border border-indigo-200 p-3 rounded-xl space-y-2">
+                        <div class="flex justify-between items-center border-b border-indigo-200/80 pb-1.5">
+                            <span class="text-[10px] font-bold text-indigo-900 uppercase tracking-wider flex items-center gap-1"><i class="fa-solid fa-circle-info text-indigo-600"></i> Retiros (Referencial)</span>
+                            <span id="lblEstadoCobertura" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-white border border-indigo-200 text-indigo-800">Evaluando...</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="bg-white p-2 rounded-lg border border-indigo-100"><span class="text-[10px] text-slate-500 font-semibold block uppercase">(-) Total Retiros</span><span id="kpiFlujoRetirosTotal" class="font-bold text-indigo-700 text-sm">$0</span></div>
+                            <div class="bg-white p-2 rounded-lg border border-indigo-100"><span class="text-[10px] text-slate-500 font-semibold block uppercase">(=) Flujo Neto Final</span><span id="kpiFlujoNetoFinal" class="font-extrabold text-sm">$0</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-200 p-3.5 rounded-xl space-y-2">
+                    <span class="text-[11px] font-black uppercase text-slate-700 block border-b border-slate-100 pb-1.5 flex items-center justify-between">
+                        <span>📊 Incidencia de Ítems Clave sobre el Ingreso Bruto ($ y %)</span>
+                        <span class="text-[9px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">Análisis de Costos</span>
+                    </span>
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-xs">
+                        <div class="bg-slate-50 p-2 rounded-lg border border-slate-200"><span class="text-[10px] text-slate-500 font-bold block uppercase">🧹 Aseo</span><span id="kpiIncAseoMonto" class="font-extrabold text-slate-800 block mt-0.5">$0</span><span id="kpiIncAseoPct" class="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.2 rounded inline-block mt-0.5">0%</span></div>
+                        <div class="bg-slate-50 p-2 rounded-lg border border-slate-200"><span class="text-[10px] text-slate-500 font-bold block uppercase">⚡ Electricidad</span><span id="kpiIncElecMonto" class="font-extrabold text-slate-800 block mt-0.5">$0</span><span id="kpiIncElecPct" class="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.2 rounded inline-block mt-0.5">0%</span></div>
+                        <div class="bg-slate-50 p-2 rounded-lg border border-slate-200"><span class="text-[10px] text-slate-500 font-bold block uppercase">🔥 Gas</span><span id="kpiIncGasMonto" class="font-extrabold text-slate-800 block mt-0.5">$0</span><span id="kpiIncGasPct" class="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.2 rounded inline-block mt-0.5">0%</span></div>
+                        <div class="bg-slate-50 p-2 rounded-lg border border-slate-200"><span class="text-[10px] text-slate-500 font-bold block uppercase">🪵 Leña</span><span id="kpiIncLenaMonto" class="font-extrabold text-slate-800 block mt-0.5">$0</span><span id="kpiIncLenaPct" class="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.2 rounded inline-block mt-0.5">0%</span></div>
+                        <div class="bg-slate-50 p-2 rounded-lg border border-slate-200 col-span-2 sm:col-span-1"><span class="text-[10px] text-slate-500 font-bold block uppercase">🛢️ Parafina</span><span id="kpiIncParafinaMonto" class="font-extrabold text-slate-800 block mt-0.5">$0</span><span id="kpiIncParafinaPct" class="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.2 rounded inline-block mt-0.5">0%</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                <div class="bg-sky-50/60 border border-sky-200 p-4 rounded-xl">
+                    <span class="text-[10px] font-bold text-sky-700 uppercase tracking-wider block">Noches Arrendadas</span>
+                    <h4 id="kpiDiasAno" class="text-xl font-black text-sky-900 mt-1">0 noches</h4>
+                    <span id="lblSubNochesFamilia" class="text-[10px] font-semibold text-slate-500 block mt-0.5">(+0 noches Uso Familia)</span>
+                </div>
+                <div class="bg-emerald-50/60 border border-emerald-200 p-4 rounded-xl">
+                    <span class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">Ingresos Recibidos (Bruto)</span>
+                    <h4 id="kpiIngresosBrutosAno" class="text-xl font-black text-emerald-900 mt-1">$0</h4>
+                </div>
+                <div class="bg-purple-50/60 border border-purple-200 p-4 rounded-xl">
+                    <span class="text-[10px] font-bold text-purple-700 uppercase tracking-wider block">Margen Promedio Día % y $</span>
+                    <h4 id="kpiGananciaPromedioLimpiaDia" class="text-sm font-black text-purple-900 mt-1.5">$0 /día (0%)</h4>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 p-4 rounded-xl space-y-3 shadow-sm">
+                <h4 class="font-bold text-xs uppercase text-slate-700 flex items-center gap-2"><i class="fa-solid fa-table text-sky-600"></i> Tabla Financiera Mensual (Enero a Diciembre con Acumulado)</h4>
+                <div class="overflow-x-auto rounded-lg border border-slate-200">
+                    <table class="w-full text-xs text-left border-collapse">
+                        <thead class="bg-slate-100 text-slate-700 font-bold uppercase text-[10px]">
+                            <tr>
+                                <th class="p-2.5">Mes</th>
+                                <th class="p-2.5">Ingresos Brutos ($)</th>
+                                <th class="p-2.5">Egresos / Gastos Totales ($)</th>
+                                <th class="p-2.5">Subtotal Mensual ($)</th>
+                                <th class="p-2.5">Acumulado Mensual ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaMesesKPI" class="divide-y divide-slate-100"></tbody>
+                        <tfoot id="tfootMesesKPI" class="bg-slate-100 font-extrabold border-t-2 border-slate-300 text-slate-900"></tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <h4 class="font-bold text-xs uppercase text-slate-500 mb-3">Gráfico Mensual: Ingresos Brutos vs Egresos Totales ($ CLP)</h4>
+                <div class="h-64"><canvas id="chartIngresosMes"></canvas></div>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t border-slate-200">
+                <button type="button" onclick="toggleModal('modalKPIs')" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-5 rounded-xl text-xs transition flex items-center gap-1.5"><i class="fa-solid fa-xmark"></i> Cerrar Informe</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalRetiros" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-200 pb-3">
+                <h3 class="text-sm font-bold text-slate-800 flex items-center"><i class="fa-solid fa-hand-holding-dollar mr-2 text-indigo-600"></i>Configuración de Retiros Personales</h3>
+                <button type="button" onclick="toggleModal('modalRetiros')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="formRetiros" class="space-y-3 text-xs">
+                <div><label class="text-slate-600 font-semibold block mb-1">Previred ($ CLP)</label><input type="number" id="rPrevired" value="0" min="0" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-slate-800 focus:outline-none focus:border-indigo-600"></div>
+                <div><label class="text-slate-600 font-semibold block mb-1">Crédito ($ CLP)</label><input type="number" id="rCredito" value="0" min="0" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-slate-800 focus:outline-none focus:border-indigo-600"></div>
+                <div><label class="text-slate-600 font-semibold block mb-1">Gastos Comunes ($ CLP)</label><input type="number" id="rGastosComunes" value="0" min="0" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-slate-800 focus:outline-none focus:border-indigo-600"></div>
+                <div><label class="text-slate-600 font-semibold block mb-1">Retiros Extras ($ CLP)</label><input type="number" id="rRetirosExtras" value="0" min="0" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-slate-800 focus:outline-none focus:border-indigo-600"></div>
+                <div><label class="text-slate-600 font-semibold block mb-1">Otros Gastos / Retiros ($ CLP)</label><input type="number" id="rOtros" value="0" min="0" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-slate-800 focus:outline-none focus:border-indigo-600"></div>
+                <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-200 flex justify-between items-center font-bold text-indigo-900"><span>TOTAL RETIROS:</span><span id="resTotalRetirosModal" class="text-sm font-black">$0</span></div>
+                <div class="flex justify-end gap-2 border-t border-slate-200 pt-3"><button type="button" onclick="guardarRetiros()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-xl text-xs transition">Guardar Retiros</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPTS LÓGICA GENERAL -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyC6nbWndwjEx00-jvzt-KXDwA6anvg0-5A",
@@ -637,253 +947,182 @@
         let fechasAirbnb = [];
         let fechasAirbnbReservas = [];
         let fechasAirbnbBloqueos = [];
+        
         let fechasBooking = [];
         let fechasBookingReservas = [];
+        
         let usuarios = [];
         let usuarioActivoId = localStorage.getItem('usr_activo_caban') || null;
         let abonosTemp = [];
         let reservaCalculada = {};
+        
         let costosCasa = {
             verano: { parafina: 0, gas: 3000, electricidad: 15000, lena: 1000, starlink: 5000, plagas: 1000, jardinero: 1000, insumos: 1500 },
             invierno: { parafina: 5000, gas: 3000, electricidad: 32000, lena: 4000, starlink: 5000, plagas: 5000, jardinero: 1000, insumos: 1500 },
-            aseo: 110000, regalo: 10000
+            aseo: 110000,
+            regalo: 10000
         };
+
         let retirosConfig = { previred: 0, credito: 0, gastosComunes: 0, retirosExtras: 0, otros: 0 };
+
         let mesCalendarioOffset = 0;
         let chartInstance = null;
+
         let seleccionTempCheckin = null;
         let seleccionTempCheckout = null;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            renderCalendario();
-            renderTabla();
-
-            ['valorDiarioFinal', 'feeAseo', 'costoPlataforma', 'tipoDoc'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.addEventListener('input', calcularValores);
-            });
-
-            inicializarSincronizacionCloud();
-            sincronizarNavegador('airbnb', false);
-            sincronizarNavegador('booking', false);
-        });
 
         function inicializarSincronizacionCloud() {
             db.collection('reservas').onSnapshot(snapshot => {
                 reservas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 actualizarEstadosAutomaticos();
                 poblarFiltroAnos();
+                poblarFiltrosKPIAnos();
                 renderCalendario();
                 renderTabla();
                 actualizarResumenGlobal();
-            });
+            }, err => console.error("Error sincronizando reservas:", err));
 
             db.collection('usuarios').onSnapshot(snapshot => {
                 usuarios = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (usuarios.length === 0) {
+                    db.collection('usuarios').add({ nombre: "Eduardo Vicencio", email: "e.vicencio@evarq.cl" });
+                }
                 actualizarUsuarioActivoUI();
-            });
+            }, err => console.error("Error sincronizando usuarios:", err));
 
             db.collection('configuracion').doc('costosCasa').onSnapshot(doc => {
-                if (doc.exists) costosCasa = doc.data();
+                if (doc.exists) {
+                    costosCasa = doc.data();
+                } else {
+                    db.collection('configuracion').doc('costosCasa').set(costosCasa);
+                }
             });
 
             db.collection('configuracion').doc('retiros').onSnapshot(doc => {
-                if (doc.exists) retirosConfig = doc.data();
+                if (doc.exists) {
+                    retirosConfig = doc.data();
+                } else {
+                    db.collection('configuracion').doc('retiros').set(retirosConfig);
+                }
             });
         }
 
-        // --- FUNCIÓN GENERADORA DE LA FICHA Y POLÍTICAS (FORMATO ARCHIVO 9) ---
-        function construirHTMLFichaReserva() {
-            const inVal = document.getElementById('checkin').value || '2026-12-05';
-            const outVal = document.getElementById('checkout').value || '2026-12-08';
-            const valorDiario = parseFloat(document.getElementById('valorDiarioFinal').value) || 270000;
-            const feeAseoVal = parseFloat(document.getElementById('feeAseo').value) || 0;
-            const nombre = document.getElementById('nombre').value || 'Huésped Pendiente';
-            const rut = document.getElementById('rut').value || 'Pendiente';
-            const fono = document.getElementById('telefono').value || 'Sin Teléfono';
-            const direccion = document.getElementById('direccion').value || 'Sin Dirección';
-            const adultos = document.getElementById('adultos').value || '2';
-            const ninos = document.getElementById('ninos').value || '0';
-            const canal = document.getElementById('canal').value || 'Directo';
-
-            const checkinFmt = formatearFechaChile(inVal);
-            const checkoutFmt = formatearFechaChile(outVal);
-
-            const inDate = new Date(inVal);
-            const outDate = new Date(outVal);
-            const noches = Math.ceil(Math.abs(outDate - inDate) / (1000 * 60 * 60 * 24)) || 1;
-
-            const totalBruto = (noches * valorDiario) + feeAseoVal;
-            const abono50 = Math.round(totalBruto * 0.5);
-
-            const hoyFmt = formatearFechaChile(new Date().toISOString().split('T')[0]);
-
-            return `
-            <div class="ficha-body space-y-6 text-slate-800 text-xs p-4 sm:p-6 bg-white border border-slate-300 rounded shadow-md max-w-3xl mx-auto">
-                <!-- HOJA 1: FORMULARIO RESERVA -->
-                <div class="border border-slate-300 p-6 rounded bg-white space-y-4">
-                    <div class="grid grid-cols-3 items-center border-b-2 border-[#e89c7c] pb-3 gap-2">
-                        <div><img src="https://drive.google.com/thumbnail?id=13lAQBDPNtqM7BmFMuq1R78MOHhGF_S_U&sz=w500" class="h-16 object-contain"></div>
-                        <div class="text-center">
-                            <span class="font-black text-sm block tracking-widest text-slate-800">REFUGIO</span>
-                            <span class="font-normal text-xs block text-slate-600">ENTRE MONTAÑAS</span>
-                            <span class="font-bold text-xs block text-[#e89c7c]">MALALCAHUELLO</span>
-                        </div>
-                        <div class="text-right text-[11px]">
-                            <h2 class="font-bold text-xs uppercase text-slate-800">FORMULARIO DE RESERVA</h2>
-                            <div><strong>Fecha:</strong> ${hoyFmt}</div>
-                        </div>
-                    </div>
-
-                    <div class="bg-[#e89c7c] text-slate-900 font-bold p-1.5 uppercase text-xs tracking-wider">ANTECEDENTES GENERALES DE LA RESERVA</div>
-
-                    <div class="grid grid-cols-4 gap-2 text-center">
-                        <div class="border p-1.5"><span class="block text-[9px] font-bold uppercase text-slate-500">Check-in</span><strong class="text-xs">${checkinFmt}</strong></div>
-                        <div class="border p-1.5"><span class="block text-[9px] font-bold uppercase text-slate-500">Hora</span><strong class="text-xs">15:00</strong></div>
-                        <div class="border p-1.5"><span class="block text-[9px] font-bold uppercase text-slate-500">Check-out</span><strong class="text-xs">${checkoutFmt}</strong></div>
-                        <div class="border p-1.5"><span class="block text-[9px] font-bold uppercase text-slate-500">Hora</span><strong class="text-xs">12:00</strong></div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="border p-1.5"><span class="block text-[9px] font-bold uppercase text-slate-500">Adultos</span><strong>${adultos}</strong></div>
-                        <div class="border p-1.5"><span class="block text-[9px] font-bold uppercase text-slate-500">Niños (&lt;12 años)</span><strong>${ninos}</strong></div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="border p-1.5"><span class="block text-[9px] font-bold uppercase text-slate-500">Nombre Contacto</span><strong>${nombre}</strong></div>
-                        <div class="border p-1.5"><span class="block text-[9px] font-bold uppercase text-slate-500">RUT / Pasaporte</span><strong>${rut}</strong></div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="border p-1.5"><span class="block text-[9px] font-bold uppercase text-slate-500">Dirección</span><strong>${direccion}</strong></div>
-                        <div class="border p-1.5"><span class="block text-[9px] font-bold uppercase text-slate-500">Teléfono</span><strong>${fono}</strong></div>
-                    </div>
-
-                    <div class="border p-1.5"><span class="block text-[9px] font-bold uppercase text-slate-500">Canal Origen</span><strong>${canal}</strong></div>
-
-                    <div class="bg-[#e89c7c] text-slate-900 font-bold p-1.5 uppercase text-xs tracking-wider">PRECIO Y FORMA DE PAGO</div>
-
-                    <div class="grid grid-cols-4 gap-2 text-center">
-                        <div class="border p-1.5"><span class="block text-[9px] font-bold uppercase text-slate-500">N° Noches</span><strong>${noches}</strong></div>
-                        <div class="border p-1.5"><span class="block text-[9px] font-bold uppercase text-slate-500">Valor Noche</span><strong>$${valorDiario.toLocaleString('es-CL')}</strong></div>
-                        <div class="border p-1.5"><span class="block text-[9px] font-bold uppercase text-slate-500">Fee Aseo</span><strong>$${feeAseoVal.toLocaleString('es-CL')}</strong></div>
-                        <div class="border p-1.5"><span class="block text-[9px] font-bold uppercase text-slate-500">Total</span><strong>$${totalBruto.toLocaleString('es-CL')}</strong></div>
-                    </div>
-
-                    <div class="border p-3 bg-slate-50 space-y-1">
-                        <p class="font-bold text-slate-900">Monto 50% RESERVA: <span class="text-emerald-800 font-black">$${abono50.toLocaleString('es-CL')} CLP</span></p>
-                        <p class="text-[11px] text-slate-600">Transferir el monto de reserva a la siguiente cuenta:</p>
-                        <p class="font-bold text-slate-800">Jardín Norte SPA | RUT: 76.714.914-k</p>
-                        <p class="text-slate-700">Banco Itaú | Cta Cte: 0214623372 | Email: mcverac@uc.cl</p>
-                        <p class="font-bold text-rose-700 text-[11px]">El saldo se debe transferir ANTES o al MOMENTO del check-in.</p>
-                    </div>
-
-                    <div class="bg-[#e89c7c] p-2 text-slate-900 font-bold text-[11px] rounded">
-                        El pago del monto de Reserva constituye la aceptación total de las condiciones estipuladas.
-                    </div>
-                </div>
-
-                <!-- HOJA 2: POLÍTICAS Y CONDICIONES -->
-                <div class="border border-slate-300 p-6 rounded bg-white space-y-3">
-                    <h3 class="font-black text-sm uppercase border-b-2 border-[#e89c7c] pb-2 text-slate-800">POLÍTICAS Y CONDICIONES DEL ALOJAMIENTO</h3>
-                    <div class="space-y-2 text-[11px] leading-relaxed text-slate-700">
-                        <p><strong>1. HORARIOS:</strong> Check-in desde 15:00 hrs | Check-out hasta 12:00 hrs.</p>
-                        <p><strong>2. CANCELACIONES:</strong> Anulación o reagendamiento sin costo avisando 7 días antes del Check-In.</p>
-                        <p><strong>3. NO SHOW:</strong> La no presentación en la fecha implica anulación sin devolución.</p>
-                        <p><strong>4. REQUERIMIENTOS:</strong> Leña ilimitada incluida para la estufa principal. Tinaja de uso libre y libre de costo.</p>
-                        <p><strong>5. NORMAS:</strong> Prohibido fumar en interiores y prohibido hacer fogatas externas no autorizadas.</p>
-                    </div>
-                </div>
-            </div>`;
+        async function obtenerContenidoICal(source = 'airbnb') {
+            const queryUrl = `${URL_WORKER_PROXY}?source=${source}`;
+            const resp = await fetch(queryUrl);
+            if (!resp.ok) throw new Error(`Error en Worker para ${source}.`);
+            const txt = await resp.text();
+            if (txt && txt.includes('BEGIN:VCALENDAR')) return txt;
+            throw new Error(`iCal devuelto de ${source} no es válido.`);
         }
 
-        function generarYMostrarFichaModal() {
-            document.getElementById('contenedorFichaImprimible').innerHTML = construirHTMLFichaReserva();
-            toggleModal('modalFichaVistaPrevia');
-        }
+        function procesarTextoICal(dataText, origen = 'airbnb', esManual = false) {
+            try {
+                if (typeof ICAL === 'undefined') return;
+                const jcalData = ICAL.parse(dataText);
+                const comp = new ICAL.Component(jcalData);
+                const vevents = comp.getAllSubcomponents('vevent');
 
-        function imprimirFichaOficial() {
-            const contenido = document.getElementById('contenedorFichaImprimible').innerHTML;
-            const ventana = window.open('', '_blank');
-            ventana.document.write(`
-                <html>
-                <head>
-                    <title>Ficha Oficial de Reserva - Refugio Entre Montañas</title>
-                    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-                    <script src="https://cdn.tailwindcss.com"><\/script>
-                    <style>body { font-family: 'Montserrat', sans-serif; }</style>
-                </head>
-                <body class="p-6 bg-white">${contenido}</body>
-                </html>
-            `);
-            ventana.document.close();
-            setTimeout(() => { ventana.print(); }, 500);
-        }
+                let tempReservas = [];
+                let tempBloqueos = [];
+                let contadorReservas = 0;
 
-        // --- ENVIAR CONFIRMACIÓN WHATSAPP INTEGRADA ---
-        function enviarConfirmacionWhatsApp() {
-            const inVal = document.getElementById('checkin').value;
-            const outVal = document.getElementById('checkout').value;
-            const valorDiario = parseFloat(document.getElementById('valorDiarioFinal').value) || 0;
-            const feeAseoVal = parseFloat(document.getElementById('feeAseo').value) || 0;
+                vevents.forEach(event => {
+                    const dtstart = event.getFirstPropertyValue('dtstart');
+                    const dtend = event.getFirstPropertyValue('dtend');
+                    const summary = (event.getFirstPropertyValue('summary') || '').toString().toLowerCase();
+                    const description = (event.getFirstPropertyValue('description') || '').toString();
+                    const uid = (event.getFirstPropertyValue('uid') || '').toString();
 
-            if (!inVal || !outVal || valorDiario <= 0) {
-                return alert('⚠️ Selecciona primero las fechas de estadía y el Valor Diario.');
-            }
+                    if (dtstart && dtend) {
+                        let cur = dtstart.toJSDate();
+                        const end = dtend.toJSDate();
 
-            const nombre = document.getElementById('nombre').value || 'Huésped';
-            const fono = document.getElementById('telefono').value || '';
-            const checkin = formatearFechaChile(inVal);
-            const checkout = formatearFechaChile(outVal);
+                        const checkinIso = cur.toISOString().split('T')[0];
+                        const checkoutIso = end.toISOString().split('T')[0];
 
-            const inDate = new Date(inVal);
-            const outDate = new Date(outVal);
-            const noches = Math.ceil(Math.abs(outDate - inDate) / (1000 * 60 * 60 * 24)) || 1;
-            
-            const totalBruto = (noches * valorDiario) + feeAseoVal;
-            const totalAbonado = abonosTemp.reduce((sum, a) => sum + parseFloat(a.monto || 0), 0);
-            const saldoPendiente = totalBruto - totalAbonado;
+                        let codigoExtraido = null;
+                        const matchCodigo = uid.match(/([A-Z0-9]{8,10})/i) || description.match(/HM[A-Z0-9]{8,10}/i) || summary.match(/([0-9]{7,12})/i);
+                        if (matchCodigo) codigoExtraido = matchCodigo[0];
 
-            const soloNumerosFono = String(fono).replace(/\D/g, '');
-            const claveCerradura = soloNumerosFono.length >= 4 ? soloNumerosFono.slice(-4) : '----';
+                        const esReserva = summary.includes('reserved') || 
+                                          summary.includes('reserva') || 
+                                          summary.includes('booking') || 
+                                          description.includes('reservation') || 
+                                          (codigoExtraido && !summary.includes('not available'));
 
-            // URL directa al archivo de la ficha (9_2.html) en GitHub Pages
-            const urlFormulario = `https://ev02750275.github.io/entremantanas/9_2.html?in=${inVal}&out=${outVal}&nombre=${encodeURIComponent(nombre)}`;
+                        while (cur < end) {
+                            const yyyy = cur.getFullYear();
+                            const mm = String(cur.getMonth() + 1).padStart(2, '0');
+                            const dd = String(cur.getDate()).padStart(2, '0');
+                            const fechaIso = `${yyyy}-${mm}-${dd}`;
 
-            const msg = `🏔️ *CONFIRMACIÓN DE RESERVA - REFUGIO ENTRE MONTAÑAS* 🏔️\n\n` +
-                        `¡Hola ${nombre}! Te enviamos el detalle de tu reserva:\n\n` +
-                        `📅 *Check-In:* ${checkin} (15:00 hrs)\n` +
-                        `📅 *Check-Out:* ${checkout} (12:00 hrs)\n` +
-                        `🌙 *Estadía:* ${noches} noches\n` +
-                        `🔑 *Clave Cerradura Digital:* ${claveCerradura}\n\n` +
-                        `💰 *Monto Total:* $${totalBruto.toLocaleString('es-CL')} CLP\n` +
-                        `✅ *Monto Abonado:* $${totalAbonado.toLocaleString('es-CL')} CLP\n` +
-                        `📌 *Saldo Pendiente:* $${saldoPendiente.toLocaleString('es-CL')} CLP\n\n` +
-                        `📄 *Ver Ficha / Estado de Reserva Online:*\n` +
-                        `${urlFormulario}\n\n` +
-                        `¡Te esperamos en Malalcahuello! 🌲❄️`;
+                            if (esReserva) {
+                                tempReservas.push({ 
+                                    fecha: fechaIso, 
+                                    codigo: codigoExtraido || `${origen.toUpperCase()}-IMPORT`,
+                                    checkin: checkinIso,
+                                    checkout: checkoutIso,
+                                    canal: origen === 'booking' ? 'Booking' : 'Airbnb'
+                                });
+                            } else {
+                                tempBloqueos.push(fechaIso);
+                            }
 
-            navigator.clipboard.writeText(msg);
+                            cur.setDate(cur.getDate() + 1);
+                        }
 
-            if (soloNumerosFono.length >= 8) {
-                const numCompleto = soloNumerosFono.startsWith('56') ? soloNumerosFono : `56${soloNumerosFono}`;
-                window.open(`https://wa.me/${numCompleto}?text=${encodeURIComponent(msg)}`, '_blank');
-            } else {
-                alert('¡Mensaje de WhatsApp copiado al portapapeles! Abre la app de WhatsApp para enviarlo al huésped.');
+                        if (esReserva) contadorReservas++;
+                    }
+                });
+
+                if (origen === 'booking') {
+                    fechasBookingReservas = tempReservas;
+                    fechasBooking = tempReservas.map(f => f.fecha);
+                } else {
+                    fechasAirbnbReservas = tempReservas;
+                    fechasAirbnbBloqueos = tempBloqueos;
+                    fechasAirbnb = [...tempReservas.map(f => f.fecha), ...tempBloqueos];
+                }
+
+                renderCalendario();
+
+                if (esManual) {
+                    alert(`¡Sincronización de ${origen.toUpperCase()} Completada!\n\n• Reservas detectadas: ${contadorReservas}`);
+                }
+            } catch (err) {
+                console.warn("Inconveniente al procesar iCal:", err);
             }
         }
 
-        // --- FUNCIONES AUXILIARES DE CALENDARIO Y TABLAS ---
-        function formatearFechaChile(fechaYYYYMMDD) {
-            if (!fechaYYYYMMDD) return '-';
-            const partes = String(fechaYYYYMMDD).split('-');
-            if (partes.length !== 3) return fechaYYYYMMDD;
-            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        async function sincronizarNavegador(origen = 'airbnb', esManual = false) {
+            try {
+                const dataText = await obtenerContenidoICal(origen);
+                procesarTextoICal(dataText, origen, esManual);
+            } catch (e) {
+                console.warn(`[Sincronización Silenciosa] Inconveniente al sincronizar ${origen}:`, e.message);
+                if (esManual) {
+                    const usarArchivo = confirm(`Ocurrió un inconveniente al conectar iCal para ${origen.toUpperCase()}.\n\n¿Deseas seleccionar un archivo .ics local de tu equipo?`);
+                    if (usarArchivo) {
+                        document.getElementById('inputArchivoIcs').click();
+                    }
+                }
+            }
         }
 
-        function toggleModal(id) {
-            const el = document.getElementById(id);
-            if (el) el.classList.toggle('hidden');
+        function cargarArchivoIcsLocal(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    procesarTextoICal(e.target.result, 'airbnb', true);
+                } catch (err) {
+                    alert("Error al leer el archivo .ics seleccionado.");
+                }
+            };
+            reader.readAsText(file);
         }
 
         function scrollAlCalendario() {
@@ -909,21 +1148,747 @@
                 seleccionTempCheckout = null;
                 document.getElementById('checkin').value = fechaStr;
                 document.getElementById('checkout').value = '';
+
                 document.getElementById('lblRangoFechasSeleccionado').innerText = `Entrada: ${formatearFechaChile(fechaStr)} (Selecciona Salida...)`;
+                document.getElementById('lblEstadoSeleccionFechas').innerText = "👇 Haz clic en la FECHA DE SALIDA (Check-Out)";
             } else {
                 if (fechaStr <= seleccionTempCheckin) {
                     seleccionTempCheckin = fechaStr;
                     seleccionTempCheckout = null;
                     document.getElementById('checkin').value = fechaStr;
                     document.getElementById('checkout').value = '';
+                    document.getElementById('lblRangoFechasSeleccionado').innerText = `Entrada: ${formatearFechaChile(fechaStr)} (Selecciona Salida...)`;
+                    document.getElementById('lblEstadoSeleccionFechas').innerText = "👇 Haz clic en la FECHA DE SALIDA (Check-Out)";
                 } else {
+                    if (verificarSobreposicionFechas(seleccionTempCheckin, fechaStr, document.getElementById('reservaId').value)) {
+                        alert('⚠️ RANGO NO DISPONIBLE: Hay otra reserva u ocupación en el período seleccionado.');
+                        return;
+                    }
+
                     seleccionTempCheckout = fechaStr;
                     document.getElementById('checkout').value = fechaStr;
+
                     document.getElementById('lblRangoFechasSeleccionado').innerText = `${formatearFechaChile(seleccionTempCheckin)} ➔ ${formatearFechaChile(seleccionTempCheckout)}`;
-                    calcularValores();
+                    document.getElementById('lblEstadoSeleccionFechas').innerText = "✅ Período Seleccionado";
+
+                    actualizarSelectorTemporadaAutomatico();
+                    validarFechasEnTiempoReal();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             }
+
+            renderCalendario();
+        }
+
+        function cargarFechasPorCodigo(plataforma = 'Airbnb') {
+            const codigoBuscado = document.getElementById('codigoOTA').value.trim().toUpperCase();
+            if (!codigoBuscado) return alert(`Por favor, ingresa o pega el código de reserva de ${plataforma}.`);
+
+            const conjunto = plataforma === 'Booking' ? fechasBookingReservas : fechasAirbnbReservas;
+            const reservaEncontrada = conjunto.find(f => f.codigo && f.codigo.toUpperCase().includes(codigoBuscado));
+
+            if (reservaEncontrada) {
+                document.getElementById('canal').value = plataforma === 'Booking' ? 'Booking' : 'Airbnb';
+                seleccionTempCheckin = reservaEncontrada.checkin;
+                seleccionTempCheckout = reservaEncontrada.checkout;
+                document.getElementById('checkin').value = reservaEncontrada.checkin;
+                document.getElementById('checkout').value = reservaEncontrada.checkout;
+
+                document.getElementById('lblRangoFechasSeleccionado').innerText = `${formatearFechaChile(reservaEncontrada.checkin)} ➔ ${formatearFechaChile(reservaEncontrada.checkout)}`;
+
+                evaluarModoFamilia();
+                actualizarSelectorTemporadaAutomatico();
+                calcularValores();
+                renderCalendario();
+
+                alert(`✅ ¡Datos encontrados para el código ${codigoBuscado} (${plataforma})!\n\nCheck-In: ${formatearFechaChile(reservaEncontrada.checkin)}\nCheck-Out: ${formatearFechaChile(reservaEncontrada.checkout)}`);
+            } else {
+                alert(`⚠️ No se encontraron fechas para el código "${codigoBuscado}" en ${plataforma}.`);
+            }
+        }
+
+        function autocompletarDesdeOTA(codigo, checkin, checkout, canal = 'Airbnb') {
+            limpiarFormulario();
+
+            document.getElementById('codigoOTA').value = (codigo && !codigo.includes('IMPORT')) ? codigo : '';
+            document.getElementById('canal').value = canal;
+            
+            seleccionTempCheckin = checkin;
+            seleccionTempCheckout = checkout;
+            document.getElementById('checkin').value = checkin;
+            document.getElementById('checkout').value = checkout;
+
+            document.getElementById('lblRangoFechasSeleccionado').innerText = `${formatearFechaChile(checkin)} ➔ ${formatearFechaChile(checkout)}`;
+
+            if (!document.getElementById('nombre').value) {
+                document.getElementById('nombre').value = codigo && !codigo.includes('IMPORT') ? `Reserva ${canal} (${codigo})` : `Reserva ${canal} Pendiente`;
+            }
+
+            evaluarModoFamilia();
+            actualizarSelectorTemporadaAutomatico();
+            calcularValores();
+            renderCalendario();
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function evaluarModoFamilia() {
+            const canal = document.getElementById('canal').value;
+            const esFamilia = (canal === 'Familia');
+
+            const nombreInput = document.getElementById('nombre');
+            if (esFamilia && !nombreInput.value) nombreInput.value = 'reserva familia';
+
+            const secCostos = document.getElementById('seccionCostosPrecios');
+            const secAbonos = document.getElementById('seccionAbonos');
+            const wrapperDoc = document.getElementById('wrapperDocTributario');
+            const secExtras = document.getElementById('seccionGastosExtras');
+            const wrapperTemp = document.getElementById('wrapperTemporada');
+            const wrapperAdultos = document.getElementById('wrapperAdultos');
+            const wrapperNinos = document.getElementById('wrapperNinos');
+            const wrapperReqs = document.getElementById('wrapperRequerimientos');
+
+            if (esFamilia) {
+                if (secCostos) secCostos.classList.add('hidden');
+                if (secAbonos) secAbonos.classList.add('hidden');
+                if (wrapperDoc) wrapperDoc.classList.add('hidden');
+                if (secExtras) secExtras.classList.add('hidden');
+                if (wrapperTemp) wrapperTemp.classList.add('hidden');
+                if (wrapperAdultos) wrapperAdultos.classList.add('hidden');
+                if (wrapperNinos) wrapperNinos.classList.add('hidden');
+                if (wrapperReqs) wrapperReqs.classList.add('hidden');
+
+                document.getElementById('valorDiarioFinal').value = 0;
+                document.getElementById('costoPlataforma').value = 0;
+            } else {
+                if (secCostos) secCostos.classList.remove('hidden');
+                if (secAbonos) secAbonos.classList.remove('hidden');
+                if (wrapperDoc) wrapperDoc.classList.remove('hidden');
+                if (secExtras) secExtras.classList.remove('hidden');
+                if (wrapperTemp) wrapperTemp.classList.remove('hidden');
+                if (wrapperAdultos) wrapperAdultos.classList.remove('hidden');
+                if (wrapperNinos) wrapperNinos.classList.remove('hidden');
+                if (wrapperReqs) wrapperReqs.classList.remove('hidden');
+
+                if (parseFloat(document.getElementById('valorDiarioFinal').value) === 0) {
+                    document.getElementById('valorDiarioFinal').value = 380000;
+                }
+            }
+            calcularValores();
+        }
+
+        function esTemporadaVerano(fechaStr) {
+            if (!fechaStr) return false;
+            const mes = parseInt(String(fechaStr).split('-')[1], 10);
+            return [12, 1, 2, 3].includes(mes);
+        }
+
+        function calcularSumaDiariaTemporada(tempObj) {
+            if (!tempObj) return 0;
+            return (Number(tempObj.parafina) || 0) +
+                   (Number(tempObj.gas) || 0) +
+                   (Number(tempObj.electricidad) || 0) +
+                   (Number(tempObj.lena) || 0) +
+                   (Number(tempObj.starlink) || 0) +
+                   (Number(tempObj.plagas) || 0) +
+                   (Number(tempObj.jardinero) || 0) +
+                   (Number(tempObj.insumos) || 0);
+        }
+
+        function formatearFechaChile(fechaYYYYMMDD) {
+            if (!fechaYYYYMMDD) return '-';
+            const partes = String(fechaYYYYMMDD).split('-');
+            if (partes.length !== 3) return fechaYYYYMMDD;
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+
+        function abrirChatWsp(telefono) {
+            if (!telefono || telefono.includes('Sin')) return;
+            const soloNumeros = String(telefono).replace(/\D/g, '');
+            if (soloNumeros) window.open(`https://wa.me/${soloNumeros}`, '_blank');
+        }
+
+        function toggleModal(id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.toggle('hidden');
+        }
+
+        function abrirModalHistorialReservas() {
+            renderTabla();
+            toggleModal('modalHistorialReservas');
+        }
+
+        function abrirModalCostos() {
+            cargarValoresCostosCasa();
+            cambiarTabTemporadaCostos('verano');
+            toggleModal('modalCostos');
+        }
+
+        function cambiarTabTemporadaCostos(temp) {
+            const btnVerano = document.getElementById('tabVerano');
+            const btnInvierno = document.getElementById('tabInvierno');
+            const secVerano = document.getElementById('seccionVerano');
+            const secInvierno = document.getElementById('seccionInvierno');
+            const lblTemp = document.getElementById('lblTemporedaActiva');
+
+            if (temp === 'verano') {
+                btnVerano.className = "flex-1 py-2 text-xs font-bold rounded-lg transition bg-white text-amber-700 shadow-sm";
+                btnInvierno.className = "flex-1 py-2 text-xs font-bold rounded-lg transition text-slate-600 hover:text-slate-900";
+                secVerano.classList.remove('hidden');
+                secInvierno.classList.add('hidden');
+                lblTemp.innerText = "Verano";
+            } else {
+                btnInvierno.className = "flex-1 py-2 text-xs font-bold rounded-lg transition bg-white text-sky-800 shadow-sm";
+                btnVerano.className = "flex-1 py-2 text-xs font-bold rounded-lg transition text-slate-600 hover:text-slate-900";
+                secInvierno.classList.remove('hidden');
+                secVerano.classList.add('hidden');
+                lblTemp.innerText = "Invierno";
+            }
+            calcularTotalTemporalCostos();
+        }
+
+        function calcularTotalTemporalCostos() {
+            const isVeranoActive = !document.getElementById('seccionVerano').classList.contains('hidden');
+            let sumaDiaria = 0;
+            const prefix = isVeranoActive ? 'v_' : 'i_';
+            ['parafina', 'gas', 'electricidad', 'lena', 'starlink', 'plagas', 'jardinero', 'insumos'].forEach(item => {
+                sumaDiaria += parseFloat(document.getElementById(prefix + item).value) || 0;
+            });
+            const aseoFijo = parseFloat(document.getElementById('cAseo').value) || 0;
+            const regaloFijo = parseFloat(document.getElementById('cRegalo').value) || 0;
+            const totalFijosReserva = aseoFijo + regaloFijo;
+
+            document.getElementById('lblTotalDiarioCalculado').innerText = `$${sumaDiaria.toLocaleString('es-CL')} /día  (Fijos: $${totalFijosReserva.toLocaleString('es-CL')})`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            inicializarSincronizacionCloud();
+            renderCalendario();
+            renderTabla();
+
+            ['valorDiarioFinal', 'costoPlataforma', 'tipoDoc'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', calcularValores);
+            });
+
+            ['rPrevired', 'rCredito', 'rGastosComunes', 'rRetirosExtras', 'rOtros'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', calcularTotalRetirosModal);
+            });
+
+            sincronizarNavegador('airbnb', false);
+            sincronizarNavegador('booking', false);
+        });
+
+        function actualizarSelectorTemporadaAutomatico() {
+            const checkinVal = document.getElementById('checkin').value;
+            if (checkinVal) {
+                const isVerano = esTemporadaVerano(checkinVal);
+                document.getElementById('selectTemporadaReserva').value = isVerano ? 'Verano' : 'Invierno';
+            }
+        }
+
+        function exportarReservasExcel() {
+            if (reservas.length === 0) return alert('No hay reservas para exportar.');
+            
+            const datosFormat = reservas.map(r => {
+                const totalAbonado = r.abonos ? r.abonos.reduce((sum, a) => sum + parseFloat(a.monto || 0), 0) : 0;
+                const totalBruto = parseFloat(r.totalBruto) || 0;
+                return {
+                    "Código OTA": r.codigoOTA || '-',
+                    "Huésped": r.nombre || 'Pendiente',
+                    "RUT / Pasaporte": r.rut || 'Pendiente',
+                    "Teléfono": r.telefono || 'Sin Teléfono',
+                    "Dirección": r.direccion || 'Sin Dirección',
+                    "Email": r.email || 'Sin Email',
+                    "Check-In": r.checkin || '-',
+                    "Check-Out": r.checkout || '-',
+                    "Temporada": r.temporadaReserva || 'Verano',
+                    "Noches": r.noches || 0,
+                    "Adultos": r.adultos || 0,
+                    "Niños": r.ninos || 0,
+                    "Canal": r.canal || 'Directo',
+                    "Estado": r.estadoReserva || '-',
+                    "Total Bruto ($)": totalBruto,
+                    "Comisión Plataforma ($)": r.costoPlataforma || 0,
+                    "Total Abonado ($)": totalAbonado,
+                    "Saldo Pendiente ($)": totalBruto - totalAbonado,
+                    "Tipo Documento": r.tipoDoc || 'Sin Documento',
+                    "Anotaciones": r.anotaciones || ''
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(datosFormat);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Reservas");
+            XLSX.writeFile(workbook, `Reservas_RefugioEntreMontanas_${new Date().toISOString().split('T')[0]}.xlsx`);
+        }
+
+        function exportarMargenesExcel() {
+            if (reservas.length === 0) return alert('No hay datos para exportar.');
+
+            const datosFormat = reservas.map(r => {
+                const esFamilia = (r.canal === 'Familia');
+                const nochesUso = r.noches || 1;
+                const isVerano = (r.temporadaReserva === 'Verano');
+                const diarioVeranoRef = calcularSumaDiariaTemporada(costosCasa.verano);
+                const diarioInviernoRef = calcularSumaDiariaTemporada(costosCasa.invierno);
+                const diarioUnitario = isVerano ? diarioVeranoRef : diarioInviernoRef;
+
+                const costoDiarioTotal = esFamilia ? 0 : (r.costoDiarioAplicado !== undefined ? r.costoDiarioAplicado : (nochesUso * diarioUnitario));
+                const costosFijos = esFamilia ? 0 : (r.costoFijoAplicado !== undefined ? r.costoFijoAplicado : ((costosCasa.aseo || 0) + (costosCasa.regalo || 0)));
+                
+                const costoPlat = parseFloat(r.costoPlataforma) || 0;
+                const extras = (r.costoBencinaGenerador || 0) + (r.costoImprevistosReserva || 0);
+                const gananciaNeta = (r.totalBruto || 0) - costoPlat - costoDiarioTotal - costosFijos - extras;
+                const margenPct = r.totalBruto > 0 ? ((gananciaNeta / r.totalBruto) * 100).toFixed(1) : 0;
+
+                return {
+                    "Código OTA": r.codigoOTA || '-',
+                    "Huésped": r.nombre || 'Pendiente',
+                    "Check-In": r.checkin || '-',
+                    "Check-Out": r.checkout || '-',
+                    "Temporada": r.temporadaReserva || 'Verano',
+                    "Noches": nochesUso,
+                    "Ingreso Bruto ($)": r.totalBruto || 0,
+                    "Comisión Plataforma ($)": costoPlat,
+                    "Costos Diarios Congelados ($)": costoDiarioTotal,
+                    "Costos Fijos Congelados ($)": costosFijos,
+                    "Extras ($)": extras,
+                    "Margen $ Limpio": gananciaNeta,
+                    "Margen %": `${margenPct}%`
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(datosFormat);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Margen_Contribucion");
+            XLSX.writeFile(workbook, `MargenContribucion_RefugioEntreMontanas_${new Date().toISOString().split('T')[0]}.xlsx`);
+        }
+
+        function exportarHuespedesExcel() {
+            const mapaHuespedes = {};
+            reservas.forEach(r => {
+                const clave = r.rut && !r.rut.includes('Pendiente') ? String(r.rut).trim() : String(r.nombre || '').trim().toLowerCase();
+                if (!mapaHuespedes[clave]) {
+                    mapaHuespedes[clave] = {
+                        "Nombre Completo": r.nombre || 'Pendiente',
+                        "RUT / Pasaporte": r.rut || 'Pendiente',
+                        "Teléfono": r.telefono || 'Sin Teléfono',
+                        "Dirección": r.direccion || 'Sin Dirección',
+                        "Email": r.email || 'Sin Email',
+                        "Total Visitas": 1,
+                        "Última Visita": r.checkin
+                    };
+                } else {
+                    mapaHuespedes[clave]["Total Visitas"] += 1;
+                    if (r.checkin > mapaHuespedes[clave]["Última Visita"]) {
+                        mapaHuespedes[clave]["Última Visita"] = r.checkin;
+                    }
+                }
+            });
+
+            const datos = Object.values(mapaHuespedes);
+            if (datos.length === 0) return alert('No hay huéspedes registrados.');
+
+            const worksheet = XLSX.utils.json_to_sheet(datos);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Base_Huespedes");
+            XLSX.writeFile(workbook, `Huespedes_RefugioEntreMontanas_${new Date().toISOString().split('T')[0]}.xlsx`);
+        }
+
+        function exportarKPIsExcel() {
+            const annoSel = document.getElementById('kpiAnno').value || new Date().getFullYear().toString();
+            const mesSel = document.getElementById('kpiMes').value;
+
+            const reservasFiltradas = reservas.filter(r => {
+                if (!r.checkin) return false;
+                const partes = String(r.checkin).split('-');
+                const matchAnno = partes[0] === annoSel;
+                const matchMes = !mesSel || partes[1] === mesSel;
+                return matchAnno && matchMes;
+            });
+
+            let totalIngresos = 0;
+            let totalGastosDiarios = 0;
+            let totalCostosFijosExtras = 0;
+
+            const diarioVeranoRef = calcularSumaDiariaTemporada(costosCasa.verano);
+            const diarioInviernoRef = calcularSumaDiariaTemporada(costosCasa.invierno);
+            const costoAseoRef = costosCasa.aseo || 0;
+            const costoRegaloRef = costosCasa.regalo || 0;
+
+            const detalleReservasKPI = reservasFiltradas.map(r => {
+                const esFamilia = (r.canal === 'Familia');
+                const noches = r.noches || 1;
+                const isVerano = (r.temporadaReserva === 'Verano');
+                const diarioUnitario = isVerano ? diarioVeranoRef : diarioInviernoRef;
+                const costoDiarioTotal = esFamilia ? 0 : (r.costoDiarioAplicado !== undefined ? r.costoDiarioAplicado : (noches * diarioUnitario));
+                const costosFijos = esFamilia ? 0 : (r.costoFijoAplicado !== undefined ? r.costoFijoAplicado : (costoAseoRef + costoRegaloRef));
+                
+                const costoPlat = parseFloat(r.costoPlataforma) || 0;
+                const extras = (r.costoBencinaGenerador || 0) + (r.costoImprevistosReserva || 0);
+                const gananciaReserva = (r.totalBruto || 0) - costoPlat - costoDiarioTotal - costosFijos - extras;
+
+                totalIngresos += (r.totalBruto || 0);
+                totalGastosDiarios += costoDiarioTotal;
+                totalCostosFijosExtras += (costosFijos + costoPlat + extras);
+
+                return {
+                    "Reserva ID": r.id,
+                    "Código OTA": r.codigoOTA || '-',
+                    "Huésped": r.nombre || 'Pendiente',
+                    "Check-In": r.checkin || '-',
+                    "Temporada": r.temporadaReserva || 'Verano',
+                    "Noches": noches,
+                    "Ingreso Bruto ($)": r.totalBruto || 0,
+                    "Gastos Diarios ($)": costoDiarioTotal,
+                    "Costos Fijos + Extras ($)": costosFijos + costoPlat + extras,
+                    "Resultado Operacional ($)": gananciaReserva
+                };
+            });
+
+            const workbook = XLSX.utils.book_new();
+            const wsDetalle = XLSX.utils.json_to_sheet(detalleReservasKPI);
+            XLSX.utils.book_append_sheet(workbook, wsDetalle, `KPIs_${annoSel}_${mesSel || 'Anual'}`);
+            XLSX.writeFile(workbook, `KPIs_RefugioEntreMontanas_${annoSel}_${mesSel || 'Anual'}.xlsx`);
+        }
+
+        function limpiarFormulario() {
+            const form = document.getElementById('reservaForm');
+            if (form) form.reset();
+            document.getElementById('reservaId').value = '';
+            document.getElementById('codigoOTA').value = '';
+            document.getElementById('direccion').value = '';
+            document.getElementById('valorDiarioFinal').value = 380000;
+            document.getElementById('canal').value = 'Directo';
+            document.getElementById('adultos').value = 2;
+            document.getElementById('ninos').value = 0;
+            
+            reiniciarSeleccionRangoFechas();
+            evaluarModoFamilia();
+
+            document.getElementById('reqCuna').checked = false;
+            document.getElementById('reqProtectorEstufa').checked = false;
+            document.getElementById('reqPerro').checked = false;
+            document.getElementById('costoBencinaGenerador').value = 0;
+            document.getElementById('costoImprevistosReserva').value = 0;
+            abonosTemp = [];
+            reservaCalculada = {};
+            document.getElementById('badgeEdit').classList.add('hidden');
+            document.getElementById('formTitulo').innerHTML = `<i class="fa-solid fa-calendar-plus text-emerald-700 mr-2.5"></i>Ingresar / Editar Reserva`;
+            renderAbonos();
+            document.getElementById('cantDiasMostrar').value = '0 días / 0 noches';
+            document.getElementById('resNoches').innerText = '0d / 0n';
+            document.getElementById('resTotalBruto').innerText = '$0';
+            document.getElementById('resCostoPlataforma').innerText = '$0';
+            document.getElementById('resNetoCaban').innerText = '$0';
+            document.getElementById('resNetoImpuesto').innerText = '$0';
+            document.getElementById('resIva').innerText = '$0';
+            document.getElementById('resTotalAbonado').innerText = '$0';
+            document.getElementById('resSaldoPendiente').innerText = '$0';
+        }
+
+        function cargarParaEditar(id) {
+            const r = reservas.find(item => item.id === id);
+            if (!r) return;
+
+            const modalHist = document.getElementById('modalHistorialReservas');
+            if (modalHist && !modalHist.classList.contains('hidden')) toggleModal('modalHistorialReservas');
+
+            document.getElementById('reservaId').value = r.id;
+            document.getElementById('codigoOTA').value = r.codigoOTA || '';
+            document.getElementById('nombre').value = r.nombre || '';
+            document.getElementById('rut').value = r.rut || '';
+            document.getElementById('email').value = r.email || '';
+            document.getElementById('telefono').value = r.telefono || '';
+            document.getElementById('direccion').value = r.direccion || '';
+            document.getElementById('adultos').value = r.adultos || 1;
+            document.getElementById('ninos').value = r.ninos || 0;
+            document.getElementById('selectTemporadaReserva').value = r.temporadaReserva || 'Verano';
+            document.getElementById('reqPerro').checked = !!r.reqPerro;
+            document.getElementById('reqCuna').checked = !!r.reqCuna;
+            document.getElementById('reqProtectorEstufa').checked = !!r.reqProtectorEstufa;
+            document.getElementById('costoBencinaGenerador').value = r.costoBencinaGenerador || 0;
+            document.getElementById('costoImprevistosReserva').value = r.costoImprevistosReserva || 0;
+            
+            seleccionTempCheckin = r.checkin;
+            seleccionTempCheckout = r.checkout;
+            document.getElementById('checkin').value = r.checkin || '';
+            document.getElementById('checkout').value = r.checkout || '';
+            document.getElementById('lblRangoFechasSeleccionado').innerText = `${formatearFechaChile(r.checkin)} ➔ ${formatearFechaChile(r.checkout)}`;
+
+            document.getElementById('valorDiarioFinal').value = r.valorDiarioFinal || 0;
+            document.getElementById('costoPlataforma').value = r.costoPlataforma || 0;
+            document.getElementById('canal').value = r.canal || 'Directo';
+            document.getElementById('tipoDoc').value = r.tipoDoc || 'Sin Documento';
+            document.getElementById('anotaciones').value = r.anotaciones || '';
+
+            evaluarModoFamilia();
+
+            abonosTemp = r.abonos ? [...r.abonos] : [];
+            renderAbonos();
+            calcularValores();
+            renderCalendario();
+
+            document.getElementById('badgeEdit').classList.remove('hidden');
+            document.getElementById('formTitulo').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-600 mr-2.5"></i>Editando: ${r.nombre}`;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function verResultadoEspecial(id) {
+            const r = reservas.find(item => item.id === id);
+            if (!r) return;
+
+            const esFamilia = (r.canal === 'Familia');
+            const noches = r.noches || 1;
+            const isVerano = (r.temporadaReserva === 'Verano');
+            const diarioVeranoRef = calcularSumaDiariaTemporada(costosCasa.verano);
+            const diarioInviernoRef = calcularSumaDiariaTemporada(costosCasa.invierno);
+            const diarioUnitario = isVerano ? diarioVeranoRef : diarioInviernoRef;
+
+            const costoDiarioTotal = esFamilia ? 0 : (r.costoDiarioAplicado !== undefined ? r.costoDiarioAplicado : (noches * diarioUnitario));
+            const costosFijos = esFamilia ? 0 : (r.costoFijoAplicado !== undefined ? r.costoFijoAplicado : ((costosCasa.aseo || 0) + (costosCasa.regalo || 0)));
+            
+            const costoPlat = parseFloat(r.costoPlataforma) || 0;
+            const extras = (r.costoBencinaGenerador || 0) + (r.costoImprevistosReserva || 0);
+            
+            const gananciaNeta = (r.totalBruto || 0) - costoPlat - costoDiarioTotal - costosFijos - extras;
+            const margenPct = r.totalBruto > 0 ? ((gananciaNeta / r.totalBruto) * 100).toFixed(1) : 0;
+
+            const contenedor = document.getElementById('contenidoDetalleEconomico');
+            contenedor.innerHTML = `
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <span class="font-bold text-slate-800 text-sm block">${r.nombre || 'Huésped Pendiente'}</span>
+                    ${r.codigoOTA ? `<span class="text-[10px] text-slate-400 font-mono block mt-0.5">#${r.codigoOTA}</span>` : ''}
+                    <span class="text-slate-500 text-xs block mt-1">${formatearFechaChile(r.checkin)} al ${formatearFechaChile(r.checkout)} (${noches} noches) [${isVerano ? '☀️ Verano' : '❄️ Invierno'}]</span>
+                </div>
+                <div class="space-y-2 border-t border-slate-200 pt-2 text-xs">
+                    <div class="flex justify-between font-semibold"><span>Ingreso Bruto Arriendo:</span><span class="text-emerald-700">$${(r.totalBruto || 0).toLocaleString('es-CL')}</span></div>
+                    <div class="flex justify-between text-rose-600"><span>- Comisión Plataforma:</span><span>-$${costoPlat.toLocaleString('es-CL')}</span></div>
+                    <div class="flex justify-between text-amber-700"><span>- Costos Diarios Congelados (${noches}n):</span><span>-$${costoDiarioTotal.toLocaleString('es-CL')}</span></div>
+                    <div class="flex justify-between text-teal-800"><span>- Costos Fijos Congelados (Aseo + Regalo):</span><span>-$${costosFijos.toLocaleString('es-CL')}</span></div>
+                    <div class="flex justify-between text-purple-700"><span>- Gastos Extras:</span><span>-$${extras.toLocaleString('es-CL')}</span></div>
+                    <div class="border-t border-slate-200 pt-2 flex justify-between font-black text-sm ${gananciaNeta >= 0 ? 'text-emerald-700' : 'text-rose-600'}">
+                        <span>Margen $ Limpio:</span>
+                        <span>$${gananciaNeta.toLocaleString('es-CL')}</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-slate-600"><span>Porcentaje de Margen:</span><span>${margenPct}%</span></div>
+                </div>
+            `;
+            toggleModal('modalDetalleEconomico');
+        }
+
+        function poblarFiltroAnos() {
+            const selectAno = document.getElementById('filtroAno');
+            if (!selectAno) return;
+            const valActual = selectAno.value;
+            selectAno.innerHTML = '<option value="">Todos los Años</option>';
+            const annos = [...new Set(reservas.map(r => r.checkin ? String(r.checkin).substring(0, 4) : ''))].filter(Boolean);
+            annos.sort().reverse().forEach(a => {
+                selectAno.innerHTML += `<option value="${a}">${a}</option>`;
+            });
+            if (valActual) selectAno.value = valActual;
+        }
+
+        function poblarFiltrosKPIAnos() {
+            const kpiAno = document.getElementById('kpiAnno');
+            const margenAno = document.getElementById('filtroMargenAno');
+            const hoyAno = new Date().getFullYear().toString();
+
+            const annos = [...new Set(reservas.map(r => r.checkin ? String(r.checkin).substring(0, 4) : ''))].filter(Boolean);
+            if (!annos.includes(hoyAno)) annos.push(hoyAno);
+            annos.sort().reverse();
+
+            if (kpiAno) {
+                kpiAno.innerHTML = '';
+                annos.forEach(a => kpiAno.innerHTML += `<option value="${a}">${a}</option>`);
+                kpiAno.value = hoyAno;
+            }
+            if (margenAno) {
+                margenAno.innerHTML = '<option value="">Todos los Años</option>';
+                annos.forEach(a => margenAno.innerHTML += `<option value="${a}">${a}</option>`);
+                margenAno.value = hoyAno;
+            }
+        }
+
+        function renderTabla() {
+            const tbody = document.getElementById('tablaReservas');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const textoInput = document.getElementById('filtroTexto');
+            const estadoInput = document.getElementById('filtroEstado');
+            const mesInput = document.getElementById('filtroMes');
+            const anoInput = document.getElementById('filtroAno');
+
+            const texto = textoInput ? textoInput.value.toLowerCase().trim() : '';
+            const estado = estadoInput ? estadoInput.value : '';
+            const mes = mesInput ? mesInput.value : '';
+            const ano = anoInput ? anoInput.value : '';
+
+            const reservasFiltradas = reservas.filter(r => {
+                const nombreVal = String(r.nombre || '').toLowerCase();
+                const otaVal = String(r.codigoOTA || '').toLowerCase();
+                const coincideTexto = !texto || nombreVal.includes(texto) || otaVal.includes(texto);
+                const coincideEstado = !estado || r.estadoReserva === estado;
+                
+                let coincideMes = true;
+                if (mes && r.checkin) {
+                    const mesCheckin = String(r.checkin).split('-')[1];
+                    coincideMes = (mesCheckin === mes);
+                }
+
+                let coincideAno = true;
+                if (ano && r.checkin) {
+                    const anoCheckin = String(r.checkin).split('-')[0];
+                    coincideAno = (anoCheckin === ano);
+                }
+
+                return coincideTexto && coincideEstado && coincideMes && coincideAno;
+            });
+
+            if (reservasFiltradas.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-slate-400 font-medium">No se encontraron reservas con los filtros aplicados.</td></tr>`;
+                return;
+            }
+
+            reservasFiltradas.forEach(r => {
+                let reqsText = [];
+                if (r.reqPerro) reqsText.push('🐾 Perro');
+                if (r.reqCuna) reqsText.push('🍼 Cuna');
+                if (r.reqProtectorEstufa) reqsText.push('🛡️ Prot. Estufa');
+                const reqsHtml = reqsText.length > 0 ? `<div class="text-[11px] text-sky-700 font-semibold mt-0.5">${reqsText.join(' | ')}</div>` : '<div class="text-[11px] text-slate-400">Sin extras</div>';
+
+                const totalAbonado = r.abonos ? r.abonos.reduce((sum, a) => sum + parseFloat(a.monto || 0), 0) : 0;
+                const totalBrutoVal = parseFloat(r.totalBruto) || 0;
+                const saldoCalculado = totalBrutoVal - totalAbonado;
+
+                let abonosFormatted = '';
+                if (r.abonos && r.abonos.length > 0) {
+                    abonosFormatted = r.abonos.map(a => `• $${parseFloat(a.monto).toLocaleString('es-CL')}`).join('<br>');
+                } else {
+                    abonosFormatted = '<span class="text-slate-400">Sin abonos</span>';
+                }
+
+                const saldoHtml = `<div class="mt-1 pt-1 border-t border-slate-200 font-bold ${saldoCalculado > 0 ? 'text-amber-700' : 'text-emerald-700'}">
+                    Saldo: $${saldoCalculado.toLocaleString('es-CL')}
+                </div>`;
+
+                const isVerano = (r.temporadaReserva === 'Verano');
+                const iconoTemp = isVerano ? `<span class="inline-flex items-center px-2 py-0.5 bg-amber-100 text-amber-800 font-bold rounded text-[11px]"><i class="fa-solid fa-sun mr-1"></i> Verano</span>` : `<span class="inline-flex items-center px-2 py-0.5 bg-sky-100 text-sky-800 font-bold rounded text-[11px]"><i class="fa-solid fa-snowflake mr-1"></i> Invierno</span>`;
+
+                const otaBadge = r.codigoOTA ? `<span class="text-[10px] text-slate-400 font-mono block tracking-tight">#${r.codigoOTA}</span>` : '';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 border-b border-slate-200 transition">
+                        <td class="p-3">
+                            <button type="button" onclick="cargarParaEditar('${r.id}')" class="font-bold text-emerald-800 hover:text-emerald-600 text-left text-xs block">
+                                ${r.nombre || 'Huésped Pendiente'}
+                            </button>
+                            <button type="button" onclick="abrirChatWsp('${r.telefono}')" title="Abrir WhatsApp" class="text-[11px] text-emerald-600 font-medium hover:underline flex items-center gap-1 mt-0.5">
+                                <i class="fa-brands fa-whatsapp"></i> ${r.telefono || 'Sin Teléfono'}
+                            </button>
+                        </td>
+                        <td class="p-3">
+                            <div class="font-medium text-slate-800">${formatearFechaChile(r.checkin)} al ${formatearFechaChile(r.checkout)}</div>
+                            <div class="font-bold text-[11px] text-emerald-700 mt-0.5">${r.dias || ((r.noches || 0) + 1)}d / ${r.noches || 0}n</div>
+                        </td>
+                        <td class="p-3">${iconoTemp}</td>
+                        <td class="p-3">
+                            <span class="text-slate-700 font-medium">${r.adultos || 0} Ad / ${r.ninos || 0} Niñ</span>
+                            ${reqsHtml}
+                        </td>
+                        <td class="p-3">
+                            <span class="bg-slate-100 border border-slate-200 px-2 py-1 rounded text-[11px] text-slate-700 font-semibold">${r.canal || 'Directo'}</span>
+                            ${otaBadge}
+                        </td>
+                        <td class="p-3 font-bold text-slate-900">$${totalBrutoVal.toLocaleString('es-CL')}</td>
+                        <td class="p-3 text-[11px]">
+                            ${abonosFormatted}
+                            ${saldoHtml}
+                        </td>
+                        <td class="p-3">
+                            <select onchange="cambiarEstadoManual('${r.id}', this.value)" class="bg-white border border-slate-300 rounded p-1 text-[11px] font-semibold text-slate-800 focus:outline-none">
+                                <option value="Reserva" ${r.estadoReserva === 'Reserva' ? 'selected' : ''}>🟡 Reserva</option>
+                                <option value="Reserva en Curso" ${r.estadoReserva === 'Reserva en Curso' ? 'selected' : ''}>🟢 En Curso</option>
+                                <option value="Reserva Terminada" ${r.estadoReserva === 'Reserva Terminada' ? 'selected' : ''}>⚪ Terminada</option>
+                            </select>
+                        </td>
+                        <td class="p-3 text-center space-x-1.5">
+                            <button type="button" onclick="cargarParaEditar('${r.id}')" title="Editar" class="p-1.5 bg-sky-100 border border-sky-300 text-sky-800 rounded-lg hover:bg-sky-200"><i class="fa-solid fa-pen"></i></button>
+                            <button type="button" onclick="eliminarReserva('${r.id}')" title="Eliminar" class="p-1.5 bg-rose-100 border border-rose-300 text-rose-700 rounded-lg hover:bg-rose-200"><i class="fa-solid fa-trash"></i></button>
+                            <button type="button" onclick="verResultadoEspecial('${r.id}')" title="Ver Resultado Económico" class="p-1.5 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-lg hover:bg-emerald-200"><i class="fa-solid fa-eye"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function eliminarReserva(id) {
+            if (confirm('¿Eliminar esta reserva permanentemente?')) {
+                await db.collection('reservas').doc(id).delete();
+            }
+        }
+
+        function abrirModalHuespedes() {
+            const tbody = document.getElementById('tablaHuespedesBase');
+            tbody.innerHTML = '';
+
+            const mapaHuespedes = {};
+            reservas.forEach(r => {
+                const clave = r.rut && !r.rut.includes('Pendiente') ? String(r.rut).trim() : String(r.nombre || '').trim().toLowerCase();
+                if (!mapaHuespedes[clave]) {
+                    mapaHuespedes[clave] = {
+                        nombre: r.nombre || 'Huésped Pendiente',
+                        rut: r.rut || 'Pendiente',
+                        telefono: r.telefono || 'Sin Teléfono',
+                        direccion: r.direccion || 'Sin Dirección',
+                        email: r.email || 'Sin Email',
+                        totalVisitas: 1,
+                        ultimaVisita: r.checkin
+                    };
+                } else {
+                    mapaHuespedes[clave].totalVisitas += 1;
+                    if (r.checkin > mapaHuespedes[clave].ultimaVisita) {
+                        mapaHuespedes[clave].ultimaVisita = r.checkin;
+                    }
+                }
+            });
+
+            const listaHuespedes = Object.values(mapaHuespedes);
+            if (listaHuespedes.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400 font-medium">No hay huéspedes registrados.</td></tr>`;
+            } else {
+                listaHuespedes.forEach(h => {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 border-b border-slate-100">
+                            <td class="p-2.5 font-bold text-slate-800">${h.nombre}</td>
+                            <td class="p-2.5 font-mono text-slate-500">${h.rut}</td>
+                            <td class="p-2.5 font-semibold text-emerald-600 cursor-pointer" onclick="abrirChatWsp('${h.telefono}')"><i class="fa-brands fa-whatsapp mr-1"></i> ${h.telefono}</td>
+                            <td class="p-2.5 text-slate-700">${h.direccion}</td>
+                            <td class="p-2.5 text-slate-700">${h.email}</td>
+                            <td class="p-2.5 text-center font-extrabold text-slate-800">${h.totalVisitas}</td>
+                            <td class="p-2.5 text-slate-500">${formatearFechaChile(h.ultimaVisita)}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            toggleModal('modalHuespedes');
+        }
+
+        function imprimirTablaHuespedes() {
+            window.print();
+        }
+
+        function cambiarMesCalendario(offset) {
+            mesCalendarioOffset += offset;
+            renderCalendario();
+        }
+
+        function resetMesCalendario() {
+            mesCalendarioOffset = 0;
             renderCalendario();
         }
 
@@ -931,6 +1896,7 @@
             const contenedor = document.getElementById('calendarioContenedor');
             if (!contenedor) return;
             contenedor.innerHTML = '';
+
             const hoy = new Date();
             for (let i = 0; i < 2; i++) {
                 const fechaBase = new Date(hoy.getFullYear(), hoy.getMonth() + mesCalendarioOffset + i, 1);
@@ -944,70 +1910,1067 @@
                         </div>
                         <div class="grid grid-cols-7 gap-1 text-xs">
                 `;
+
                 const primerDiaSemana = (fechaBase.getDay() + 6) % 7;
                 const ultimoDiaMes = new Date(fechaBase.getFullYear(), fechaBase.getMonth() + 1, 0).getDate();
 
-                for (let empty = 0; empty < primerDiaSemana; empty++) htmlMes += `<div></div>`;
+                for (let empty = 0; empty < primerDiaSemana; empty++) {
+                    htmlMes += `<div></div>`;
+                }
 
                 for (let dia = 1; dia <= ultimoDiaMes; dia++) {
                     const fechaStr = `${fechaBase.getFullYear()}-${String(fechaBase.getMonth() + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+                    
+                    let coincidenCheckin = false;
+                    let coincidenCheckout = false;
                     let claseDia = 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 cursor-pointer';
+                    let etiquetaPlataforma = '';
+                    let idReservaGuardada = null;
 
-                    if (seleccionTempCheckin && !seleccionTempCheckout && fechaStr === seleccionTempCheckin) claseDia = 'cal-day-sel-in';
-                    else if (seleccionTempCheckin && seleccionTempCheckout && fechaStr >= seleccionTempCheckin && fechaStr <= seleccionTempCheckout) claseDia = 'cal-day-sel-range';
+                    reservas.forEach(r => {
+                        if (fechaStr === r.checkin) coincidenCheckin = true;
+                        if (fechaStr === r.checkout) coincidenCheckout = true;
 
-                    htmlMes += `<div onclick="manejarClicFechaLibre('${fechaStr}')" class="p-2 rounded-lg text-center font-medium transition ${claseDia}">${dia}</div>`;
+                        if (fechaStr >= r.checkin && fechaStr <= r.checkout) {
+                            etiquetaPlataforma = r.canal ? r.canal.toUpperCase() : 'DIRECTA';
+                            idReservaGuardada = r.id;
+                            if (r.estadoReserva === 'Reserva en Curso') {
+                                claseDia = 'cal-day-curso';
+                            } else if (r.estadoReserva === 'Reserva Terminada') {
+                                claseDia = 'cal-day-terminada';
+                            } else {
+                                claseDia = 'cal-day-confirmada';
+                            }
+                        }
+                    });
+
+                    let esReservaAirbnb = false;
+                    let esReservaBooking = false;
+                    let esBloqueo = false;
+                    let infoReservaOTA = null;
+
+                    if (!idReservaGuardada) {
+                        infoReservaOTA = fechasAirbnbReservas.find(f => f.fecha === fechaStr);
+                        if (infoReservaOTA) {
+                            esReservaAirbnb = true;
+                        } else {
+                            infoReservaOTA = fechasBookingReservas.find(f => f.fecha === fechaStr);
+                            if (infoReservaOTA) esReservaBooking = true;
+                        }
+
+                        esBloqueo = fechasAirbnbBloqueos.includes(fechaStr);
+
+                        if (esReservaAirbnb) {
+                            claseDia = 'cal-day-airbnb shadow-sm';
+                        } else if (esReservaBooking) {
+                            claseDia = 'cal-day-booking shadow-sm';
+                        } else if (esBloqueo) {
+                            claseDia = 'cal-day-bloqueo';
+                        }
+                    }
+
+                    if (coincidenCheckin && coincidenCheckout) {
+                        claseDia = 'cal-day-transicion';
+                    }
+
+                    if (seleccionTempCheckin && !seleccionTempCheckout) {
+                        if (fechaStr === seleccionTempCheckin) claseDia = 'cal-day-sel-in';
+                    } else if (seleccionTempCheckin && seleccionTempCheckout) {
+                        if (fechaStr >= seleccionTempCheckin && fechaStr <= seleccionTempCheckout) {
+                            claseDia = 'cal-day-sel-range';
+                        }
+                    }
+
+                    if (idReservaGuardada) {
+                        htmlMes += `<div onclick="cargarParaEditar('${idReservaGuardada}')" title="Clic para ver/editar reserva guardada" class="p-2 rounded-lg text-center font-medium transition ${claseDia}">${dia} <span class="text-[8px] block font-extrabold">${etiquetaPlataforma}</span></div>`;
+                    } else if ((esReservaAirbnb || esReservaBooking) && infoReservaOTA) {
+                        const plat = esReservaBooking ? 'Booking' : 'Airbnb';
+                        htmlMes += `<div onclick="autocompletarDesdeOTA('${infoReservaOTA.codigo}', '${infoReservaOTA.checkin}', '${infoReservaOTA.checkout}', '${plat}')" title="Clic para importar esta reserva de ${plat}" class="p-2 rounded-lg text-center font-medium transition ${claseDia}">${dia} <span class="text-[8px] block font-extrabold uppercase">${plat}</span></div>`;
+                    } else if (esBloqueo) {
+                        htmlMes += `<div title="Fecha bloqueada" class="p-2 rounded-lg text-center font-medium transition ${claseDia}">${dia} <span class="text-[8px] block font-bold">Fecha bloqueada</span></div>`;
+                    } else {
+                        htmlMes += `<div onclick="manejarClicFechaLibre('${fechaStr}')" title="Clic para seleccionar rango de reserva" class="p-2 rounded-lg text-center font-medium transition ${claseDia}">${dia}</div>`;
+                    }
                 }
+
                 htmlMes += `</div></div>`;
                 contenedor.innerHTML += htmlMes;
             }
         }
 
-        function cambiarMesCalendario(offset) { mesCalendarioOffset += offset; renderCalendario(); }
-        function resetMesCalendario() { mesCalendarioOffset = 0; renderCalendario(); }
-
-        function calcularValores() {
+        function validarFechasEnTiempoReal() {
             const inVal = document.getElementById('checkin').value;
             const outVal = document.getElementById('checkout').value;
-            const valorDiarioFinal = parseFloat(document.getElementById('valorDiarioFinal').value) || 0;
-            const feeAseoVal = parseFloat(document.getElementById('feeAseo').value) || 0;
+            const idExistente = document.getElementById('reservaId').value;
 
             if (inVal && outVal) {
-                const inDate = new Date(inVal);
-                const outDate = new Date(outVal);
-                if (outDate > inDate) {
-                    const noches = Math.ceil(Math.abs(outDate - inDate) / (1000 * 60 * 60 * 24));
-                    const totalBruto = (noches * valorDiarioFinal) + feeAseoVal;
-                    document.getElementById('cantDiasMostrar').value = `${noches + 1} días / ${noches} noches`;
-                    document.getElementById('resNoches').innerText = `${noches + 1}d / ${noches}n`;
-                    document.getElementById('resTotalBruto').innerText = `$${totalBruto.toLocaleString('es-CL')}`;
+                if (outVal <= inVal) {
+                    alert('⚠️ La fecha de Check-Out debe ser posterior al Check-In (Mínimo 1 día).');
+                    reiniciarSeleccionRangoFechas();
+                    return;
                 }
+
+                if (verificarSobreposicionFechas(inVal, outVal, idExistente)) {
+                    alert('⚠️ FECHA OCUPADA: Las fechas seleccionadas se solapan con otra reserva existente.');
+                    reiniciarSeleccionRangoFechas();
+                    return;
+                }
+            }
+            calcularValores();
+        }
+
+        function verificarSobreposicionFechas(checkinStr, checkoutStr, idActual = null) {
+            const solapaFirestore = reservas.some(r => {
+                if (idActual && r.id === idActual) return false;
+                return (checkinStr < r.checkout && checkoutStr > r.checkin);
+            });
+
+            if (solapaFirestore) return true;
+
+            const canalElegido = document.getElementById('canal').value;
+            const codigoOTAVal = document.getElementById('codigoOTA').value.trim();
+
+            if (canalElegido === 'Airbnb' || canalElegido === 'Booking' || codigoOTAVal !== '') {
+                return false;
+            }
+
+            let cur = new Date(checkinStr);
+            const end = new Date(checkoutStr);
+            while (cur < end) {
+                const yyyy = cur.getFullYear();
+                const mm = String(cur.getMonth() + 1).padStart(2, '0');
+                const dd = String(cur.getDate()).padStart(2, '0');
+                if (fechasAirbnbBloqueos.includes(`${yyyy}-${mm}-${dd}`)) return true;
+                cur.setDate(cur.getDate() + 1);
+            }
+
+            return false;
+        }
+
+        function obtenerUltimos4Telefono() {
+            const fono = document.getElementById('telefono').value || '';
+            const soloNumeros = String(fono).replace(/\D/g, '');
+            return soloNumeros.length >= 4 ? soloNumeros.slice(-4) : '----';
+        }
+
+        function mostrarClaveCerradura() {
+            const clave = obtenerUltimos4Telefono();
+            if (clave === '----') {
+                alert('Ingresa un número de teléfono válido para generar los 4 dígitos.');
+                return;
+            }
+            document.getElementById('textoClaveSugerida').innerText = clave;
+            toggleModal('modalClaveCerradura');
+        }
+
+        function copiarClaveCerradura() {
+            const clave = document.getElementById('textoClaveSugerida').innerText;
+            navigator.clipboard.writeText(clave);
+            alert(`Clave ${clave} copiada al portapapeles.`);
+        }
+
+        function calcularEstadoAutomatico(checkin, checkout, estadoManual) {
+            if (estadoManual === 'Reserva Terminada') return 'Reserva Terminada';
+            
+            const hoyStr = new Date().toISOString().split('T')[0];
+            if (hoyStr > checkout) {
+                return 'Reserva Terminada';
+            } else if (hoyStr >= checkin && hoyStr <= checkout) {
+                return 'Reserva en Curso';
+            } else {
+                return 'Reserva';
             }
         }
 
-        function limpiarFormulario() {
-            document.getElementById('reservaForm').reset();
-            document.getElementById('reservaId').value = '';
-            reiniciarSeleccionRangoFechas();
+        function actualizarEstadosAutomaticos() {
+            reservas.forEach(r => {
+                const nuevoEstado = calcularEstadoAutomatico(r.checkin, r.checkout, r.estadoReserva);
+                if (r.estadoReserva !== nuevoEstado) {
+                    r.estadoReserva = nuevoEstado;
+                    db.collection('reservas').doc(r.id).update({ estadoReserva: nuevoEstado });
+                }
+            });
+        }
+
+        async function cambiarEstadoManual(id, nuevoEstado) {
+            await db.collection('reservas').doc(id).update({ estadoReserva: nuevoEstado });
+        }
+
+        function calcularValores() {
+            const inDate = new Date(document.getElementById('checkin').value);
+            const outDate = new Date(document.getElementById('checkout').value);
+            const valorDiarioFinal = parseFloat(document.getElementById('valorDiarioFinal').value) || 0;
+            const costoPlataforma = parseFloat(document.getElementById('costoPlataforma').value) || 0;
+            const tipoDoc = document.getElementById('tipoDoc').value;
+
+            if (inDate && outDate && outDate > inDate) {
+                const diffTime = Math.abs(outDate - inDate);
+                const noches = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const dias = noches + 1;
+
+                document.getElementById('cantDiasMostrar').value = `${dias} días / ${noches} noches`;
+                document.getElementById('resNoches').innerText = `${dias}d / ${noches}n`;
+
+                const totalBruto = noches * valorDiarioFinal;
+                const netoCaban = totalBruto - costoPlataforma;
+
+                let netoImpuesto = totalBruto;
+                let iva = 0;
+
+                if (tipoDoc === 'Factura Afecta') {
+                    netoImpuesto = Math.round(totalBruto / 1.19);
+                    iva = totalBruto - netoImpuesto;
+                }
+
+                const totalAbonado = abonosTemp.reduce((sum, a) => sum + parseFloat(a.monto || 0), 0);
+                const saldoPendiente = totalBruto - totalAbonado;
+
+                document.getElementById('resTotalBruto').innerText = `$${totalBruto.toLocaleString('es-CL')}`;
+                document.getElementById('resCostoPlataforma').innerText = `$${costoPlataforma.toLocaleString('es-CL')}`;
+                document.getElementById('resNetoCaban').innerText = `$${Math.round(netoCaban).toLocaleString('es-CL')}`;
+                document.getElementById('resNetoImpuesto').innerText = `$${netoImpuesto.toLocaleString('es-CL')}`;
+                document.getElementById('resIva').innerText = `$${iva.toLocaleString('es-CL')}`;
+                document.getElementById('resTotalAbonado').innerText = `$${totalAbonado.toLocaleString('es-CL')}`;
+                document.getElementById('resSaldoPendiente').innerText = `$${saldoPendiente.toLocaleString('es-CL')}`;
+
+                reservaCalculada = { dias, noches, totalBruto, costoPlataforma, netoCaban, netoImpuesto, iva, totalAbonado, saldoPendiente };
+            }
+        }
+
+        function agregarAbono() {
+            const monto = parseFloat(document.getElementById('montoPago').value);
+            if (!monto || monto <= 0) return alert('Ingresa un monto válido.');
+            
+            const hoyFechaStr = new Date().toISOString().split('T')[0];
+            abonosTemp.push({ fecha: hoyFechaStr, monto });
+            document.getElementById('montoPago').value = '';
+            renderAbonos();
+            calcularValores();
+        }
+
+        function quitarAbono(index) {
+            abonosTemp.splice(index, 1);
+            renderAbonos();
+            calcularValores();
+        }
+
+        function renderAbonos() {
+            const tbody = document.getElementById('tablaAbonos');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            abonosTemp.forEach((a, index) => {
+                tbody.innerHTML += `
+                    <tr class="border-b border-slate-200">
+                        <td class="p-2 text-slate-500">${formatearFechaChile(a.fecha)}</td>
+                        <td class="p-2 font-semibold text-slate-800">$${parseFloat(a.monto).toLocaleString('es-CL')}</td>
+                        <td class="p-2 text-center"><button type="button" onclick="quitarAbono(${index})" class="text-rose-600 hover:text-rose-800 font-bold px-2">✕</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        // GUARDADO EN FIREBASE (SÓLO SOLICITA FECHAS Y VALOR DIARIO COMO MANDATORIOS)
+        document.getElementById('reservaForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const checkinVal = document.getElementById('checkin').value;
+            const checkoutVal = document.getElementById('checkout').value;
+            const valorDiarioVal = parseFloat(document.getElementById('valorDiarioFinal').value);
+
+            if (!checkinVal || !checkoutVal) {
+                return alert('⚠️ Campo obligatorio: Por favor selecciona las fechas de Check-In y Check-Out.');
+            }
+
+            if (isNaN(valorDiarioVal) || valorDiarioVal <= 0) {
+                return alert('⚠️ Campo obligatorio: Debe ingresar un Valor Diario válido mayor a $0.');
+            }
+
+            const idExistente = document.getElementById('reservaId').value;
+            if (verificarSobreposicionFechas(checkinVal, checkoutVal, idExistente)) {
+                return alert('⚠️ ERROR DE DISPONIBILIDAD: Ya existe una reserva guardada previamente en la base de datos para esas fechas.');
+            }
+
+            const estadoCalculado = calcularEstadoAutomatico(checkinVal, checkoutVal, 'Auto');
+
+            const temporadaElegida = document.getElementById('selectTemporadaReserva').value;
+            const isVerano = (temporadaElegida === 'Verano');
+            const diarioVeranoRef = calcularSumaDiariaTemporada(costosCasa.verano);
+            const diarioInviernoRef = calcularSumaDiariaTemporada(costosCasa.invierno);
+            const diarioVigente = isVerano ? diarioVeranoRef : diarioInviernoRef;
+
+            const canalInput = String(document.getElementById('canal').value || 'Directo');
+            const esFamilia = (canalInput === 'Familia');
+
+            const noches = Number(reservaCalculada.noches || 1);
+            
+            const costoDiarioAplicado = esFamilia ? 0 : (noches * diarioVigente);
+            const costoFijoAplicado = esFamilia ? 0 : ((costosCasa.aseo || 0) + (costosCasa.regalo || 0));
+
+            const codigoOTAInput = String(document.getElementById('codigoOTA').value || '').trim();
+            
+            let nombreInput = String(document.getElementById('nombre').value || '').trim();
+            if (!nombreInput) {
+                if (esFamilia) nombreInput = 'reserva familia';
+                else if (codigoOTAInput) nombreInput = `Reserva ${canalInput} (${codigoOTAInput})`;
+                else nombreInput = 'Huésped Pendiente';
+            }
+
+            const rutInput = String(document.getElementById('rut').value || '').trim() || 'Pendiente';
+            const emailInput = String(document.getElementById('email').value || '').trim() || 'Sin Email';
+            const telefonoInput = String(document.getElementById('telefono').value || '').trim() || 'Sin Teléfono';
+            const direccionInput = String(document.getElementById('direccion').value || '').trim() || 'Sin Dirección';
+
+            const nuevaReserva = {
+                codigoOTA: codigoOTAInput,
+                estadoReserva: String(estadoCalculado || 'Reserva'),
+                nombre: nombreInput,
+                rut: rutInput,
+                email: emailInput,
+                telefono: telefonoInput,
+                direccion: direccionInput,
+                adultos: Number(document.getElementById('adultos').value || 1),
+                ninos: Number(document.getElementById('ninos').value || 0),
+                temporadaReserva: temporadaElegida,
+                reqPerro: Boolean(document.getElementById('reqPerro').checked),
+                reqCuna: Boolean(document.getElementById('reqCuna').checked),
+                reqProtectorEstufa: Boolean(document.getElementById('reqProtectorEstufa').checked),
+                costoBencinaGenerador: Number(document.getElementById('costoBencinaGenerador').value || 0),
+                costoImprevistosReserva: Number(document.getElementById('costoImprevistosReserva').value || 0),
+                checkin: String(checkinVal || ''),
+                checkout: String(checkoutVal || ''),
+                valorDiarioFinal: valorDiarioVal,
+                costoPlataforma: Number(document.getElementById('costoPlataforma').value || 0),
+                canal: canalInput,
+                tipoDoc: String(document.getElementById('tipoDoc').value || 'Sin Documento'),
+                anotaciones: String(document.getElementById('anotaciones').value || ''),
+                abonos: abonosTemp.map(a => ({ fecha: String(a.fecha), monto: Number(a.monto) })),
+                dias: Number(reservaCalculada.dias || 1),
+                noches: noches,
+                totalBruto: Number(reservaCalculada.totalBruto || 0),
+                netoCaban: Number(reservaCalculada.netoCaban || 0),
+                netoImpuesto: Number(reservaCalculada.netoImpuesto || 0),
+                iva: Number(reservaCalculada.iva || 0),
+                totalAbonado: Number(reservaCalculada.totalAbonado || 0),
+                saldoPendiente: Number(reservaCalculada.saldoPendiente || 0),
+                costoDiarioAplicado: costoDiarioAplicado,
+                costoFijoAplicado: costoFijoAplicado
+            };
+
+            try {
+                if (idExistente) {
+                    await db.collection('reservas').doc(idExistente).update(nuevaReserva);
+                } else {
+                    await db.collection('reservas').add(nuevaReserva);
+                }
+
+                alert('¡Reserva guardada con éxito!');
+                limpiarFormulario();
+            } catch (err) {
+                alert("❌ NO SE PUDO GUARDAR EN FIREBASE: " + err.message);
+            }
+        });
+
+        // GENERACIÓN Y DESCARGA DEL FORMULARIO PDF OFICIAL
+        function generarEnviarFormularioPDF() {
+            const checkin = document.getElementById('checkin').value;
+            const checkout = document.getElementById('checkout').value;
+            const valorDiario = parseFloat(document.getElementById('valorDiarioFinal').value) || 0;
+
+            if (!checkin || !checkout || valorDiario <= 0) {
+                return alert('⚠️ Para generar el Formulario PDF debes ingresar al menos las fechas de estadía y el Valor Diario.');
+            }
+
+            const nombre = document.getElementById('nombre').value || 'Huésped Pendiente';
+            const rut = document.getElementById('rut').value || 'Pendiente';
+            const fono = document.getElementById('telefono').value || 'Sin Teléfono';
+            const direccion = document.getElementById('direccion').value || 'Sin Dirección';
+            const adultos = document.getElementById('adultos').value || '1';
+            const ninos = document.getElementById('ninos').value || '0';
+            const canal = document.getElementById('canal').value || 'Directo';
+
+            const noches = reservaCalculada.noches || 1;
+            const totalBruto = reservaCalculada.totalBruto || (noches * valorDiario);
+            const reserva50Pct = totalBruto * 0.5;
+
+            const fechaHoy = new Date();
+            const fechaForm = fechaHoy.getDate() + '-' + fechaHoy.toLocaleString('es-ES', { month: 'short' });
+            const numForm = Math.floor(Math.random() * 90) + 10;
+
+            const chkWsp = (canal === 'Directo') ? 'X' : ' ';
+            const chkAir = (canal === 'Airbnb') ? 'X' : ' ';
+            const chkBoo = (canal === 'Booking') ? 'X' : ' ';
+            const chkOtr = (canal !== 'Directo' && canal !== 'Airbnb' && canal !== 'Booking') ? 'X' : ' ';
+
+            const docDefinition = {
+                pageSize: 'LETTER',
+                pageMargins: [35, 30, 35, 30],
+                content: [
+                    {
+                        table: {
+                            widths: ['*'],
+                            body: [[
+                                { text: 'FORMULARIO DE RESERVA', style: 'headerTitle', alignment: 'center' }
+                            ]]
+                        },
+                        layout: 'noBorders'
+                    },
+                    {
+                        columns: [
+                            { text: 'Nº Form: ' + numForm, style: 'subHeader' },
+                            { text: 'Fecha Form: ' + fechaForm, style: 'subHeader', alignment: 'right' }
+                        ],
+                        margin: [0, 5, 0, 10]
+                    },
+                    { text: 'REFUGIO ENTRE MONTAÑAS - MALALCAHUELLO', style: 'sectionHeader', alignment: 'center' },
+                    { text: 'ANTECEDENTES GENERALES DE LA RESERVA', style: 'tableHeaderBanner', margin: [0, 10, 0, 5] },
+                    {
+                        table: {
+                            widths: ['20%', '20%', '15%', '15%', '15%', '15%'],
+                            body: [
+                                [
+                                    { text: 'Check-in', style: 'cellLabel' },
+                                    { text: formatearFechaChile(checkin), style: 'cellVal' },
+                                    { text: 'Hora', style: 'cellLabel' },
+                                    { text: '15:00', style: 'cellVal' },
+                                    { text: 'Nº Adultos', style: 'cellLabel' },
+                                    { text: adultos, style: 'cellVal' }
+                                ],
+                                [
+                                    { text: 'Check-out', style: 'cellLabel' },
+                                    { text: formatearFechaChile(checkout), style: 'cellVal' },
+                                    { text: 'Hora', style: 'cellLabel' },
+                                    { text: '12:00', style: 'cellVal' },
+                                    { text: 'Nº Niños (<12a)', style: 'cellLabel' },
+                                    { text: ninos, style: 'cellVal' }
+                                ]
+                            ]
+                        },
+                        margin: [0, 0, 0, 10]
+                    },
+                    {
+                        table: {
+                            widths: ['30%', '70%'],
+                            body: [
+                                [{ text: 'NOMBRE CONTACTO RESERVA', style: 'cellLabel' }, { text: nombre, style: 'cellValBold' }],
+                                [{ text: 'RUT / PASAPORTE', style: 'cellLabel' }, { text: rut, style: 'cellVal' }],
+                                [{ text: 'DIRECCIÓN', style: 'cellLabel' }, { text: direccion, style: 'cellVal' }],
+                                [{ text: 'TELÉFONO / FONO', style: 'cellLabel' }, { text: fono, style: 'cellVal' }]
+                            ]
+                        },
+                        margin: [0, 0, 0, 10]
+                    },
+                    { text: 'ORIGEN RESERVA', style: 'cellLabel', margin: [0, 5, 0, 2] },
+                    {
+                        columns: [
+                            { text: '[ ' + chkWsp + ' ] IG / Wsp / Directo', fontSize: 10 },
+                            { text: '[ ' + chkAir + ' ] Airbnb', fontSize: 10 },
+                            { text: '[ ' + chkBoo + ' ] Booking', fontSize: 10 },
+                            { text: '[ ' + chkOtr + ' ] Otro', fontSize: 10 }
+                        ],
+                        margin: [0, 0, 0, 15]
+                    },
+                    { text: 'PRECIO Y FORMA DE PAGO', style: 'tableHeaderBanner', margin: [0, 5, 0, 5] },
+                    {
+                        table: {
+                            widths: ['20%', '20%', '20%', '20%', '20%'],
+                            body: [
+                                [
+                                    { text: 'Nº Noches', style: 'cellLabel' },
+                                    { text: 'Valor Diario', style: 'cellLabel' },
+                                    { text: 'Fee Aseo', style: 'cellLabel' },
+                                    { text: 'Valor Total', style: 'cellLabel' },
+                                    { text: 'Valor 50% Reserva', style: 'cellLabel' }
+                                ],
+                                [
+                                    { text: '' + noches, style: 'cellVal' },
+                                    { text: '$' + valorDiario.toLocaleString('es-CL'), style: 'cellVal' },
+                                    { text: '$0', style: 'cellVal' },
+                                    { text: '$' + totalBruto.toLocaleString('es-CL'), style: 'cellValBold' },
+                                    { text: '$' + reserva50Pct.toLocaleString('es-CL'), style: 'cellValBold' }
+                                ]
+                            ]
+                        },
+                        margin: [0, 0, 0, 10]
+                    },
+                    {
+                        style: 'bankBox',
+                        stack: [
+                            { text: 'Favor transferir el monto de la reserva a la siguiente cuenta bancaria:', fontSize: 9, bold: true },
+                            { text: '• Jardín Norte SPA | RUT: 76.714.914-k | Banco Itaú | Cta Cte: 0214623372 | mcverac@uc.cl', fontSize: 9, margin: [0, 3, 0, 3] },
+                            { text: 'El saldo se debe transferir ANTES o al MOMENTO del check-in.', fontSize: 9, italic: true }
+                        ]
+                    },
+                    { text: 'CONSIDERACIONES IMPORTANTES DEL ALOJAMIENTO', style: 'sectionHeader', margin: [0, 15, 0, 5] },
+                    {
+                        ol: [
+                            'La calefacción del refugio depende mayoritariamente de la estufa a leña; el huésped es responsable de mantenerla encendida. Se suministra leña ilimitada gratis.',
+                            'Ante cortes recurrentes de energía en la zona, el refugio dispone de un generador a bencina de activación manual según instrucciones entregadas.',
+                            'En caso de nevadas/heladas que impidan el acceso vehicular directo, podrá acceder caminando desde un punto cercano habilitado (50m approx).',
+                            'La Tinaja es de uso ilimitado y gratis. Su proceso de llenado y calefacción puede demorar hasta 30 horas en temperaturas extremas.',
+                            'Por seguridad, el perímetro externo cuenta con cámaras de vigilancia monitoreadas exclusivamente por los dueños.'
+                        ],
+                        fontSize: 8.5,
+                        margin: [0, 0, 0, 15]
+                    },
+                    { text: 'El pago del monto de Reserva constituye la aceptación de todas las condiciones estipuladas en este formulario.', fontSize: 8, italic: true, alignment: 'center' },
+                    { text: 'Contacto Refugio: M. Carla Vera – +56 9 9879 3922', fontSize: 9, bold: true, alignment: 'center', margin: [0, 5, 0, 0] },
+
+                    // PÁGINA 2: POLÍTICAS Y CONDICIONES
+                    { text: '', pageBreak: 'before' },
+                    { text: 'POLÍTICAS Y CONDICIONES DEL ALOJAMIENTO', style: 'headerTitle', alignment: 'center', margin: [0, 0, 0, 10] },
+                    { text: 'Al confirmar y pagar la reserva, el huésped declara aceptar y haber tomado conocimiento de las políticas y condiciones del refugio.', fontSize: 9, italic: true, margin: [0, 0, 0, 10] },
+                    {
+                        ol: [
+                            { text: 'HORARIOS: Check-in desde las 15:00 hrs | Check-out hasta las 12:00 hrs.', bold: true },
+                            'CAMBIOS O CANCELACIONES: Anulación sin costo hasta 7 días antes del check-in (devolución 100%). Dentro de los 7 días sólo por fuerza mayor comprobable de accesibilidad.',
+                            'NO ARRIBO (NO SHOW): La no presentación anula la reserva sin derecho a reembolso.',
+                            'RETIRO ANTICIPADO: No se efectuará reembolso de noches no utilizadas.',
+                            'CANTIDAD DE HUÉSPEDES: Prohibido exceder el cupo declarado. Visitas moderadas permitidas previa consulta.',
+                            'ACCESO: Autónomo mediante clave digital asignada para el condominio y refugio.',
+                            'DAÑOS: Deben ser informados antes del check-out. Prohibido verter productos a la tinaja.',
+                            'PROHIBIDO EL FUEGO: Prohibido fumar en interiores y hacer fogatas. Uso exclusivo de parrilla a carbón.',
+                            'RUIDOS: Mantener volumen moderado que respete el entorno y vecinos.',
+                            'ENTORNO Y MEDIO AMBIENTE: Cuidado de la flora, fauna y gestión adecuada de residuos.',
+                            'MASCOTAS: Solo previa autorización explícita. Nunca deben quedar solas en la propiedad.',
+                            'DERECHO DE ADMISIÓN: Se reserva el derecho de acceso por no pago, estado de ebriedad o falta de respeto.'
+                        ],
+                        fontSize: 8.5,
+                        lineHeight: 1.2
+                    }
+                ],
+                styles: {
+                    headerTitle: { fontSize: 14, bold: true, color: '#111827' },
+                    subHeader: { fontSize: 9, bold: true, color: '#4b5563' },
+                    sectionHeader: { fontSize: 11, bold: true, color: '#065f46', margin: [0, 5, 0, 5] },
+                    tableHeaderBanner: { fontSize: 10, bold: true, color: '#ffffff', fillColor: '#065f46', padding: 4 },
+                    cellLabel: { fontSize: 8.5, bold: true, color: '#374151', fillColor: '#f3f4f6' },
+                    cellVal: { fontSize: 8.5, color: '#1f2937' },
+                    cellValBold: { fontSize: 8.5, bold: true, color: '#065f46' },
+                    bankBox: { fillColor: '#ecfdf5', padding: 8, margin: [0, 5, 0, 10] }
+                }
+            };
+
+            pdfMake.createPdf(docDefinition).download('Formulario_Reserva_' + nombre.replace(/\s+/g, '_') + '_' + checkin + '.pdf');
         }
 
         function actualizarUsuarioActivoUI() {
             const u = usuarios.find(usr => usr.id == usuarioActivoId) || usuarios[0];
-            if (u) document.getElementById('lblUsuarioActivo').innerText = u.nombre;
+            if (u) {
+                usuarioActivoId = u.id;
+                localStorage.setItem('usr_activo_caban', u.id);
+                document.getElementById('lblUsuarioActivo').innerText = u.nombre;
+            } else {
+                document.getElementById('lblUsuarioActivo').innerText = "Eduardo Vicencio";
+            }
+        }
+
+        function abrirModalUsuarios() {
+            const sel = document.getElementById('selUsuarioActivo');
+            sel.innerHTML = '';
+            usuarios.forEach(u => {
+                sel.innerHTML += `<option value="${u.id}" ${u.id == usuarioActivoId ? 'selected' : ''}>${u.nombre} (${u.email})</option>`;
+            });
+            cancelarEdicionUsuario();
+            renderUsuarios();
+            toggleModal('modalUsuarios');
+        }
+
+        function seleccionarUsuarioActivo(id) {
+            usuarioActivoId = id;
+            localStorage.setItem('usr_activo_caban', id);
+            actualizarUsuarioActivoUI();
+        }
+
+        function renderUsuarios() {
+            const tbody = document.getElementById('tablaUsuarios');
+            tbody.innerHTML = '';
+            usuarios.forEach(u => {
+                tbody.innerHTML += `
+                    <tr class="border-b border-slate-200">
+                        <td class="p-2 font-bold text-slate-800">${u.nombre}</td>
+                        <td class="p-2 text-slate-500">${u.email}</td>
+                        <td class="p-2 text-center space-x-1">
+                            <button type="button" onclick="prepararEdicionUsuario('${u.id}')" title="Editar" class="text-sky-600 hover:text-sky-800"><i class="fa-solid fa-pen"></i></button>
+                            ${usuarios.length > 1 ? `<button type="button" onclick="eliminarUsuario('${u.id}')" title="Eliminar" class="text-rose-600 hover:text-rose-800"><i class="fa-solid fa-trash"></i></button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function prepararEdicionUsuario(id) {
+            const u = usuarios.find(item => item.id === id);
+            if (!u) return;
+            document.getElementById('usrEditId').value = u.id;
+            document.getElementById('usrNombre').value = u.nombre;
+            document.getElementById('usrEmail').value = u.email;
+
+            document.getElementById('usrFormTitle').innerText = `Editando: ${u.nombre}`;
+            document.getElementById('btnUsrSubmit').innerText = '💾 Guardar Cambios';
+            document.getElementById('btnUsrSubmit').classList.replace('bg-emerald-700', 'bg-sky-600');
+            document.getElementById('btnCancelarEditUsr').classList.remove('hidden');
+        }
+
+        function cancelarEdicionUsuario() {
+            document.getElementById('formUsuario').reset();
+            document.getElementById('usrEditId').value = '';
+            document.getElementById('usrFormTitle').innerText = 'Registrar Usuario (Máx. 5)';
+            document.getElementById('btnUsrSubmit').innerText = '+ Agregar Usuario';
+            document.getElementById('btnUsrSubmit').classList.replace('bg-sky-600', 'bg-emerald-700');
+            document.getElementById('btnCancelarEditUsr').classList.add('hidden');
+        }
+
+        async function guardarUsuario(e) {
+            e.preventDefault();
+            const editId = document.getElementById('usrEditId').value;
+            const nombre = document.getElementById('usrNombre').value.trim();
+            const email = document.getElementById('usrEmail').value.trim();
+
+            try {
+                if (editId) {
+                    await db.collection('usuarios').doc(editId).update({ nombre, email });
+                } else {
+                    if (usuarios.length >= 5) return alert('⚠ LÍMITE ALCANZADO: Solo puedes registrar un máximo de 5 usuarios.');
+                    if (usuarios.some(u => u.email.toLowerCase() === email.toLowerCase())) return alert('Ese email/identificador ya existe.');
+                    const docRef = await db.collection('usuarios').add({ nombre, email });
+                    usuarioActivoId = docRef.id;
+                }
+                cancelarEdicionUsuario();
+                abrirModalUsuarios();
+            } catch (err) {
+                alert("Error al guardar usuario: " + err.message);
+            }
+        }
+
+        async function eliminarUsuario(id) {
+            if (confirm('¿Eliminar este usuario?')) {
+                await db.collection('usuarios').doc(id).delete();
+            }
+        }
+
+        function cargarValoresCostosCasa() {
+            const v = costosCasa.verano || {};
+            document.getElementById('v_parafina').value = v.parafina || 0;
+            document.getElementById('v_gas').value = v.gas || 3000;
+            document.getElementById('v_electricidad').value = v.electricidad || 15000;
+            document.getElementById('v_lena').value = v.lena || 1000;
+            document.getElementById('v_starlink').value = v.starlink || 5000;
+            document.getElementById('v_plagas').value = v.plagas || 1000;
+            document.getElementById('v_jardinero').value = v.jardinero || 1000;
+            document.getElementById('v_insumos').value = v.insumos || 1500;
+
+            const i = costosCasa.invierno || {};
+            document.getElementById('i_parafina').value = i.parafina || 5000;
+            document.getElementById('i_gas').value = i.gas || 3000;
+            document.getElementById('i_electricidad').value = i.electricidad || 32000;
+            document.getElementById('i_lena').value = i.lena || 4000;
+            document.getElementById('i_starlink').value = i.starlink || 5000;
+            document.getElementById('i_plagas').value = i.plagas || 5000;
+            document.getElementById('i_jardinero').value = i.jardinero || 1000;
+            document.getElementById('i_insumos').value = i.insumos || 1500;
+
+            document.getElementById('cAseo').value = costosCasa.aseo || 110000;
+            document.getElementById('cRegalo').value = costosCasa.regalo || 10000;
+            calcularTotalTemporalCostos();
+        }
+
+        async function guardarCostosCasa() {
+            const nuevosCostos = {
+                verano: {
+                    parafina: parseFloat(document.getElementById('v_parafina').value) || 0,
+                    gas: parseFloat(document.getElementById('v_gas').value) || 0,
+                    electricidad: parseFloat(document.getElementById('v_electricidad').value) || 0,
+                    lena: parseFloat(document.getElementById('v_lena').value) || 0,
+                    starlink: parseFloat(document.getElementById('v_starlink').value) || 0,
+                    plagas: parseFloat(document.getElementById('v_plagas').value) || 0,
+                    jardinero: parseFloat(document.getElementById('v_jardinero').value) || 0,
+                    insumos: parseFloat(document.getElementById('v_insumos').value) || 0
+                },
+                invierno: {
+                    parafina: parseFloat(document.getElementById('i_parafina').value) || 0,
+                    gas: parseFloat(document.getElementById('i_gas').value) || 0,
+                    electricidad: parseFloat(document.getElementById('i_electricidad').value) || 0,
+                    lena: parseFloat(document.getElementById('i_lena').value) || 0,
+                    starlink: parseFloat(document.getElementById('i_starlink').value) || 0,
+                    plagas: parseFloat(document.getElementById('i_plagas').value) || 0,
+                    jardinero: parseFloat(document.getElementById('i_jardinero').value) || 0,
+                    insumos: parseFloat(document.getElementById('i_insumos').value) || 0
+                },
+                aseo: parseFloat(document.getElementById('cAseo').value) || 110000,
+                regalo: parseFloat(document.getElementById('cRegalo').value) || 10000
+            };
+
+            try {
+                await db.collection('configuracion').doc('costosCasa').set(nuevosCostos);
+                costosCasa = nuevosCostos;
+                alert('¡Estructura de costos actualizada correctamente!');
+                toggleModal('modalCostos');
+            } catch (err) {
+                alert("Error al guardar costos: " + err.message);
+            }
+        }
+
+        function abrirModalRentabilidad() {
+            renderRentabilidad();
+            toggleModal('modalRentabilidad');
+        }
+
+        function renderRentabilidad() {
+            const tbody = document.getElementById('tablaMargenes');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const anoSel = document.getElementById('filtroMargenAno')?.value || '';
+            const mesSel = document.getElementById('filtroMargenMes')?.value || '';
+
+            const filtradas = reservas.filter(r => {
+                if (!r.checkin) return false;
+                const partes = String(r.checkin).split('-');
+                const mAno = !anoSel || partes[0] === anoSel;
+                const mMes = !mesSel || partes[1] === mesSel;
+                return mAno && mMes;
+            });
+
+            if (filtradas.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" class="p-6 text-center text-slate-400 font-medium">No se encontraron registros para los filtros seleccionados.</td></tr>`;
+                return;
+            }
+
+            const diarioVeranoRef = calcularSumaDiariaTemporada(costosCasa.verano);
+            const diarioInviernoRef = calcularSumaDiariaTemporada(costosCasa.invierno);
+
+            filtradas.forEach(r => {
+                const esFamilia = (r.canal === 'Familia');
+                const nochesUso = r.noches || 1;
+                const isVerano = (r.temporadaReserva === 'Verano');
+                const diarioUnitario = isVerano ? diarioVeranoRef : diarioInviernoRef;
+
+                const costoDiarioTotal = esFamilia ? 0 : (r.costoDiarioAplicado !== undefined ? r.costoDiarioAplicado : (nochesUso * diarioUnitario));
+                const costosFijos = esFamilia ? 0 : (r.costoFijoAplicado !== undefined ? r.costoFijoAplicado : ((costosCasa.aseo || 0) + (costosCasa.regalo || 0)));
+                const costoPlat = parseFloat(r.costoPlataforma) || 0;
+                const extras = (r.costoBencinaGenerador || 0) + (r.costoImprevistosReserva || 0);
+
+                const gananciaNeta = (r.totalBruto || 0) - costoPlat - costoDiarioTotal - costosFijos - extras;
+                const margenPct = r.totalBruto > 0 ? ((gananciaNeta / r.totalBruto) * 100).toFixed(1) : 0;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 border-b border-slate-100">
+                        <td class="p-2.5 font-bold text-slate-800 sticky left-0 bg-white z-10">${r.nombre || 'Huésped Pendiente'}</td>
+                        <td class="p-2.5 text-slate-600">${formatearFechaChile(r.checkin)} - ${formatearFechaChile(r.checkout)}</td>
+                        <td class="p-2.5 font-semibold text-slate-700">${nochesUso}n (${isVerano ? 'Verano' : 'Invierno'})</td>
+                        <td class="p-2.5 font-bold text-emerald-800">$${(r.totalBruto || 0).toLocaleString('es-CL')}</td>
+                        <td class="p-2.5 text-rose-600">$${costoPlat.toLocaleString('es-CL')}</td>
+                        <td class="p-2.5 text-amber-700">$${costoDiarioTotal.toLocaleString('es-CL')}</td>
+                        <td class="p-2.5 text-teal-800">$${costosFijos.toLocaleString('es-CL')}</td>
+                        <td class="p-2.5 text-purple-700">$${extras.toLocaleString('es-CL')}</td>
+                        <td class="p-2.5 font-black ${gananciaNeta >= 0 ? 'text-emerald-700' : 'text-rose-600'}">$${gananciaNeta.toLocaleString('es-CL')}</td>
+                        <td class="p-2.5 font-bold text-slate-700">${margenPct}%</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function abrirModalKPIs() {
+            renderKPIs();
+            toggleModal('modalKPIs');
+        }
+
+        function renderKPIs() {
+            const annoSel = document.getElementById('kpiAnno')?.value || new Date().getFullYear().toString();
+            const mesSel = document.getElementById('kpiMes')?.value || '';
+
+            const filtradas = reservas.filter(r => {
+                if (!r.checkin) return false;
+                const partes = String(r.checkin).split('-');
+                const mAno = partes[0] === annoSel;
+                const mMes = !mesSel || partes[1] === mesSel;
+                return mAno && mMes;
+            });
+
+            let totalNochesArrendadas = 0;
+            let totalNochesFamilia = 0;
+            let totalIngresosBrutos = 0;
+            let totalGastosDiarios = 0;
+            let totalCostosFijosExtras = 0;
+
+            let incAseo = 0, incElec = 0, incGas = 0, incLena = 0, incParafina = 0;
+
+            const diarioVeranoRef = calcularSumaDiariaTemporada(costosCasa.verano);
+            const diarioInviernoRef = calcularSumaDiariaTemporada(costosCasa.invierno);
+
+            filtradas.forEach(r => {
+                const esFamilia = (r.canal === 'Familia');
+                const noches = r.noches || 1;
+                const isVerano = (r.temporadaReserva === 'Verano');
+
+                if (esFamilia) {
+                    totalNochesFamilia += noches;
+                } else {
+                    totalNochesArrendadas += noches;
+                    totalIngresosBrutos += (r.totalBruto || 0);
+
+                    const configDiaria = isVerano ? costosCasa.verano : costosCasa.invierno;
+                    const diarioUnitario = isVerano ? diarioVeranoRef : diarioInviernoRef;
+
+                    const cDiario = r.costoDiarioAplicado !== undefined ? r.costoDiarioAplicado : (noches * diarioUnitario);
+                    const cFijo = r.costoFijoAplicado !== undefined ? r.costoFijoAplicado : ((costosCasa.aseo || 0) + (costosCasa.regalo || 0));
+                    const cPlat = parseFloat(r.costoPlataforma) || 0;
+                    const cExtras = (r.costoBencinaGenerador || 0) + (r.costoImprevistosReserva || 0);
+
+                    totalGastosDiarios += cDiario;
+                    totalCostosFijosExtras += (cFijo + cPlat + cExtras);
+
+                    if (configDiaria) {
+                        incElec += (configDiaria.electricidad || 0) * noches;
+                        incGas += (configDiaria.gas || 0) * noches;
+                        incLena += (configDiaria.lena || 0) * noches;
+                        incParafina += (configDiaria.parafina || 0) * noches;
+                    }
+                    incAseo += (costosCasa.aseo || 0);
+                }
+            });
+
+            const resultadoOp = totalIngresosBrutos - totalGastosDiarios - totalCostosFijosExtras;
+            const totalRetiros = (retirosConfig.previred || 0) + (retirosConfig.credito || 0) + (retirosConfig.gastosComunes || 0) + (retirosConfig.retirosExtras || 0) + (retirosConfig.otros || 0);
+            const flujoNetoFinal = resultadoOp - totalRetiros;
+
+            document.getElementById('kpiFlujoIngresos').innerText = `$${totalIngresosBrutos.toLocaleString('es-CL')}`;
+            document.getElementById('kpiFlujoGastosDia').innerText = `$${totalGastosDiarios.toLocaleString('es-CL')}`;
+            document.getElementById('kpiFlujoCostosFijos').innerText = `$${totalCostosFijosExtras.toLocaleString('es-CL')}`;
+            document.getElementById('kpiFlujoResultadoOp').innerText = `$${resultadoOp.toLocaleString('es-CL')}`;
+            document.getElementById('kpiFlujoRetirosTotal').innerText = `$${totalRetiros.toLocaleString('es-CL')}`;
+            
+            const elNetoFinal = document.getElementById('kpiFlujoNetoFinal');
+            elNetoFinal.innerText = `$${flujoNetoFinal.toLocaleString('es-CL')}`;
+            elNetoFinal.className = `font-extrabold text-sm ${flujoNetoFinal >= 0 ? 'text-emerald-700' : 'text-rose-600'}`;
+
+            document.getElementById('kpiDiasAno').innerText = `${totalNochesArrendadas} noches`;
+            document.getElementById('lblSubNochesFamilia').innerText = `(+${totalNochesFamilia} noches Uso Familia)`;
+            document.getElementById('kpiIngresosBrutosAno').innerText = `$${totalIngresosBrutos.toLocaleString('es-CL')}`;
+
+            const promedioDiarioLimpio = totalNochesArrendadas > 0 ? Math.round(resultadoOp / totalNochesArrendadas) : 0;
+            const pctMargenLimpio = totalIngresosBrutos > 0 ? ((resultadoOp / totalIngresosBrutos) * 100).toFixed(1) : 0;
+            document.getElementById('kpiGananciaPromedioLimpiaDia').innerText = `$${promedioDiarioLimpio.toLocaleString('es-CL')} /día (${pctMargenLimpio}%)`;
+
+            const calcPct = (monto) => totalIngresosBrutos > 0 ? ((monto / totalIngresosBrutos) * 100).toFixed(1) + '%' : '0%';
+            document.getElementById('kpiIncAseoMonto').innerText = `$${incAseo.toLocaleString('es-CL')}`;
+            document.getElementById('kpiIncAseoPct').innerText = calcPct(incAseo);
+            document.getElementById('kpiIncElecMonto').innerText = `$${incElec.toLocaleString('es-CL')}`;
+            document.getElementById('kpiIncElecPct').innerText = calcPct(incElec);
+            document.getElementById('kpiIncGasMonto').innerText = `$${incGas.toLocaleString('es-CL')}`;
+            document.getElementById('kpiIncGasPct').innerText = calcPct(incGas);
+            document.getElementById('kpiIncLenaMonto').innerText = `$${incLena.toLocaleString('es-CL')}`;
+            document.getElementById('kpiIncLenaPct').innerText = calcPct(incLena);
+            document.getElementById('kpiIncParafinaMonto').innerText = `$${incParafina.toLocaleString('es-CL')}`;
+            document.getElementById('kpiIncParafinaPct').innerText = calcPct(incParafina);
+
+            renderTablaMesesKPI(annoSel);
+        }
+
+        function renderTablaMesesKPI(annoSel) {
+            const tbody = document.getElementById('tablaMesesKPI');
+            const tfoot = document.getElementById('tfootMesesKPI');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const mesesNombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            
+            let acum = 0;
+            let totBruto = 0;
+            let totEgresos = 0;
+
+            const datosGraficoIngresos = [];
+            const datosGraficoEgresos = [];
+
+            const diarioVeranoRef = calcularSumaDiariaTemporada(costosCasa.verano);
+            const diarioInviernoRef = calcularSumaDiariaTemporada(costosCasa.invierno);
+
+            mesesNombres.forEach((nombreMes, index) => {
+                const mm = String(index + 1).padStart(2, '0');
+
+                const reservasMes = reservas.filter(r => {
+                    if (!r.checkin) return false;
+                    const partes = String(r.checkin).split('-');
+                    return partes[0] === annoSel && partes[1] === mm;
+                });
+
+                let brutoMes = 0;
+                let egresosMes = 0;
+
+                reservasMes.forEach(r => {
+                    if (r.canal !== 'Familia') {
+                        const noches = r.noches || 1;
+                        const isVerano = (r.temporadaReserva === 'Verano');
+                        const diarioUnitario = isVerano ? diarioVeranoRef : diarioInviernoRef;
+
+                        const cDiario = r.costoDiarioAplicado !== undefined ? r.costoDiarioAplicado : (noches * diarioUnitario);
+                        const cFijo = r.costoFijoAplicado !== undefined ? r.costoFijoAplicado : ((costosCasa.aseo || 0) + (costosCasa.regalo || 0));
+                        const cPlat = parseFloat(r.costoPlataforma) || 0;
+                        const cExtras = (r.costoBencinaGenerador || 0) + (r.costoImprevistosReserva || 0);
+
+                        brutoMes += (r.totalBruto || 0);
+                        egresosMes += (cDiario + cFijo + cPlat + cExtras);
+                    }
+                });
+
+                const subtotal = brutoMes - egresosMes;
+                acum += subtotal;
+                totBruto += brutoMes;
+                totEgresos += egresosMes;
+
+                datosGraficoIngresos.push(brutoMes);
+                datosGraficoEgresos.push(egresosMes);
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 border-b border-slate-100">
+                        <td class="p-2.5 font-bold text-slate-800">${nombreMes}</td>
+                        <td class="p-2.5 text-emerald-700 font-semibold">$${brutoMes.toLocaleString('es-CL')}</td>
+                        <td class="p-2.5 text-rose-600 font-semibold">$${egresosMes.toLocaleString('es-CL')}</td>
+                        <td class="p-2.5 font-bold ${subtotal >= 0 ? 'text-emerald-800' : 'text-rose-600'}">$${subtotal.toLocaleString('es-CL')}</td>
+                        <td class="p-2.5 font-black ${acum >= 0 ? 'text-sky-900' : 'text-rose-700'}">$${acum.toLocaleString('es-CL')}</td>
+                    </tr>
+                `;
+            });
+
+            tfoot.innerHTML = `
+                <tr>
+                    <td class="p-2.5">TOTAL ANUAL</td>
+                    <td class="p-2.5 text-emerald-800">$${totBruto.toLocaleString('es-CL')}</td>
+                    <td class="p-2.5 text-rose-700">$${totEgresos.toLocaleString('es-CL')}</td>
+                    <td class="p-2.5 text-emerald-900">$${(totBruto - totEgresos).toLocaleString('es-CL')}</td>
+                    <td class="p-2.5 text-sky-900">$${acum.toLocaleString('es-CL')}</td>
+                </tr>
+            `;
+
+            renderGraficoKPIs(mesesNombres, datosGraficoIngresos, datosGraficoEgresos);
+        }
+
+        function renderGraficoKPIs(labels, ingresos, egresos) {
+            const ctx = document.getElementById('chartIngresosMes');
+            if (!ctx) return;
+
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Ingresos Brutos ($)', data: ingresos, backgroundColor: '#10b981' },
+                        { label: 'Egresos Totales ($)', data: egresos, backgroundColor: '#f43f5e' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { ticks: { callback: value => '$' + value.toLocaleString('es-CL') } }
+                    }
+                }
+            });
+        }
+
+        function abrirModalRetiros() {
+            document.getElementById('rPrevired').value = retirosConfig.previred || 0;
+            document.getElementById('rCredito').value = retirosConfig.credito || 0;
+            document.getElementById('rGastosComunes').value = retirosConfig.gastosComunes || 0;
+            document.getElementById('rRetirosExtras').value = retirosConfig.retirosExtras || 0;
+            document.getElementById('rOtros').value = retirosConfig.otros || 0;
+            calcularTotalRetirosModal();
+            toggleModal('modalRetiros');
+        }
+
+        function calcularTotalRetirosModal() {
+            const prev = parseFloat(document.getElementById('rPrevired').value) || 0;
+            const cred = parseFloat(document.getElementById('rCredito').value) || 0;
+            const gc = parseFloat(document.getElementById('rGastosComunes').value) || 0;
+            const ext = parseFloat(document.getElementById('rRetirosExtras').value) || 0;
+            const otr = parseFloat(document.getElementById('rOtros').value) || 0;
+            const total = prev + cred + gc + ext + otr;
+            document.getElementById('resTotalRetirosModal').innerText = `$${total.toLocaleString('es-CL')}`;
+        }
+
+        async function guardarRetiros() {
+            const nuevosRetiros = {
+                previred: parseFloat(document.getElementById('rPrevired').value) || 0,
+                credito: parseFloat(document.getElementById('rCredito').value) || 0,
+                gastosComunes: parseFloat(document.getElementById('rGastosComunes').value) || 0,
+                retirosExtras: parseFloat(document.getElementById('rRetirosExtras').value) || 0,
+                otros: parseFloat(document.getElementById('rOtros').value) || 0
+            };
+
+            try {
+                await db.collection('configuracion').doc('retiros').set(nuevosRetiros);
+                retirosConfig = nuevosRetiros;
+                alert('¡Configuración de retiros guardada con éxito!');
+                toggleModal('modalRetiros');
+                renderKPIs();
+            } catch (err) {
+                alert("Error al guardar retiros: " + err.message);
+            }
         }
 
         function actualizarResumenGlobal() {
             const hoy = new Date();
             const mesActual = String(hoy.getMonth() + 1).padStart(2, '0');
-            let resMes = 0, brutoMes = 0;
+            const anoActual = hoy.getFullYear().toString();
+
+            let resMes = 0, nochesMes = 0, brutoMes = 0;
+            let resAno = 0, nochesAno = 0, brutoAno = 0;
+
             reservas.forEach(r => {
-                if (r.checkin && String(r.checkin).split('-')[1] === mesActual) {
-                    resMes++;
-                    brutoMes += (r.totalBruto || 0);
+                if (!r.checkin) return;
+                const partes = String(r.checkin).split('-');
+                const mAno = partes[0] === anoActual;
+                const mMes = partes[1] === mesActual;
+
+                if (mAno && r.canal !== 'Familia') {
+                    resAno++;
+                    nochesAno += (r.noches || 0);
+                    brutoAno += (r.totalBruto || 0);
+
+                    if (mMes) {
+                        resMes++;
+                        nochesMes += (r.noches || 0);
+                        brutoMes += (r.totalBruto || 0);
+                    }
                 }
             });
+
             document.getElementById('dashResMes').innerText = resMes;
+            document.getElementById('dashNochesMes').innerText = `${nochesMes}n`;
             document.getElementById('dashBrutoMes').innerText = `$${brutoMes.toLocaleString('es-CL')}`;
+
+            document.getElementById('dashResAno').innerText = resAno;
+            document.getElementById('dashNochesAno').innerText = `${nochesAno}n`;
+            document.getElementById('dashBrutoAno').innerText = `$${brutoAno.toLocaleString('es-CL')}`;
+        }
+
+        function generarWsp() {
+            if (!reservaCalculada || !document.getElementById('checkin').value) return;
+
+            const nombre = document.getElementById('nombre').value || 'Huésped';
+            const checkin = formatearFechaChile(document.getElementById('checkin').value);
+            const checkout = formatearFechaChile(document.getElementById('checkout').value);
+            const noches = reservaCalculada.noches || 0;
+            const totalBruto = (reservaCalculada.totalBruto || 0).toLocaleString('es-CL');
+            const totalAbonado = (reservaCalculada.totalAbonado || 0).toLocaleString('es-CL');
+            const saldoPendiente = (reservaCalculada.saldoPendiente || 0).toLocaleString('es-CL');
+            const claveCerradura = obtenerUltimos4Telefono();
+
+            const msg = `🏔️ *CONFIRMACIÓN DE RESERVA - REFUGIO ENTRE MONTAÑAS* 🏔️\n\n` +
+                        `¡Hola ${nombre}! Confirmamos tu reserva:\n\n` +
+                        `📅 *Check-In:* ${checkin} (16:00 hrs)\n` +
+                        `📅 *Check-Out:* ${checkout} (12:00 hrs)\n` +
+                        `🌙 *Estadía:* ${noches} noches\n` +
+                        `🔑 *Clave Cerradura Digital:* ${claveCerradura}\n\n` +
+                        `💰 *Monto Total:* $${totalBruto} CLP\n` +
+                        `✅ *Monto Abonado:* $${totalAbonado} CLP\n` +
+                        `📌 *Saldo Pendiente:* $${saldoPendiente} CLP\n\n` +
+                        `¡Te esperamos en Malalcahuello para una excelente estadía! 🌲❄️`;
+
+            navigator.clipboard.writeText(msg);
+            alert('¡Mensaje de confirmación copiado al portapapeles! Puedes pegarlo directamente en WhatsApp.');
         }
     </script>
 </body>
