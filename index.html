@@ -14,7 +14,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- FontAwesome CDN -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-fontawesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -24,10 +24,6 @@
 
     <!-- ical.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ical.js/1.5.0/ical.min.js"></script>
-
-    <!-- pdfMake CDN (Formulario PDF Dinámico) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 
     <!-- FIREBASE SDKs (v9.23.0 Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -44,7 +40,6 @@
         .cal-day-booking { background-color: #ffe4e6 !important; color: #1e3a8a !important; font-weight: 700; border: 1px solid #fecdd3; cursor: pointer; }
 
         .cal-day-confirmada { background-color: #fef3c7 !important; color: #92400e !important; font-weight: 800; border: 1.5px solid #fde68a; cursor: pointer; }
-        
         .cal-day-bloqueo { background-color: #cbd5e1 !important; color: #334155 !important; font-weight: 700; border: 1px solid #94a3b8; }
         
         .cal-day-transicion { 
@@ -66,8 +61,8 @@
 
         @media print {
             body * { visibility: hidden; }
-            #areaImpresionPDF, #areaImpresionPDF * { visibility: visible; }
-            #areaImpresionPDF { position: absolute; left: 0; top: 0; width: 100%; color: #000; }
+            #areaImpresion, #areaImpresion * { visibility: visible; }
+            #areaImpresion { position: absolute; left: 0; top: 0; width: 100%; color: #000; }
         }
     </style>
 </head>
@@ -173,7 +168,7 @@
                         </div>
                     </div>
 
-                    <!-- DATOS DE HUÉSPED (INCLUYE DIRECCIÓN) -->
+                    <!-- DATOS DE HUÉSPED -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Nombre Huésped</label>
@@ -287,14 +282,19 @@
                         </div>
                     </div>
 
-                    <div id="seccionCostosPrecios" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <!-- SECCIÓN COSTOS Y PRECIOS -->
+                    <div id="seccionCostosPrecios" class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Duración Calculada</label>
                             <input type="text" id="cantDiasMostrar" readonly value="0 días / 0 noches" class="w-full bg-slate-100 border border-slate-300 font-bold text-slate-700 rounded-lg px-3 py-2 text-xs">
                         </div>
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Tarifa Noche ($ CLP) *</label>
-                            <input type="number" id="valorDiarioFinal" value="380000" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-emerald-800 focus:outline-none focus:border-emerald-600">
+                            <input type="number" id="valorDiarioFinal" value="270000" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-emerald-800 focus:outline-none focus:border-emerald-600">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Fee de Aseo ($ CLP)</label>
+                            <input type="number" id="feeAseo" value="0" min="0" class="w-full bg-emerald-50/50 border border-emerald-300 rounded-lg px-3 py-2 text-xs font-bold text-emerald-900 focus:outline-none focus:border-emerald-600">
                         </div>
                         <div>
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Comisión Plataforma ($ CLP)</label>
@@ -467,15 +467,11 @@
                     </div>
                 </div>
 
-                <!-- BOTONES PDF Y WHATSAPP -->
-                <div class="flex flex-col gap-2 pt-2">
-                    <button id="btnGenerarPDF" onclick="generarEnviarFormularioPDF()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow">
-                        <i class="fa-solid fa-file-pdf text-sm"></i>
-                        <span>Enviar Formulario Reserva (PDF)</span>
-                    </button>
-                    <button type="button" onclick="generarWsp()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-1.5 px-3 rounded-lg text-[11px] transition flex items-center justify-center gap-1.5 border border-slate-700">
-                        <i class="fa-brands fa-whatsapp text-emerald-400"></i>
-                        <span>Copiar Confirmación (WhatsApp)</span>
+                <!-- BOTÓN DE ACCIÓN EXCLUSIVO WHATSAPP -->
+                <div class="pt-2">
+                    <button type="button" onclick="enviarConfirmacionWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-3 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow active:scale-95">
+                        <i class="fa-brands fa-whatsapp text-lg"></i>
+                        <span>Enviar Confirmación por WhatsApp</span>
                     </button>
                 </div>
             </section>
@@ -762,11 +758,11 @@
                 </h3>
                 <div class="flex items-center gap-2">
                     <button type="button" onclick="exportarHuespedesExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center gap-1.5 shadow"><i class="fa-solid fa-file-excel"></i> Exportar Excel</button>
-                    <button type="button" onclick="imprimirTablaHuespedes()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center gap-1.5 shadow"><i class="fa-solid fa-print"></i> Imprimir / PDF</button>
+                    <button type="button" onclick="imprimirTablaHuespedes()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center gap-1.5 shadow"><i class="fa-solid fa-print"></i> Imprimir</button>
                     <button type="button" onclick="toggleModal('modalHuespedes')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
             </div>
-            <div id="areaImpresionPDF" class="overflow-x-auto max-h-96 rounded-xl border border-slate-200 bg-white">
+            <div id="areaImpresion" class="overflow-x-auto max-h-96 rounded-xl border border-slate-200 bg-white">
                 <table class="w-full text-xs text-left border-collapse">
                     <thead class="bg-indigo-50 text-indigo-900 border-b border-indigo-200 font-bold">
                         <tr>
@@ -942,6 +938,7 @@
         const db = firebase.firestore();
 
         const URL_WORKER_PROXY = "https://dry-field-4c22.evicencio.workers.dev/";
+        const URL_WEB_APP = "https://voucher-voucher5.vercel.app";
 
         let reservas = [];
         let fechasAirbnb = [];
@@ -970,6 +967,25 @@
 
         let seleccionTempCheckin = null;
         let seleccionTempCheckout = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCalendario();
+            renderTabla();
+
+            ['valorDiarioFinal', 'feeAseo', 'costoPlataforma', 'tipoDoc'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', calcularValores);
+            });
+
+            ['rPrevired', 'rCredito', 'rGastosComunes', 'rRetirosExtras', 'rOtros'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', calcularTotalRetirosModal);
+            });
+
+            inicializarSincronizacionCloud();
+            sincronizarNavegador('airbnb', false);
+            sincronizarNavegador('booking', false);
+        });
 
         function inicializarSincronizacionCloud() {
             db.collection('reservas').onSnapshot(snapshot => {
@@ -1259,6 +1275,7 @@
                 if (wrapperReqs) wrapperReqs.classList.add('hidden');
 
                 document.getElementById('valorDiarioFinal').value = 0;
+                document.getElementById('feeAseo').value = 0;
                 document.getElementById('costoPlataforma').value = 0;
             } else {
                 if (secCostos) secCostos.classList.remove('hidden');
@@ -1271,7 +1288,7 @@
                 if (wrapperReqs) wrapperReqs.classList.remove('hidden');
 
                 if (parseFloat(document.getElementById('valorDiarioFinal').value) === 0) {
-                    document.getElementById('valorDiarioFinal').value = 380000;
+                    document.getElementById('valorDiarioFinal').value = 270000;
                 }
             }
             calcularValores();
@@ -1361,25 +1378,6 @@
             document.getElementById('lblTotalDiarioCalculado').innerText = `$${sumaDiaria.toLocaleString('es-CL')} /día  (Fijos: $${totalFijosReserva.toLocaleString('es-CL')})`;
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            inicializarSincronizacionCloud();
-            renderCalendario();
-            renderTabla();
-
-            ['valorDiarioFinal', 'costoPlataforma', 'tipoDoc'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.addEventListener('input', calcularValores);
-            });
-
-            ['rPrevired', 'rCredito', 'rGastosComunes', 'rRetirosExtras', 'rOtros'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.addEventListener('input', calcularTotalRetirosModal);
-            });
-
-            sincronizarNavegador('airbnb', false);
-            sincronizarNavegador('booking', false);
-        });
-
         function actualizarSelectorTemporadaAutomatico() {
             const checkinVal = document.getElementById('checkin').value;
             if (checkinVal) {
@@ -1409,6 +1407,8 @@
                     "Niños": r.ninos || 0,
                     "Canal": r.canal || 'Directo',
                     "Estado": r.estadoReserva || '-',
+                    "Valor Diario ($)": r.valorDiarioFinal || 0,
+                    "Fee Aseo ($)": r.feeAseo || 0,
                     "Total Bruto ($)": totalBruto,
                     "Comisión Plataforma ($)": r.costoPlataforma || 0,
                     "Total Abonado ($)": totalAbonado,
@@ -1560,7 +1560,8 @@
             document.getElementById('reservaId').value = '';
             document.getElementById('codigoOTA').value = '';
             document.getElementById('direccion').value = '';
-            document.getElementById('valorDiarioFinal').value = 380000;
+            document.getElementById('valorDiarioFinal').value = 270000;
+            document.getElementById('feeAseo').value = 0;
             document.getElementById('canal').value = 'Directo';
             document.getElementById('adultos').value = 2;
             document.getElementById('ninos').value = 0;
@@ -1619,6 +1620,7 @@
             document.getElementById('lblRangoFechasSeleccionado').innerText = `${formatearFechaChile(r.checkin)} ➔ ${formatearFechaChile(r.checkout)}`;
 
             document.getElementById('valorDiarioFinal').value = r.valorDiarioFinal || 0;
+            document.getElementById('feeAseo').value = r.feeAseo || 0;
             document.getElementById('costoPlataforma').value = r.costoPlataforma || 0;
             document.getElementById('canal').value = r.canal || 'Directo';
             document.getElementById('tipoDoc').value = r.tipoDoc || 'Sin Documento';
@@ -2097,43 +2099,49 @@
         }
 
         function calcularValores() {
-            const inDate = new Date(document.getElementById('checkin').value);
-            const outDate = new Date(document.getElementById('checkout').value);
+            const inVal = document.getElementById('checkin').value;
+            const outVal = document.getElementById('checkout').value;
             const valorDiarioFinal = parseFloat(document.getElementById('valorDiarioFinal').value) || 0;
+            const feeAseoVal = parseFloat(document.getElementById('feeAseo').value) || 0;
             const costoPlataforma = parseFloat(document.getElementById('costoPlataforma').value) || 0;
             const tipoDoc = document.getElementById('tipoDoc').value;
 
-            if (inDate && outDate && outDate > inDate) {
-                const diffTime = Math.abs(outDate - inDate);
-                const noches = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                const dias = noches + 1;
+            if (inVal && outVal) {
+                const inDate = new Date(inVal);
+                const outDate = new Date(outVal);
+                
+                if (outDate > inDate) {
+                    const diffTime = Math.abs(outDate - inDate);
+                    const noches = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    const dias = noches + 1;
 
-                document.getElementById('cantDiasMostrar').value = `${dias} días / ${noches} noches`;
-                document.getElementById('resNoches').innerText = `${dias}d / ${noches}n`;
+                    document.getElementById('cantDiasMostrar').value = `${dias} días / ${noches} noches`;
+                    document.getElementById('resNoches').innerText = `${dias}d / ${noches}n`;
 
-                const totalBruto = noches * valorDiarioFinal;
-                const netoCaban = totalBruto - costoPlataforma;
+                    const totalBruto = (noches * valorDiarioFinal) + feeAseoVal;
+                    const netoCaban = totalBruto - costoPlataforma;
 
-                let netoImpuesto = totalBruto;
-                let iva = 0;
+                    let netoImpuesto = totalBruto;
+                    let iva = 0;
 
-                if (tipoDoc === 'Factura Afecta') {
-                    netoImpuesto = Math.round(totalBruto / 1.19);
-                    iva = totalBruto - netoImpuesto;
+                    if (tipoDoc === 'Factura Afecta') {
+                        netoImpuesto = Math.round(totalBruto / 1.19);
+                        iva = totalBruto - netoImpuesto;
+                    }
+
+                    const totalAbonado = abonosTemp.reduce((sum, a) => sum + parseFloat(a.monto || 0), 0);
+                    const saldoPendiente = totalBruto - totalAbonado;
+
+                    document.getElementById('resTotalBruto').innerText = `$${totalBruto.toLocaleString('es-CL')}`;
+                    document.getElementById('resCostoPlataforma').innerText = `$${costoPlataforma.toLocaleString('es-CL')}`;
+                    document.getElementById('resNetoCaban').innerText = `$${Math.round(netoCaban).toLocaleString('es-CL')}`;
+                    document.getElementById('resNetoImpuesto').innerText = `$${netoImpuesto.toLocaleString('es-CL')}`;
+                    document.getElementById('resIva').innerText = `$${iva.toLocaleString('es-CL')}`;
+                    document.getElementById('resTotalAbonado').innerText = `$${totalAbonado.toLocaleString('es-CL')}`;
+                    document.getElementById('resSaldoPendiente').innerText = `$${saldoPendiente.toLocaleString('es-CL')}`;
+
+                    reservaCalculada = { dias, noches, totalBruto, feeAseo: feeAseoVal, costoPlataforma, netoCaban, netoImpuesto, iva, totalAbonado, saldoPendiente };
                 }
-
-                const totalAbonado = abonosTemp.reduce((sum, a) => sum + parseFloat(a.monto || 0), 0);
-                const saldoPendiente = totalBruto - totalAbonado;
-
-                document.getElementById('resTotalBruto').innerText = `$${totalBruto.toLocaleString('es-CL')}`;
-                document.getElementById('resCostoPlataforma').innerText = `$${costoPlataforma.toLocaleString('es-CL')}`;
-                document.getElementById('resNetoCaban').innerText = `$${Math.round(netoCaban).toLocaleString('es-CL')}`;
-                document.getElementById('resNetoImpuesto').innerText = `$${netoImpuesto.toLocaleString('es-CL')}`;
-                document.getElementById('resIva').innerText = `$${iva.toLocaleString('es-CL')}`;
-                document.getElementById('resTotalAbonado').innerText = `$${totalAbonado.toLocaleString('es-CL')}`;
-                document.getElementById('resSaldoPendiente').innerText = `$${saldoPendiente.toLocaleString('es-CL')}`;
-
-                reservaCalculada = { dias, noches, totalBruto, costoPlataforma, netoCaban, netoImpuesto, iva, totalAbonado, saldoPendiente };
             }
         }
 
@@ -2169,13 +2177,14 @@
             });
         }
 
-        // GUARDADO EN FIREBASE (SÓLO SOLICITA FECHAS Y VALOR DIARIO COMO MANDATORIOS)
+        // GUARDADO EN FIREBASE
         document.getElementById('reservaForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const checkinVal = document.getElementById('checkin').value;
             const checkoutVal = document.getElementById('checkout').value;
             const valorDiarioVal = parseFloat(document.getElementById('valorDiarioFinal').value);
+            const feeAseoVal = parseFloat(document.getElementById('feeAseo').value) || 0;
 
             if (!checkinVal || !checkoutVal) {
                 return alert('⚠️ Campo obligatorio: Por favor selecciona las fechas de Check-In y Check-Out.');
@@ -2239,6 +2248,7 @@
                 checkin: String(checkinVal || ''),
                 checkout: String(checkoutVal || ''),
                 valorDiarioFinal: valorDiarioVal,
+                feeAseo: feeAseoVal,
                 costoPlataforma: Number(document.getElementById('costoPlataforma').value || 0),
                 canal: canalInput,
                 tipoDoc: String(document.getElementById('tipoDoc').value || 'Sin Documento'),
@@ -2270,187 +2280,53 @@
             }
         });
 
-        // GENERACIÓN Y DESCARGA DEL FORMULARIO PDF OFICIAL
-        function generarEnviarFormularioPDF() {
-            const checkin = document.getElementById('checkin').value;
-            const checkout = document.getElementById('checkout').value;
+        // LÓGICA EXCLUSIVA WHATSAPP CON ENLACE WEB
+        function enviarConfirmacionWhatsApp() {
+            const inVal = document.getElementById('checkin').value;
+            const outVal = document.getElementById('checkout').value;
             const valorDiario = parseFloat(document.getElementById('valorDiarioFinal').value) || 0;
+            const feeAseoVal = parseFloat(document.getElementById('feeAseo').value) || 0;
 
-            if (!checkin || !checkout || valorDiario <= 0) {
-                return alert('⚠️ Para generar el Formulario PDF debes ingresar al menos las fechas de estadía y el Valor Diario.');
+            if (!inVal || !outVal || valorDiario <= 0) {
+                return alert('⚠️ Selecciona primero las fechas de estadía y el Valor Diario.');
             }
 
-            const nombre = document.getElementById('nombre').value || 'Huésped Pendiente';
-            const rut = document.getElementById('rut').value || 'Pendiente';
-            const fono = document.getElementById('telefono').value || 'Sin Teléfono';
-            const direccion = document.getElementById('direccion').value || 'Sin Dirección';
-            const adultos = document.getElementById('adultos').value || '1';
-            const ninos = document.getElementById('ninos').value || '0';
-            const canal = document.getElementById('canal').value || 'Directo';
+            const nombre = document.getElementById('nombre').value || 'Huésped';
+            const fono = document.getElementById('telefono').value || '';
+            const checkin = formatearFechaChile(inVal);
+            const checkout = formatearFechaChile(outVal);
 
-            const noches = reservaCalculada.noches || 1;
-            const totalBruto = reservaCalculada.totalBruto || (noches * valorDiario);
-            const reserva50Pct = totalBruto * 0.5;
+            const inDate = new Date(inVal);
+            const outDate = new Date(outVal);
+            const noches = Math.ceil(Math.abs(outDate - inDate) / (1000 * 60 * 60 * 24)) || 1;
+            
+            const totalBruto = (noches * valorDiario) + feeAseoVal;
+            const totalAbonado = abonosTemp.reduce((sum, a) => sum + parseFloat(a.monto || 0), 0);
+            const saldoPendiente = totalBruto - totalAbonado;
 
-            const fechaHoy = new Date();
-            const fechaForm = fechaHoy.getDate() + '-' + fechaHoy.toLocaleString('es-ES', { month: 'short' });
-            const numForm = Math.floor(Math.random() * 90) + 10;
+            const soloNumerosFono = String(fono).replace(/\D/g, '');
+            const claveCerradura = soloNumerosFono.length >= 4 ? soloNumerosFono.slice(-4) : '----';
 
-            const chkWsp = (canal === 'Directo') ? 'X' : ' ';
-            const chkAir = (canal === 'Airbnb') ? 'X' : ' ';
-            const chkBoo = (canal === 'Booking') ? 'X' : ' ';
-            const chkOtr = (canal !== 'Directo' && canal !== 'Airbnb' && canal !== 'Booking') ? 'X' : ' ';
+            const msg = `🏔️ *CONFIRMACIÓN DE RESERVA - REFUGIO ENTRE MONTAÑAS* 🏔️\n\n` +
+                        `¡Hola ${nombre}! Te enviamos el detalle de tu reserva:\n\n` +
+                        `📅 *Check-In:* ${checkin} (15:00 hrs)\n` +
+                        `📅 *Check-Out:* ${checkout} (12:00 hrs)\n` +
+                        `🌙 *Estadía:* ${noches} noches\n` +
+                        `🔑 *Clave Cerradura Digital:* ${claveCerradura}\n\n` +
+                        `💰 *Monto Total:* $${totalBruto.toLocaleString('es-CL')} CLP\n` +
+                        `✅ *Monto Abonado:* $${totalAbonado.toLocaleString('es-CL')} CLP\n` +
+                        `📌 *Saldo Pendiente:* $${saldoPendiente.toLocaleString('es-CL')} CLP\n\n` +
+                        `🌐 *Ver Ficha / Estado de Reserva Online:*\n${URL_WEB_APP}\n\n` +
+                        `¡Te esperamos en Malalcahuello! 🌲❄️`;
 
-            const docDefinition = {
-                pageSize: 'LETTER',
-                pageMargins: [35, 30, 35, 30],
-                content: [
-                    {
-                        table: {
-                            widths: ['*'],
-                            body: [[
-                                { text: 'FORMULARIO DE RESERVA', style: 'headerTitle', alignment: 'center' }
-                            ]]
-                        },
-                        layout: 'noBorders'
-                    },
-                    {
-                        columns: [
-                            { text: 'Nº Form: ' + numForm, style: 'subHeader' },
-                            { text: 'Fecha Form: ' + fechaForm, style: 'subHeader', alignment: 'right' }
-                        ],
-                        margin: [0, 5, 0, 10]
-                    },
-                    { text: 'REFUGIO ENTRE MONTAÑAS - MALALCAHUELLO', style: 'sectionHeader', alignment: 'center' },
-                    { text: 'ANTECEDENTES GENERALES DE LA RESERVA', style: 'tableHeaderBanner', margin: [0, 10, 0, 5] },
-                    {
-                        table: {
-                            widths: ['20%', '20%', '15%', '15%', '15%', '15%'],
-                            body: [
-                                [
-                                    { text: 'Check-in', style: 'cellLabel' },
-                                    { text: formatearFechaChile(checkin), style: 'cellVal' },
-                                    { text: 'Hora', style: 'cellLabel' },
-                                    { text: '15:00', style: 'cellVal' },
-                                    { text: 'Nº Adultos', style: 'cellLabel' },
-                                    { text: adultos, style: 'cellVal' }
-                                ],
-                                [
-                                    { text: 'Check-out', style: 'cellLabel' },
-                                    { text: formatearFechaChile(checkout), style: 'cellVal' },
-                                    { text: 'Hora', style: 'cellLabel' },
-                                    { text: '12:00', style: 'cellVal' },
-                                    { text: 'Nº Niños (<12a)', style: 'cellLabel' },
-                                    { text: ninos, style: 'cellVal' }
-                                ]
-                            ]
-                        },
-                        margin: [0, 0, 0, 10]
-                    },
-                    {
-                        table: {
-                            widths: ['30%', '70%'],
-                            body: [
-                                [{ text: 'NOMBRE CONTACTO RESERVA', style: 'cellLabel' }, { text: nombre, style: 'cellValBold' }],
-                                [{ text: 'RUT / PASAPORTE', style: 'cellLabel' }, { text: rut, style: 'cellVal' }],
-                                [{ text: 'DIRECCIÓN', style: 'cellLabel' }, { text: direccion, style: 'cellVal' }],
-                                [{ text: 'TELÉFONO / FONO', style: 'cellLabel' }, { text: fono, style: 'cellVal' }]
-                            ]
-                        },
-                        margin: [0, 0, 0, 10]
-                    },
-                    { text: 'ORIGEN RESERVA', style: 'cellLabel', margin: [0, 5, 0, 2] },
-                    {
-                        columns: [
-                            { text: '[ ' + chkWsp + ' ] IG / Wsp / Directo', fontSize: 10 },
-                            { text: '[ ' + chkAir + ' ] Airbnb', fontSize: 10 },
-                            { text: '[ ' + chkBoo + ' ] Booking', fontSize: 10 },
-                            { text: '[ ' + chkOtr + ' ] Otro', fontSize: 10 }
-                        ],
-                        margin: [0, 0, 0, 15]
-                    },
-                    { text: 'PRECIO Y FORMA DE PAGO', style: 'tableHeaderBanner', margin: [0, 5, 0, 5] },
-                    {
-                        table: {
-                            widths: ['20%', '20%', '20%', '20%', '20%'],
-                            body: [
-                                [
-                                    { text: 'Nº Noches', style: 'cellLabel' },
-                                    { text: 'Valor Diario', style: 'cellLabel' },
-                                    { text: 'Fee Aseo', style: 'cellLabel' },
-                                    { text: 'Valor Total', style: 'cellLabel' },
-                                    { text: 'Valor 50% Reserva', style: 'cellLabel' }
-                                ],
-                                [
-                                    { text: '' + noches, style: 'cellVal' },
-                                    { text: '$' + valorDiario.toLocaleString('es-CL'), style: 'cellVal' },
-                                    { text: '$0', style: 'cellVal' },
-                                    { text: '$' + totalBruto.toLocaleString('es-CL'), style: 'cellValBold' },
-                                    { text: '$' + reserva50Pct.toLocaleString('es-CL'), style: 'cellValBold' }
-                                ]
-                            ]
-                        },
-                        margin: [0, 0, 0, 10]
-                    },
-                    {
-                        style: 'bankBox',
-                        stack: [
-                            { text: 'Favor transferir el monto de la reserva a la siguiente cuenta bancaria:', fontSize: 9, bold: true },
-                            { text: '• Jardín Norte SPA | RUT: 76.714.914-k | Banco Itaú | Cta Cte: 0214623372 | mcverac@uc.cl', fontSize: 9, margin: [0, 3, 0, 3] },
-                            { text: 'El saldo se debe transferir ANTES o al MOMENTO del check-in.', fontSize: 9, italic: true }
-                        ]
-                    },
-                    { text: 'CONSIDERACIONES IMPORTANTES DEL ALOJAMIENTO', style: 'sectionHeader', margin: [0, 15, 0, 5] },
-                    {
-                        ol: [
-                            'La calefacción del refugio depende mayoritariamente de la estufa a leña; el huésped es responsable de mantenerla encendida. Se suministra leña ilimitada gratis.',
-                            'Ante cortes recurrentes de energía en la zona, el refugio dispone de un generador a bencina de activación manual según instrucciones entregadas.',
-                            'En caso de nevadas/heladas que impidan el acceso vehicular directo, podrá acceder caminando desde un punto cercano habilitado (50m approx).',
-                            'La Tinaja es de uso ilimitado y gratis. Su proceso de llenado y calefacción puede demorar hasta 30 horas en temperaturas extremas.',
-                            'Por seguridad, el perímetro externo cuenta con cámaras de vigilancia monitoreadas exclusivamente por los dueños.'
-                        ],
-                        fontSize: 8.5,
-                        margin: [0, 0, 0, 15]
-                    },
-                    { text: 'El pago del monto de Reserva constituye la aceptación de todas las condiciones estipuladas en este formulario.', fontSize: 8, italic: true, alignment: 'center' },
-                    { text: 'Contacto Refugio: M. Carla Vera – +56 9 9879 3922', fontSize: 9, bold: true, alignment: 'center', margin: [0, 5, 0, 0] },
+            navigator.clipboard.writeText(msg);
 
-                    // PÁGINA 2: POLÍTICAS Y CONDICIONES
-                    { text: '', pageBreak: 'before' },
-                    { text: 'POLÍTICAS Y CONDICIONES DEL ALOJAMIENTO', style: 'headerTitle', alignment: 'center', margin: [0, 0, 0, 10] },
-                    { text: 'Al confirmar y pagar la reserva, el huésped declara aceptar y haber tomado conocimiento de las políticas y condiciones del refugio.', fontSize: 9, italic: true, margin: [0, 0, 0, 10] },
-                    {
-                        ol: [
-                            { text: 'HORARIOS: Check-in desde las 15:00 hrs | Check-out hasta las 12:00 hrs.', bold: true },
-                            'CAMBIOS O CANCELACIONES: Anulación sin costo hasta 7 días antes del check-in (devolución 100%). Dentro de los 7 días sólo por fuerza mayor comprobable de accesibilidad.',
-                            'NO ARRIBO (NO SHOW): La no presentación anula la reserva sin derecho a reembolso.',
-                            'RETIRO ANTICIPADO: No se efectuará reembolso de noches no utilizadas.',
-                            'CANTIDAD DE HUÉSPEDES: Prohibido exceder el cupo declarado. Visitas moderadas permitidas previa consulta.',
-                            'ACCESO: Autónomo mediante clave digital asignada para el condominio y refugio.',
-                            'DAÑOS: Deben ser informados antes del check-out. Prohibido verter productos a la tinaja.',
-                            'PROHIBIDO EL FUEGO: Prohibido fumar en interiores y hacer fogatas. Uso exclusivo de parrilla a carbón.',
-                            'RUIDOS: Mantener volumen moderado que respete el entorno y vecinos.',
-                            'ENTORNO Y MEDIO AMBIENTE: Cuidado de la flora, fauna y gestión adecuada de residuos.',
-                            'MASCOTAS: Solo previa autorización explícita. Nunca deben quedar solas en la propiedad.',
-                            'DERECHO DE ADMISIÓN: Se reserva el derecho de acceso por no pago, estado de ebriedad o falta de respeto.'
-                        ],
-                        fontSize: 8.5,
-                        lineHeight: 1.2
-                    }
-                ],
-                styles: {
-                    headerTitle: { fontSize: 14, bold: true, color: '#111827' },
-                    subHeader: { fontSize: 9, bold: true, color: '#4b5563' },
-                    sectionHeader: { fontSize: 11, bold: true, color: '#065f46', margin: [0, 5, 0, 5] },
-                    tableHeaderBanner: { fontSize: 10, bold: true, color: '#ffffff', fillColor: '#065f46', padding: 4 },
-                    cellLabel: { fontSize: 8.5, bold: true, color: '#374151', fillColor: '#f3f4f6' },
-                    cellVal: { fontSize: 8.5, color: '#1f2937' },
-                    cellValBold: { fontSize: 8.5, bold: true, color: '#065f46' },
-                    bankBox: { fillColor: '#ecfdf5', padding: 8, margin: [0, 5, 0, 10] }
-                }
-            };
-
-            pdfMake.createPdf(docDefinition).download('Formulario_Reserva_' + nombre.replace(/\s+/g, '_') + '_' + checkin + '.pdf');
+            if (soloNumerosFono.length >= 8) {
+                const numCompleto = soloNumerosFono.startsWith('56') ? soloNumerosFono : `56${soloNumerosFono}`;
+                window.open(`https://wa.me/${numCompleto}?text=${encodeURIComponent(msg)}`, '_blank');
+            } else {
+                alert('¡Mensaje copiado al portapapeles con el enlace incluido! (Ingresa un teléfono válido para abrir el chat de WhatsApp automáticamente).');
+            }
         }
 
         function actualizarUsuarioActivoUI() {
@@ -2945,33 +2821,72 @@
             document.getElementById('dashNochesAno').innerText = `${nochesAno}n`;
             document.getElementById('dashBrutoAno').innerText = `$${brutoAno.toLocaleString('es-CL')}`;
         }
-
-        function generarWsp() {
-            if (!reservaCalculada || !document.getElementById('checkin').value) return;
-
-            const nombre = document.getElementById('nombre').value || 'Huésped';
-            const checkin = formatearFechaChile(document.getElementById('checkin').value);
-            const checkout = formatearFechaChile(document.getElementById('checkout').value);
-            const noches = reservaCalculada.noches || 0;
-            const totalBruto = (reservaCalculada.totalBruto || 0).toLocaleString('es-CL');
-            const totalAbonado = (reservaCalculada.totalAbonado || 0).toLocaleString('es-CL');
-            const saldoPendiente = (reservaCalculada.saldoPendiente || 0).toLocaleString('es-CL');
-            const claveCerradura = obtenerUltimos4Telefono();
-
-            const msg = `🏔️ *CONFIRMACIÓN DE RESERVA - REFUGIO ENTRE MONTAÑAS* 🏔️\n\n` +
-                        `¡Hola ${nombre}! Confirmamos tu reserva:\n\n` +
-                        `📅 *Check-In:* ${checkin} (16:00 hrs)\n` +
-                        `📅 *Check-Out:* ${checkout} (12:00 hrs)\n` +
-                        `🌙 *Estadía:* ${noches} noches\n` +
-                        `🔑 *Clave Cerradura Digital:* ${claveCerradura}\n\n` +
-                        `💰 *Monto Total:* $${totalBruto} CLP\n` +
-                        `✅ *Monto Abonado:* $${totalAbonado} CLP\n` +
-                        `📌 *Saldo Pendiente:* $${saldoPendiente} CLP\n\n` +
-                        `¡Te esperamos en Malalcahuello para una excelente estadía! 🌲❄️`;
-
-            navigator.clipboard.writeText(msg);
-            alert('¡Mensaje de confirmación copiado al portapapeles! Puedes pegarlo directamente en WhatsApp.');
-        }
     </script>
 </body>
 </html>
+
+function enviarVoucherFormulario9() {
+    // 1. Obtener datos del formulario local
+    const checkin = document.getElementById('checkin') ? document.getElementById('checkin').value : '';
+    const checkout = document.getElementById('checkout') ? document.getElementById('checkout').value : '';
+    const tarifa = document.getElementById('valorDiarioFinal') ? document.getElementById('valorDiarioFinal').value : 0;
+    const feeAseo = document.getElementById('feeAseo') ? document.getElementById('feeAseo').value : 0;
+    const nombre = document.getElementById('nombre') ? document.getElementById('nombre').value : 'Huésped';
+    const rut = document.getElementById('rut') ? document.getElementById('rut').value : '';
+    const fono = document.getElementById('telefono') ? document.getElementById('telefono').value : '';
+    const direccion = document.getElementById('direccion') ? document.getElementById('direccion').value : '';
+    const adultos = document.getElementById('adultos') ? document.getElementById('adultos').value : 1;
+    const ninos = document.getElementById('ninos') ? document.getElementById('ninos').value : 0;
+    const canal = document.getElementById('canal') ? document.getElementById('canal').value : 'Directo';
+    
+    const noches = typeof reservaCalculada !== 'undefined' && reservaCalculada.noches ? reservaCalculada.noches : 1;
+    const totalBruto = (noches * parseFloat(tarifa || 0)) + parseFloat(feeAseo || 0);
+    const abono50 = totalBruto * 0.5;
+
+    if (!checkin || !checkout) {
+        alert('⚠️ Por favor selecciona primero las fechas de check-in y check-out.');
+        return;
+    }
+
+    // 2. Link público al Voucher en Vercel
+    const urlBaseVercel = "https://voucher-voucher5.vercel.app";
+    const linkVoucherPDF = `${urlBaseVercel}/?nombre=${encodeURIComponent(nombre)}&rut=${encodeURIComponent(rut)}&telefono=${encodeURIComponent(fono)}&direccion=${encodeURIComponent(direccion)}&checkin=${encodeURIComponent(checkin)}&checkout=${encodeURIComponent(checkout)}&adultos=${adultos}&ninos=${ninos}&noches=${noches}&tarifa=${tarifa}&feeAseo=${feeAseo}&canal=${encodeURIComponent(canal)}`;
+
+    const fmt = (num) => '$' + Math.round(num).toLocaleString('es-CL');
+
+    // 3. Mensaje completo
+    const mensaje = `🏔️ *CONFIRMACIÓN DE RESERVA - REFUGIO ENTRE MONTAÑAS* 🏔️\n\n` +
+                    `Hola *${nombre}*, ¡tu reserva ha sido procesada con éxito!\n\n` +
+                    `📌 *DETALLES DE LA ESTADÍA:*\n` +
+                    `• *Check-in:* ${checkin} (desde las 15:00 hrs)\n` +
+                    `• *Check-out:* ${checkout} (hasta las 12:00 hrs)\n` +
+                    `• *Noches:* ${noches}\n` +
+                    `• *Huéspedes:* ${adultos} Adultos / ${ninos} Niños\n\n` +
+                    `💳 *RESUMEN DE PAGO:*\n` +
+                    `• *Valor Total Estadía:* ${fmt(totalBruto)}\n` +
+                    `• *Monto Reserva (50%):* ${fmt(abono50)}\n` +
+                    `• *Saldo Pendiente:* ${fmt(abono50)} (se cancela al momento del Check-in)\n\n` +
+                    `🏦 *DATOS DE TRANSFERENCIA:* \n` +
+                    `• *Titular:* Jardín Norte SPA\n` +
+                    `• *RUT:* 76.714.914-k\n` +
+                    `• *Banco:* Banco Itaú\n` +
+                    `• *Tipo de Cuenta:* Cuenta Corriente\n` +
+                    `• *N° Cuenta:* 0214623372\n` +
+                    `• *Correo:* mcverac@uc.cl\n\n` +
+                    `📄 *COMPROBANTE Y POLÍTICAS:* \n` +
+                    `Puedes revisar y descargar tu comprobante oficial (Formulario 9) en el siguiente enlace:\n` +
+                    `${linkVoucherPDF}\n\n` +
+                    `¡Te esperamos en Malalcahuello! 🌲❄️`;
+
+    // 4. Copiar al portapapeles
+    navigator.clipboard.writeText(mensaje);
+
+    // 5. Abrir WhatsApp automáticamente
+    if (fono) {
+        const numLimpio = fono.replace(/\D/g, '');
+        const numCompleto = numLimpio.startsWith('56') ? numLimpio : `56${numLimpio}`;
+        window.open(`https://wa.me/${numCompleto}?text=${encodeURIComponent(mensaje)}`, '_blank');
+    } else {
+        alert('¡Mensaje copiado al portapapeles!');
+    }
+}
