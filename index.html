@@ -2282,52 +2282,98 @@
 
         // LÓGICA EXCLUSIVA WHATSAPP CON ENLACE WEB
         function enviarConfirmacionWhatsApp() {
-            const inVal = document.getElementById('checkin').value;
-            const outVal = document.getElementById('checkout').value;
-            const valorDiario = parseFloat(document.getElementById('valorDiarioFinal').value) || 0;
-            const feeAseoVal = parseFloat(document.getElementById('feeAseo').value) || 0;
-
-            if (!inVal || !outVal || valorDiario <= 0) {
-                return alert('⚠️ Selecciona primero las fechas de estadía y el Valor Diario.');
-            }
-
-            const nombre = document.getElementById('nombre').value || 'Huésped';
-            const fono = document.getElementById('telefono').value || '';
-            const checkin = formatearFechaChile(inVal);
-            const checkout = formatearFechaChile(outVal);
-
-            const inDate = new Date(inVal);
-            const outDate = new Date(outVal);
-            const noches = Math.ceil(Math.abs(outDate - inDate) / (1000 * 60 * 60 * 24)) || 1;
-            
-            const totalBruto = (noches * valorDiario) + feeAseoVal;
-            const totalAbonado = abonosTemp.reduce((sum, a) => sum + parseFloat(a.monto || 0), 0);
-            const saldoPendiente = totalBruto - totalAbonado;
-
-            const soloNumerosFono = String(fono).replace(/\D/g, '');
-            const claveCerradura = soloNumerosFono.length >= 4 ? soloNumerosFono.slice(-4) : '----';
-
-            const msg = `🏔️ *CONFIRMACIÓN DE RESERVA - REFUGIO ENTRE MONTAÑAS* 🏔️\n\n` +
-                        `¡Hola ${nombre}! Te enviamos el detalle de tu reserva:\n\n` +
-                        `📅 *Check-In:* ${checkin} (15:00 hrs)\n` +
-                        `📅 *Check-Out:* ${checkout} (12:00 hrs)\n` +
-                        `🌙 *Estadía:* ${noches} noches\n` +
-                        `🔑 *Clave Cerradura Digital:* ${claveCerradura}\n\n` +
-                        `💰 *Monto Total:* $${totalBruto.toLocaleString('es-CL')} CLP\n` +
-                        `✅ *Monto Abonado:* $${totalAbonado.toLocaleString('es-CL')} CLP\n` +
-                        `📌 *Saldo Pendiente:* $${saldoPendiente.toLocaleString('es-CL')} CLP\n\n` +
-                        `🌐 *Ver Ficha / Estado de Reserva Online:*\n${URL_WEB_APP}\n\n` +
-                        `¡Te esperamos en Malalcahuello! 🌲❄️`;
-
-            navigator.clipboard.writeText(msg);
-
-            if (soloNumerosFono.length >= 8) {
-                const numCompleto = soloNumerosFono.startsWith('56') ? soloNumerosFono : `56${soloNumerosFono}`;
-                window.open(`https://wa.me/${numCompleto}?text=${encodeURIComponent(msg)}`, '_blank');
-            } else {
-                alert('¡Mensaje copiado al portapapeles con el enlace incluido! (Ingresa un teléfono válido para abrir el chat de WhatsApp automáticamente).');
-            }
+    // Función auxiliar para buscar valores en campos con distintos IDs posibles
+    const getVal = (ids, defaultVal = '') => {
+        for (let id of ids) {
+            let el = document.getElementById(id);
+            if (el && el.value !== undefined && el.value !== null && el.value !== '') return el.value;
         }
+        return defaultVal;
+    };
+
+    // 1. Lectura flexible de los campos del panel local
+    const nombre = getVal(['nombre', 'nombreHuesped', 'huespedNombre', 'clienteNombre'], 'Huésped');
+    const rut = getVal(['rut', 'rutPasaporte', 'rutHuesped'], '');
+    const fono = getVal(['telefono', 'telefonoWhatsapp', 'fono', 'celular'], '');
+    const direccion = getVal(['direccion', 'direccionCiudad', 'direccionHuesped'], '');
+
+    // Lectura de fechas
+    let checkin = getVal(['checkin', 'fechaCheckin', 'fecha_in']);
+    let checkout = getVal(['checkout', 'fechaCheckout', 'fecha_out']);
+    
+    // Si las fechas están juntas en el campo "PERÍODO DE ESTADÍA"
+    const periodo = getVal(['periodoEstadia', 'periodo', 'fechasReserva', 'rangoFechas']);
+    if ((!checkin || !checkout) && periodo) {
+        const partes = periodo.split(/➔|->|a|al|-/);
+        if (partes.length >= 2) {
+            checkin = partes[0].trim();
+            checkout = partes[1].trim();
+        }
+    }
+
+    // Si aún no hay fechas, avisar
+    if (!checkin || !checkout) {
+        return alert('⚠️ Selecciona o ingresa primero el Período de Estadía (Check-in y Check-out).');
+    }
+
+    const valorDiario = parseFloat(getVal(['valorDiarioFinal', 'tarifaNoche', 'tarifa', 'precioNoche'], '0')) || 0;
+    const feeAseoVal = parseFloat(getVal(['feeAseo', 'aseo', 'costoAseo'], '0')) || 0;
+    const adultos = getVal(['adultos', 'cantAdultos', 'numAdultos'], '1');
+    const ninos = getVal(['ninos', 'cantNinos', 'numNinos'], '0');
+    const canalOrigen = getVal(['canal', 'canalOrigen', 'origenReserva'], 'Directo');
+
+    // Formato de fechas
+    const checkinFmt = typeof formatearFechaChile === 'function' ? formatearFechaChile(checkin) : checkin;
+    const checkoutFmt = typeof formatearFechaChile === 'function' ? formatearFechaChile(checkout) : checkout;
+
+    // Cálculo de noches
+    let noches = 1;
+    if (typeof reservaCalculada !== 'undefined' && reservaCalculada.noches) {
+        noches = reservaCalculada.noches;
+    } else {
+        const parseFecha = (str) => {
+            const p = str.split('/');
+            return p.length === 3 ? new Date(p[2], p[1] - 1, p[0]) : new Date(str);
+        };
+        const d1 = parseFecha(checkin);
+        const d2 = parseFecha(checkout);
+        const diff = d2 - d1;
+        if (!isNaN(diff) && diff > 0) noches = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    }
+
+    const totalBruto = (noches * valorDiario) + feeAseoVal;
+    const totalAbonado = (typeof abonosTemp !== 'undefined') ? abonosTemp.reduce((sum, a) => sum + parseFloat(a.monto || 0), 0) : 0;
+    const saldoPendiente = totalBruto - totalAbonado;
+
+    const soloNumerosFono = String(fono).replace(/\D/g, '');
+    const claveCerradura = soloNumerosFono.length >= 4 ? soloNumerosFono.slice(-4) : '----';
+
+    // 2. CONSTRUCCIÓN DEL ENLACE DINÁMICO
+    const urlBaseVercel = "https://voucher-voucher5.vercel.app";
+    const linkVoucherPDF = `${urlBaseVercel}/?nombre=${encodeURIComponent(nombre)}&rut=${encodeURIComponent(rut)}&telefono=${encodeURIComponent(fono)}&direccion=${encodeURIComponent(direccion)}&checkin=${encodeURIComponent(checkinFmt)}&checkout=${encodeURIComponent(checkoutFmt)}&adultos=${adultos}&ninos=${ninos}&noches=${noches}&tarifa=${valorDiario}&feeAseo=${feeAseoVal}&canal=${encodeURIComponent(canalOrigen)}`;            
+
+    // 3. MENSAJE PARA WHATSAPP
+    const msg = `🏔️ *CONFIRMACIÓN DE RESERVA - REFUGIO ENTRE MONTAÑAS* 🏔️\n\n` +
+                `¡Hola ${nombre}! Te enviamos el detalle de tu reserva:\n\n` +
+                `📅 *Check-In:* ${checkinFmt} (15:00 hrs)\n` +
+                `📅 *Check-Out:* ${checkoutFmt} (12:00 hrs)\n` +
+                `🌙 *Estadía:* ${noches} noches\n` +
+                `🔑 *Clave Cerradura Digital:* ${claveCerradura}\n\n` +
+                `💰 *Monto Total:* $${totalBruto.toLocaleString('es-CL')} CLP\n` +
+                `✅ *Monto Abonado:* $${totalAbonado.toLocaleString('es-CL')} CLP\n` +
+                `📌 *Saldo Pendiente:* $${saldoPendiente.toLocaleString('es-CL')} CLP\n\n` +
+                `🌐 *Ver Ficha / Estado de Reserva Online:*\n${linkVoucherPDF}\n\n` +
+                `¡Te esperamos en Malalcahuello! 🌲❄️`;
+
+    navigator.clipboard.writeText(msg);
+
+    if (soloNumerosFono.length >= 8) {
+        const numCompleto = soloNumerosFono.startsWith('56') ? soloNumerosFono : `56${soloNumerosFono}`;
+        window.open(`https://wa.me/${numCompleto}?text=${encodeURIComponent(msg)}`, '_blank');
+    } else {
+        alert('¡Mensaje copiado al portapapeles con el enlace incluido!');
+    }
+}
 
         function actualizarUsuarioActivoUI() {
             const u = usuarios.find(usr => usr.id == usuarioActivoId) || usuarios[0];
@@ -2821,40 +2867,77 @@
             document.getElementById('dashNochesAno').innerText = `${nochesAno}n`;
             document.getElementById('dashBrutoAno').innerText = `$${brutoAno.toLocaleString('es-CL')}`;
         }
-    </script>
-</body>
-</html>
+    function enviarVoucherFormulario9() {
+    // 1. Rescate inteligente de inputs según los nombres/ids de tu panel
+    const getVal = (ids, defaultVal = '') => {
+        for (let id of ids) {
+            let el = document.getElementById(id);
+            if (el && el.value !== undefined && el.value !== '') return el.value;
+        }
+        return defaultVal;
+    };
 
-function enviarVoucherFormulario9() {
-    // 1. Obtener datos del formulario local
-    const checkin = document.getElementById('checkin') ? document.getElementById('checkin').value : '';
-    const checkout = document.getElementById('checkout') ? document.getElementById('checkout').value : '';
-    const tarifa = document.getElementById('valorDiarioFinal') ? document.getElementById('valorDiarioFinal').value : 0;
-    const feeAseo = document.getElementById('feeAseo') ? document.getElementById('feeAseo').value : 0;
-    const nombre = document.getElementById('nombre') ? document.getElementById('nombre').value : 'Huésped';
-    const rut = document.getElementById('rut') ? document.getElementById('rut').value : '';
-    const fono = document.getElementById('telefono') ? document.getElementById('telefono').value : '';
-    const direccion = document.getElementById('direccion') ? document.getElementById('direccion').value : '';
-    const adultos = document.getElementById('adultos') ? document.getElementById('adultos').value : 1;
-    const ninos = document.getElementById('ninos') ? document.getElementById('ninos').value : 0;
-    const canal = document.getElementById('canal') ? document.getElementById('canal').value : 'Directo';
+    // Datos del Huésped
+    const nombre = getVal(['nombre', 'nombreHuesped', 'huespedNombre', 'clienteNombre'], 'prueba');
+    const rut = getVal(['rut', 'rutPasaporte', 'rutHuesped'], '');
+    const fono = getVal(['telefono', 'telefonoWhatsapp', 'fono', 'celular'], '');
+    const direccion = getVal(['direccion', 'direccionCiudad', 'direccionHuesped'], '');
+
+    // Fechas (Soporta rango "13/10/2026 ➔ 14/10/2026" o campos individuales)
+    let checkin = getVal(['checkin', 'fechaCheckin', 'fecha_in']);
+    let checkout = getVal(['checkout', 'fechaCheckout', 'fecha_out']);
     
-    const noches = typeof reservaCalculada !== 'undefined' && reservaCalculada.noches ? reservaCalculada.noches : 1;
-    const totalBruto = (noches * parseFloat(tarifa || 0)) + parseFloat(feeAseo || 0);
-    const abono50 = totalBruto * 0.5;
+    // Si las fechas están juntas en el campo Período de Estadía
+    const periodo = getVal(['periodoEstadia', 'periodo', 'fechasReserva', 'rangoFechas']);
+    if ((!checkin || !checkout) && periodo) {
+        const partes = periodo.split(/➔|->|a|al|-/);
+        if (partes.length >= 2) {
+            checkin = partes[0].trim();
+            checkout = partes[1].trim();
+        }
+    }
+
+    // Pasajeros y Canal
+    const adultos = getVal(['adultos', 'cantAdultos', 'numAdultos'], '1');
+    const ninos = getVal(['ninos', 'cantNinos', 'numNinos'], '0');
+    const canal = getVal(['canal', 'canalOrigen', 'origenReserva'], 'Directo');
+
+    // Tarifas
+    const tarifa = getVal(['tarifaNoche', 'valorDiarioFinal', 'tarifa', 'precioNoche'], '0');
+    const feeAseo = getVal(['feeAseo', 'aseo', 'costoAseo'], '0');
+
+    // Noches
+    let noches = 1;
+    if (typeof reservaCalculada !== 'undefined' && reservaCalculada.noches) {
+        noches = reservaCalculada.noches;
+    } else if (checkin && checkout) {
+        // Intento de cálculo por diferencia
+        const parseFecha = (str) => {
+            const p = str.split('/');
+            return p.length === 3 ? new Date(p[2], p[1] - 1, p[0]) : new Date(str);
+        };
+        const d1 = parseFecha(checkin);
+        const d2 = parseFecha(checkout);
+        const diff = d2 - d1;
+        if (!isNaN(diff) && diff > 0) {
+            noches = Math.ceil(diff / (1000 * 60 * 60 * 24));
+        }
+    }
 
     if (!checkin || !checkout) {
-        alert('⚠️ Por favor selecciona primero las fechas de check-in y check-out.');
+        alert('⚠️ Por favor selecciona o ingresa el Período de Estadía (Check-in y Check-out) en el panel.');
         return;
     }
 
-    // 2. Link público al Voucher en Vercel
+    // 2. Link público oficial a Vercel con todos los datos
     const urlBaseVercel = "https://voucher-voucher5.vercel.app";
     const linkVoucherPDF = `${urlBaseVercel}/?nombre=${encodeURIComponent(nombre)}&rut=${encodeURIComponent(rut)}&telefono=${encodeURIComponent(fono)}&direccion=${encodeURIComponent(direccion)}&checkin=${encodeURIComponent(checkin)}&checkout=${encodeURIComponent(checkout)}&adultos=${adultos}&ninos=${ninos}&noches=${noches}&tarifa=${tarifa}&feeAseo=${feeAseo}&canal=${encodeURIComponent(canal)}`;
 
+    const totalBruto = (noches * parseFloat(tarifa || 0)) + parseFloat(feeAseo || 0);
+    const abono50 = totalBruto * 0.5;
     const fmt = (num) => '$' + Math.round(num).toLocaleString('es-CL');
 
-    // 3. Mensaje completo
+    // 3. Mensaje oficial para WhatsApp
     const mensaje = `🏔️ *CONFIRMACIÓN DE RESERVA - REFUGIO ENTRE MONTAÑAS* 🏔️\n\n` +
                     `Hola *${nombre}*, ¡tu reserva ha sido procesada con éxito!\n\n` +
                     `📌 *DETALLES DE LA ESTADÍA:*\n` +
@@ -2878,10 +2961,8 @@ function enviarVoucherFormulario9() {
                     `${linkVoucherPDF}\n\n` +
                     `¡Te esperamos en Malalcahuello! 🌲❄️`;
 
-    // 4. Copiar al portapapeles
     navigator.clipboard.writeText(mensaje);
 
-    // 5. Abrir WhatsApp automáticamente
     if (fono) {
         const numLimpio = fono.replace(/\D/g, '');
         const numCompleto = numLimpio.startsWith('56') ? numLimpio : `56${numLimpio}`;
@@ -2890,3 +2971,7 @@ function enviarVoucherFormulario9() {
         alert('¡Mensaje copiado al portapapeles!');
     }
 }
+
+</script>
+</body>
+</html>
