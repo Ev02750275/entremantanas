@@ -3285,6 +3285,7 @@ function poblarSelectReservasElectricas() {
 function calcularAnalisisAnual() {
             const anioSel = parseInt(document.getElementById('selectAnioAnalisis').value) || 2026;
             
+            // 1. Obtener totales de boletas Frontel del año
             let totalKwAnio = 0;
             let totalMontoAnio = 0;
             let costoKwhPromedio = typeof obtenerCostoPromedioKwh === 'function' ? obtenerCostoPromedioKwh() : 270;
@@ -3303,6 +3304,7 @@ function calcularAnalisisAnual() {
                 }
             });
 
+            // 2. Conteo de días desde las reservas de Firebase
             let diasArrendados = 0;
             let diasFamilia = 0;
 
@@ -3323,26 +3325,31 @@ function calcularAnalisisAnual() {
             let diasVacios = diasBisiesto - (diasArrendados + diasFamilia);
             if (diasVacios < 0) diasVacios = 0;
 
+            // 3. Parámetros de entrada (Consumo Fantasma y Tinajas)
             const kwhFantasmaDia = parseFloat(document.getElementById('inputFantasmaKwh').value) || 1;
             const kwhTinajaVerano = parseFloat(document.getElementById('inputTinajaVeranoKwh').value) || 35;
             const kwhTinajaInvierno = parseFloat(document.getElementById('inputTinajaInviernoKwh').value) || 120;
 
-            const costoFantasmaAnual = Math.round(diasVacios * kwhFantasmaDia * costoKwhPromedio);
+            // 4. CÁLCULO INDependiente y AISLADO del Consumo Fantasma
+            const kwhFantasmaAnualTotal = diasVacios * kwhFantasmaDia;
+            const costoFantasmaAnual = Math.round(kwhFantasmaAnualTotal * costoKwhPromedio);
             const costoFantasmaDiario = Math.round(kwhFantasmaDia * costoKwhPromedio);
 
-            const kwRestantes = Math.max(0, totalKwAnio - (diasVacios * kwhFantasmaDia));
+            // 5. El resto de la energía va para los días ocupados (Arrendados y Familia)
+            const kwRestantesOcupados = Math.max(0, totalKwAnio - kwhFantasmaAnualTotal);
             const totalDiasOcupados = diasArrendados + diasFamilia || 1;
-            const kwPorDiaOcupado = kwRestantes / totalDiasOcupados;
+            const kwPorDiaOcupado = kwRestantesOcupados / totalDiasOcupados;
 
-            const costoAnualArriendo = Math.round(diasArrendados * kwPorDiaOcupado * costoKwhPromedio);
             const costoDiarioArriendo = Math.round(kwPorDiaOcupado * costoKwhPromedio);
+            const costoAnualArriendo = Math.round(diasArrendados * costoDiarioArriendo);
 
-            const costoAnualFamilia = Math.round(diasFamilia * kwPorDiaOcupado * costoKwhPromedio);
             const costoDiarioFamilia = costoDiarioArriendo;
+            const costoAnualFamilia = Math.round(diasFamilia * costoDiarioFamilia);
 
             const costoTinajaVeranoAnual = Math.round(kwhTinajaVerano * costoKwhPromedio);
             const costoTinajaInviernoAnual = Math.round(kwhTinajaInvierno * costoKwhPromedio);
 
+            // 6. Inyectar en pantalla
             document.getElementById('resKwConsumidos').innerText = `${totalKwAnio.toLocaleString('es-CL')} kWh`;
             document.getElementById('resMontoPagado').innerText = `$${totalMontoAnio.toLocaleString('es-CL')}`;
             
@@ -3361,7 +3368,7 @@ function calcularAnalisisAnual() {
 
             document.getElementById('costoAnualTinajaVerano').innerText = `$${costoTinajaVeranoAnual.toLocaleString('es-CL')}`;
             document.getElementById('costoAnualTinajaInvierno').innerText = `$${costoTinajaInviernoAnual.toLocaleString('es-CL')}`;
-        }
-    </script>
+        }    
+</script>
 </body>
 </html>
