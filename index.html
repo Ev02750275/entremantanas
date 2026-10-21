@@ -939,7 +939,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE GESTIÓN ELÉCTRICA AÑADIDO ABAJO -->
+    <!-- MODAL DE GESTIÓN ELÉCTRICA -->
     <div id="modalControlElectrico" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-5xl w-full p-6 space-y-6 max-h-[90vh] overflow-y-auto">
             
@@ -1016,16 +1016,16 @@
                         </thead>
                         <tbody id="tablaBoletas" class="divide-y divide-slate-100">
                             <tr class="hover:bg-slate-50">
-    <td class="p-2.5 font-semibold text-slate-800">Noviembre - Diciembre 2025</td>
-    <td class="p-2.5">$92.500</td>
-    <td class="p-2.5">340 kWh</td>
-    <td class="p-2.5 font-bold text-amber-800" data-costo="272">$272 / kWh</td>
-    <td class="p-2.5 text-center">
-        <button type="button" onclick="this.closest('tr').remove(); guardarGestionElectricaEnFirestore(); calcularPromedioGeneral(); calcularAnalisisAnual();" class="bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-600 px-2.5 py-1 rounded-lg transition shadow-sm" title="Eliminar boleta">
-            <i class="fa-solid fa-trash"></i>
-        </button>
-    </td>
-</tr>
+                                <td class="p-2.5 font-semibold text-slate-800">Noviembre - Diciembre 2025</td>
+                                <td class="p-2.5">$92.500</td>
+                                <td class="p-2.5">340 kWh</td>
+                                <td class="p-2.5 font-bold text-amber-800" data-costo="272">$272 / kWh</td>
+                                <td class="p-2.5 text-center">
+                                    <button type="button" onclick="this.closest('tr').remove(); guardarGestionElectricaEnFirestore(); calcularPromedioGeneral(); calcularAnalisisAnual();" class="bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-600 px-2.5 py-1 rounded-lg transition shadow-sm" title="Eliminar boleta">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -1040,8 +1040,8 @@
                     <div>
                         <label class="block text-[11px] font-bold text-slate-700 mb-1">Seleccionar Reserva</label>
                         <select id="selectReserva" onchange="alCambiarReservaElectrica()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium focus:outline-none focus:border-amber-600">
-    <option value="">-- Selecciona una reserva real --</option>
-</select>
+                            <option value="">-- Selecciona una reserva real --</option>
+                        </select>
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-700 mb-1">Medición Inicial (kWh)</label>
@@ -1069,7 +1069,8 @@
                     </div>
                 </div>
             </div>
-<!-- 3. Análisis Anual y Consumo Eléctrico -->
+
+            <!-- 3. Análisis Anual y Consumo Eléctrico -->
             <div class="space-y-4 pt-4 border-t border-slate-200 mt-4">
                 <div class="flex items-center justify-between">
                     <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
@@ -1092,9 +1093,15 @@
                         <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total kW Consumidos (Año Seleccionado)</div>
                         <div class="text-2xl font-extrabold text-slate-800" id="resKwConsumidos">0 kWh</div>
                     </div>
-                    <div class="bg-amber-50/60 p-4 rounded-xl border border-amber-200 text-center shadow-sm">
-                        <div class="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1">Total $ Pagado (Boletas Frontel Anual)</div>
-                        <div class="text-2xl font-extrabold text-amber-900" id="resMontoPagado">$0</div>
+                    <div class="bg-amber-50/60 p-4 rounded-xl border border-amber-200 text-center shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1">Total $ Pagado (Boletas Frontel Anual)</div>
+                            <div class="text-2xl font-extrabold text-amber-900" id="resMontoPagado">$0</div>
+                        </div>
+                        <div class="mt-2 pt-2 border-t border-amber-200/60 flex items-center justify-between text-xs">
+                            <span class="font-semibold text-amber-900">Valor a prorratear:</span>
+                            <span class="font-black text-amber-950" id="resValorProrratear">$0 / día</span>
+                        </div>
                     </div>
                 </div>
 
@@ -1114,12 +1121,13 @@
                     </div>
                 </div>
 
-                <!-- Tabla Detallada de Costos (Columnas Diario y Anual) -->
+                <!-- Tabla Detallada de Costos con Inputs kWh/día -->
                 <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
                     <table class="w-full text-xs text-left border-collapse">
                         <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                             <tr>
                                 <th class="p-3">Concepto Eléctrico</th>
+                                <th class="p-3 text-center">Consumo Promedio (kWh / día)</th>
                                 <th class="p-3 text-right">Diario ($ / día)</th>
                                 <th class="p-3 text-right">Anual ($ / año)</th>
                             </tr>
@@ -1127,26 +1135,35 @@
                         <tbody class="divide-y divide-slate-100 text-slate-700">
                             <tr>
                                 <td class="p-3 font-medium">Costo Días Arrendados (Real)</td>
+                                <td class="p-3 text-center">
+                                    <input type="number" id="inputKwhArriendo" value="12" step="0.5" oninput="calcularAnalisisAnual()" class="w-24 bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs text-center font-bold text-blue-700 focus:outline-none focus:border-amber-600" title="Ingresa el consumo promedio diario en kWh"> kWh/día
+                                </td>
                                 <td class="p-3 text-right font-semibold text-blue-700" id="costoDiarioArriendo">$0 / día</td>
                                 <td class="p-3 text-right font-bold text-blue-800" id="costoAnualArriendo">$0</td>
                             </tr>
                             <tr>
                                 <td class="p-3 font-medium">Costo Días Uso Familia</td>
+                                <td class="p-3 text-center">
+                                    <input type="number" id="inputKwhFamilia" value="12" step="0.5" oninput="calcularAnalisisAnual()" class="w-24 bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs text-center font-bold text-amber-700 focus:outline-none focus:border-amber-600" title="Ingresa el consumo promedio diario en kWh"> kWh/día
+                                </td>
                                 <td class="p-3 text-right font-semibold text-amber-700" id="costoDiarioFamilia">$0 / día</td>
                                 <td class="p-3 text-right font-bold text-amber-900" id="costoAnualFamilia">$0</td>
                             </tr>
                             <tr>
                                 <td class="p-3 font-medium">Costo Consumo Fantasma (Días Vacíos)</td>
+                                <td class="p-3 text-center text-slate-400 text-[11px]">(Usa parámetro inferior)</td>
                                 <td class="p-3 text-right font-semibold text-slate-600" id="costoDiarioFantasma">$0 / día</td>
                                 <td class="p-3 text-right font-bold text-slate-700" id="costoAnualFantasma">$0</td>
                             </tr>
                             <tr>
                                 <td class="p-3 font-medium">Llenado Tinaja (Verano)</td>
+                                <td class="p-3 text-center text-slate-400 text-[11px]">-</td>
                                 <td class="p-3 text-right text-slate-400">-</td>
                                 <td class="p-3 text-right font-bold text-emerald-700" id="costoAnualTinajaVerano">$0</td>
                             </tr>
                             <tr>
                                 <td class="p-3 font-medium">Llenado Tinaja (Invierno)</td>
+                                <td class="p-3 text-center text-slate-400 text-[11px]">-</td>
                                 <td class="p-3 text-right text-slate-400">-</td>
                                 <td class="p-3 text-right font-bold text-indigo-700" id="costoAnualTinajaInvierno">$0</td>
                             </tr>
@@ -1173,6 +1190,7 @@
                     </div>
                 </div>
             </div>
+
             <!-- Pie del Modal con Botón de Cierre -->
             <div class="flex justify-end pt-3 border-t border-slate-200">
                 <button type="button" onclick="toggleModal('modalControlElectrico')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-1.5 px-4 rounded-xl text-xs transition">
@@ -1248,7 +1266,6 @@
             sincronizarNavegador('airbnb', false);
             sincronizarNavegador('booking', false);
             
-            // Inicializar cálculos eléctricos
             calcularPromedioGeneral();
         });
 
@@ -1258,7 +1275,7 @@
                 actualizarEstadosAutomaticos();
                 poblarFiltroAnos();
                 poblarFiltrosKPIAnos();
-		poblarSelectReservasElectricas();
+		        poblarSelectReservasElectricas();
                 renderCalendario();
                 renderTabla();
                 actualizarResumenGlobal();
@@ -1269,7 +1286,7 @@
                 if (usuarios.length === 0) {
                     db.collection('usuarios').add({ nombre: "Eduardo Vicencio", email: "e.vicencio@evarq.cl" });
                 }
-                actualizarUsuarioActivoUI();
+                
             }, err => console.error("Error sincronizando usuarios:", err));
 
             db.collection('configuracion').doc('costosCasa').onSnapshot(doc => {
@@ -1280,7 +1297,15 @@
                 }
             });
 
-db.collection('configuracion').doc('gestionElectrica').onSnapshot(doc => {
+            db.collection('configuracion').doc('retiros').onSnapshot(doc => {
+                if (doc.exists) {
+                    retirosConfig = doc.data();
+                } else {
+                    db.collection('configuracion').doc('retiros').set(retirosConfig);
+                }
+            });
+
+            db.collection('configuracion').doc('gestionElectrica').onSnapshot(doc => {
                 if (doc.exists) {
                     const data = doc.data();
                     if (data.boletas && Array.isArray(data.boletas)) {
@@ -1294,9 +1319,10 @@ db.collection('configuracion').doc('gestionElectrica').onSnapshot(doc => {
                                 <td class="p-2.5">$${b.monto.toLocaleString('es-CL')}</td>
                                 <td class="p-2.5">${b.kwh.toLocaleString('es-CL')} kWh</td>
                                 <td class="p-2.5 font-bold text-amber-800" data-costo="${b.costoUnitario}">$${b.costoUnitario.toLocaleString('es-CL')} / kWh</td>
-                                <td class="p-2.5 text-center space-x-1">
-                                    <button type="button" onclick="prepararEditarBoleta(this)" class="text-sky-600 hover:text-sky-800 px-1.5 py-1 transition" title="Editar boleta"><i class="fa-solid fa-pen"></i></button>
-                                    <button type="button" onclick="this.closest('tr').remove(); guardarGestionElectricaEnFirestore(); calcularPromedioGeneral(); calcularAnalisisAnual();" class="text-rose-500 hover:text-rose-700 px-1.5 py-1 transition" title="Eliminar boleta"><i class="fa-solid fa-trash"></i></button>
+                                <td class="p-2.5 text-center">
+                                    <button type="button" onclick="this.closest('tr').remove(); guardarGestionElectricaEnFirestore(); calcularPromedioGeneral(); calcularAnalisisAnual();" class="bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-600 px-2.5 py-1 rounded-lg transition shadow-sm" title="Eliminar boleta">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
                                 </td>
                             `;
                             tbody.appendChild(tr);
@@ -1305,16 +1331,11 @@ db.collection('configuracion').doc('gestionElectrica').onSnapshot(doc => {
                     if (data.fantasmaKwh !== undefined) document.getElementById('inputFantasmaKwh').value = data.fantasmaKwh;
                     if (data.tinajaVeranoKwh !== undefined) document.getElementById('inputTinajaVeranoKwh').value = data.tinajaVeranoKwh;
                     if (data.tinajaInviernoKwh !== undefined) document.getElementById('inputTinajaInviernoKwh').value = data.tinajaInviernoKwh;
+                    if (data.kwhArriendo !== undefined) document.getElementById('inputKwhArriendo').value = data.kwhArriendo;
+                    if (data.kwhFamilia !== undefined) document.getElementById('inputKwhFamilia').value = data.kwhFamilia;
+                    
                     calcularPromedioGeneral();
                     calcularAnalisisAnual();
-                }
-            });
-
-            db.collection('configuracion').doc('retiros').onSnapshot(doc => {
-                if (doc.exists) {
-                    retirosConfig = doc.data();
-                } else {
-                    db.collection('configuracion').doc('retiros').set(retirosConfig);
                 }
             });
         }
@@ -2480,107 +2501,103 @@ db.collection('configuracion').doc('gestionElectrica').onSnapshot(doc => {
             });
         }
 
-        // GUARDADO EN FIREBASE - VERSIÓN CORREGIDA Y PERSISTENTE
-document.getElementById('reservaForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+        document.getElementById('reservaForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-    const checkinVal = document.getElementById('checkin').value;
-    const checkoutVal = document.getElementById('checkout').value;
-    const valorDiarioVal = parseFloat(document.getElementById('valorDiarioFinal').value);
-    const feeAseoVal = parseFloat(document.getElementById('feeAseo').value) || 0;
+            const checkinVal = document.getElementById('checkin').value;
+            const checkoutVal = document.getElementById('checkout').value;
+            const valorDiarioVal = parseFloat(document.getElementById('valorDiarioFinal').value);
+            const feeAseoVal = parseFloat(document.getElementById('feeAseo').value) || 0;
 
-    if (!checkinVal || !checkoutVal) {
-        return alert('⚠️ Campo obligatorio: Por favor selecciona las fechas de Check-In y Check-Out.');
-    }
+            if (!checkinVal || !checkoutVal) {
+                return alert('⚠️ Campo obligatorio: Por favor selecciona las fechas de Check-In y Check-Out.');
+            }
 
-    if (isNaN(valorDiarioVal) || valorDiarioVal <= 0) {
-        return alert('⚠️ Campo obligatorio: Debe ingresar un Valor Diario válido mayor a $0.');
-    }
+            if (isNaN(valorDiarioVal) || valorDiarioVal <= 0) {
+                return alert('⚠️ Campo obligatorio: Debe ingresar un Valor Diario válido mayor a $0.');
+            }
 
-    const idExistente = document.getElementById('reservaId').value;
-    
-    // Validar sobreposición contra la base de datos persistente
-    if (verificarSobreposicionFechas(checkinVal, checkoutVal, idExistente)) {
-        return alert('⚠️ ERROR DE DISPONIBILIDAD: Ya existe una reserva guardada previamente en la base de datos para esas fechas.');
-    }
+            const idExistente = document.getElementById('reservaId').value;
+            
+            if (verificarSobreposicionFechas(checkinVal, checkoutVal, idExistente)) {
+                return alert('⚠️ ERROR DE DISPONIBILIDAD: Ya existe una reserva guardada previamente en la base de datos para esas fechas.');
+            }
 
-    const estadoCalculado = calcularEstadoAutomatico(checkinVal, checkoutVal, 'Auto');
+            const estadoCalculado = calcularEstadoAutomatico(checkinVal, checkoutVal, 'Auto');
 
-    const temporadaElegida = document.getElementById('selectTemporadaReserva').value;
-    const isVerano = (temporadaElegida === 'Verano');
-    const diarioVeranoRef = calcularSumaDiariaTemporada(costosCasa.verano);
-    const diarioInviernoRef = calcularSumaDiariaTemporada(costosCasa.invierno);
-    const diarioVigente = isVerano ? diarioVeranoRef : diarioInviernoRef;
+            const temporadaElegida = document.getElementById('selectTemporadaReserva').value;
+            const isVerano = (temporadaElegida === 'Verano');
+            const diarioVeranoRef = calcularSumaDiariaTemporada(costosCasa.verano);
+            const diarioInviernoRef = calcularSumaDiariaTemporada(costosCasa.invierno);
+            const diarioVigente = isVerano ? diarioVeranoRef : diarioInviernoRef;
 
-    const canalInput = String(document.getElementById('canal').value || 'Directo');
-    const esFamilia = (canalInput === 'Familia');
+            const canalInput = String(document.getElementById('canal').value || 'Directo');
+            const esFamilia = (canalInput === 'Familia');
 
-    const noches = Number(reservaCalculada.noches || 1);
-    
-    const costoDiarioAplicado = esFamilia ? 0 : (noches * diarioVigente);
-    const costoFijoAplicado = esFamilia ? 0 : ((costosCasa.aseo || 0) + (costosCasa.regalo || 0));
+            const noches = Number(reservaCalculada.noches || 1);
+            
+            const costoDiarioAplicado = esFamilia ? 0 : (noches * diarioVigente);
+            const costoFijoAplicado = esFamilia ? 0 : ((costosCasa.aseo || 0) + (costosCasa.regalo || 0));
 
-    const codigoOTAInput = String(document.getElementById('codigoOTA').value || '').trim();
-    
-    let nombreInput = String(document.getElementById('nombre').value || '').trim();
-    if (!nombreInput) {
-        if (esFamilia) nombreInput = 'reserva familia';
-        else if (codigoOTAInput) nombreInput = `Reserva ${canalInput} (${codigoOTAInput})`;
-        else nombreInput = 'Huésped Pendiente';
-    }
+            const codigoOTAInput = String(document.getElementById('codigoOTA').value || '').trim();
+            
+            let nombreInput = String(document.getElementById('nombre').value || '').trim();
+            if (!nombreInput) {
+                if (esFamilia) nombreInput = 'reserva familia';
+                else if (codigoOTAInput) nombreInput = `Reserva ${canalInput} (${codigoOTAInput})`;
+                else nombreInput = 'Huésped Pendiente';
+            }
 
-    const nuevaReserva = {
-        codigoOTA: codigoOTAInput,
-        estadoReserva: String(estadoCalculado || 'Reserva'),
-        nombre: nombreInput,
-        rut: String(document.getElementById('rut').value || '').trim() || 'Pendiente',
-        email: String(document.getElementById('email').value || '').trim() || 'Sin Email',
-        telefono: String(document.getElementById('telefono').value || '').trim() || 'Sin Teléfono',
-        direccion: String(document.getElementById('direccion').value || '').trim() || 'Sin Dirección',
-        adultos: Number(document.getElementById('adultos').value || 1),
-        ninos: Number(document.getElementById('ninos').value || 0),
-        temporadaReserva: temporadaElegida,
-        reqPerro: Boolean(document.getElementById('reqPerro').checked),
-        reqCuna: Boolean(document.getElementById('reqCuna').checked),
-        reqProtectorEstufa: Boolean(document.getElementById('reqProtectorEstufa').checked),
-        costoBencinaGenerador: Number(document.getElementById('costoBencinaGenerador').value || 0),
-        costoImprevistosReserva: Number(document.getElementById('costoImprevistosReserva').value || 0),
-        checkin: String(checkinVal || ''),
-        checkout: String(checkoutVal || ''),
-        valorDiarioFinal: valorDiarioVal,
-        feeAseo: feeAseoVal,
-        costoPlataforma: Number(document.getElementById('costoPlataforma').value || 0),
-        canal: canalInput,
-        tipoDoc: String(document.getElementById('tipoDoc').value || 'Sin Documento'),
-        anotaciones: String(document.getElementById('anotaciones').value || ''),
-        abonos: abonosTemp.map(a => ({ fecha: String(a.fecha), monto: Number(a.monto) })),
-        dias: Number(reservaCalculada.dias || 1),
-        noches: noches,
-        totalBruto: Number(reservaCalculada.totalBruto || 0),
-        netoCaban: Number(reservaCalculada.netoCaban || 0),
-        netoImpuesto: Number(reservaCalculada.netoImpuesto || 0),
-        iva: Number(reservaCalculada.iva || 0),
-        totalAbonado: Number(reservaCalculada.totalAbonado || 0),
-        saldoPendiente: Number(reservaCalculada.saldoPendiente || 0),
-        costoDiarioAplicado: costoDiarioAplicado,
-        costoFijoAplicado: costoFijoAplicado
-    };
+            const nuevaReserva = {
+                codigoOTA: codigoOTAInput,
+                estadoReserva: String(estadoCalculado || 'Reserva'),
+                nombre: nombreInput,
+                rut: String(document.getElementById('rut').value || '').trim() || 'Pendiente',
+                email: String(document.getElementById('email').value || '').trim() || 'Sin Email',
+                telefono: String(document.getElementById('telefono').value || '').trim() || 'Sin Teléfono',
+                direccion: String(document.getElementById('direccion').value || '').trim() || 'Sin Dirección',
+                adultos: Number(document.getElementById('adultos').value || 1),
+                ninos: Number(document.getElementById('ninos').value || 0),
+                temporadaReserva: temporadaElegida,
+                reqPerro: Boolean(document.getElementById('reqPerro').checked),
+                reqCuna: Boolean(document.getElementById('reqCuna').checked),
+                reqProtectorEstufa: Boolean(document.getElementById('reqProtectorEstufa').checked),
+                costoBencinaGenerador: Number(document.getElementById('costoBencinaGenerador').value || 0),
+                costoImprevistosReserva: Number(document.getElementById('costoImprevistosReserva').value || 0),
+                checkin: String(checkinVal || ''),
+                checkout: String(checkoutVal || ''),
+                valorDiarioFinal: valorDiarioVal,
+                feeAseo: feeAseoVal,
+                costoPlataforma: Number(document.getElementById('costoPlataforma').value || 0),
+                canal: canalInput,
+                tipoDoc: String(document.getElementById('tipoDoc').value || 'Sin Documento'),
+                anotaciones: String(document.getElementById('anotaciones').value || ''),
+                abonos: abonosTemp.map(a => ({ fecha: String(a.fecha), monto: Number(a.monto) })),
+                dias: Number(reservaCalculada.dias || 1),
+                noches: noches,
+                totalBruto: Number(reservaCalculada.totalBruto || 0),
+                netoCaban: Number(reservaCalculada.netoCaban || 0),
+                netoImpuesto: Number(reservaCalculada.netoImpuesto || 0),
+                iva: Number(reservaCalculada.iva || 0),
+                totalAbonado: Number(reservaCalculada.totalAbonado || 0),
+                saldoPendiente: Number(reservaCalculada.saldoPendiente || 0),
+                costoDiarioAplicado: costoDiarioAplicado,
+                costoFijoAplicado: costoFijoAplicado
+            };
 
-    try {
-        if (idExistente) {
-            // Actualizar documento existente en Cloud Firestore
-            await db.collection('reservas').doc(idExistente).update(nuevaReserva);
-        } else {
-            // Crear nuevo documento persistente en Cloud Firestore
-            await db.collection('reservas').add(nuevaReserva);
-        }
+            try {
+                if (idExistente) {
+                    await db.collection('reservas').doc(idExistente).update(nuevaReserva);
+                } else {
+                    await db.collection('reservas').add(nuevaReserva);
+                }
 
-        alert('¡Reserva guardada y sincronizada con éxito en la base de datos!');
-        limpiarFormulario();
-    } catch (err) {
-        alert("❌ Error al guardar en la base de datos: " + err.message);
-    }
-});
+                alert('¡Reserva guardada y sincronizada con éxito en la base de datos!');
+                limpiarFormulario();
+            } catch (err) {
+                alert("❌ Error al guardar en la base de datos: " + err.message);
+            }
+        });
 
         function enviarConfirmacionWhatsApp() {
             let inVal = document.getElementById('checkin').value;
@@ -3118,181 +3135,80 @@ document.getElementById('reservaForm').addEventListener('submit', async (e) => {
             document.getElementById('dashBrutoAno').innerText = `$${brutoAno.toLocaleString('es-CL')}`;
         }
 
-        function enviarVoucherFormulario9() {
-            const getVal = (ids, defaultVal = '') => {
-                for (let id of ids) {
-                    let el = document.getElementById(id);
-                    if (el && el.value !== undefined && el.value !== '') return el.value;
-                }
-                return defaultVal;
-            };
+        // --- GESTIÓN ELÉCTRICA ---
+        let indiceBoletaEditando = null;
 
-            const nombre = getVal(['nombre', 'nombreHuesped', 'huespedNombre', 'clienteNombre'], 'prueba');
-            const rut = getVal(['rut', 'rutPasaporte', 'rutHuesped'], '');
-            const fono = getVal(['telefono', 'telefonoWhatsapp', 'fono', 'celular'], '');
-            const direccion = getVal(['direccion', 'direccionCiudad', 'direccionHuesped'], '');
+        function agregarBoleta() {
+            const bimestre = document.getElementById('selectBimestre').value;
+            const anio = document.getElementById('selectAnio').value;
+            const monto = parseFloat(document.getElementById('inputMonto').value);
+            const kwh = parseFloat(document.getElementById('inputKwh').value);
 
-            let checkin = getVal(['checkin', 'fechaCheckin', 'fecha_in']);
-            let checkout = getVal(['checkout', 'fechaCheckout', 'fecha_out']);
-            
-            const periodo = getVal(['periodoEstadia', 'periodo', 'fechasReserva', 'rangoFechas']);
-            if ((!checkin || !checkout) && periodo) {
-                const partes = periodo.split(/➔|->|a|al|-/);
-                if (partes.length >= 2) {
-                    checkin = partes[0].trim();
-                    checkout = partes[1].trim();
-                }
-            }
-
-            const adultos = getVal(['adultos', 'cantAdultos', 'numAdultos'], '1');
-            const ninos = getVal(['ninos', 'cantNinos', 'numNinos'], '0');
-            const canal = getVal(['canal', 'canalOrigen', 'origenReserva'], 'Directo');
-
-            const tarifa = getVal(['tarifaNoche', 'valorDiarioFinal', 'tarifa', 'precioNoche'], '0');
-            const feeAseo = getVal(['feeAseo', 'aseo', 'costoAseo'], '0');
-
-            let noches = 1;
-            if (typeof reservaCalculada !== 'undefined' && reservaCalculada.noches) {
-                noches = reservaCalculada.noches;
-            } else if (checkin && checkout) {
-                const parseFecha = (str) => {
-                    const p = str.split('/');
-                    return p.length === 3 ? new Date(p[2], p[1] - 1, p[0]) : new Date(str);
-                };
-                const d1 = parseFecha(checkin);
-                const d2 = parseFecha(checkout);
-                const diff = d2 - d1;
-                if (!isNaN(diff) && diff > 0) {
-                    noches = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                }
-            }
-
-            if (!checkin || !checkout) {
-                alert('⚠️ Por favor selecciona o ingresa el Período de Estadía (Check-in y Check-out) en el panel.');
+            if (isNaN(monto) || isNaN(kwh) || kwh <= 0) {
+                alert('⚠️ Por favor ingresa un monto y un consumo en kWh válidos.');
                 return;
             }
 
-            const urlBaseVercel = "https://voucher-voucher5.vercel.app";
-            const linkVoucherPDF = `${urlBaseVercel}/?nombre=${encodeURIComponent(nombre)}&rut=${encodeURIComponent(rut)}&telefono=${encodeURIComponent(fono)}&direccion=${encodeURIComponent(direccion)}&checkin=${encodeURIComponent(checkin)}&checkout=${encodeURIComponent(checkout)}&adultos=${adultos}&ninos=${ninos}&noches=${noches}&tarifa=${tarifa}&feeAseo=${feeAseo}&canal=${encodeURIComponent(canal)}`;
+            const costoUnitario = Math.round(monto / kwh);
+            const periodoTexto = `${bimestre} ${anio}`;
+            const tbody = document.getElementById('tablaBoletas');
 
-            const totalBruto = (noches * parseFloat(tarifa || 0)) + parseFloat(feeAseo || 0);
-            const abono50 = totalBruto * 0.5;
-            const fmt = (num) => '$' + Math.round(num).toLocaleString('es-CL');
-
-            const mensaje = `🏔️ *CONFIRMACIÓN DE RESERVA - REFUGIO ENTRE MONTAÑAS* 🏔️\n\n` +
-                            `Hola *${nombre}*, ¡tu reserva ha sido procesada con éxito!\n\n` +
-                            `📌 *DETALLES DE LA ESTADÍA:*\n` +
-                            `• *Check-in:* ${checkin} (desde las 15:00 hrs)\n` +
-                            `• *Check-out:* ${checkout} (hasta las 12:00 hrs)\n` +
-                            `• *Noches:* ${noches}\n` +
-                            `• *Huéspedes:* ${adultos} Adultos / ${ninos} Niños\n\n` +
-                            `💳 *RESUMEN DE PAGO:*\n` +
-                            `• *Valor Total Estadía:* ${fmt(totalBruto)}\n` +
-                            `• *Monto Reserva (50%):* ${fmt(abono50)}\n` +
-                            `• *Saldo Pendiente:* ${fmt(abono50)} (se cancela al momento del Check-in)\n\n` +
-                            `🏦 *DATOS DE TRANSFERENCIA:* \n` +
-                            `• *Titular:* Jardín Norte SPA\n` +
-                            `• *RUT:* 76.714.914-k\n` +
-                            `• *Banco:* Banco Itaú\n` +
-                            `• *Tipo de Cuenta:* Cuenta Corriente\n` +
-                            `• *N° Cuenta:* 0214623372\n` +
-                            `• *Correo:* mcverac@uc.cl\n\n` +
-                            `📄 *COMPROBANTE Y POLÍTICAS:* \n` +
-                            `Puedes revisar y descargar tu comprobante oficial (Formulario 9) en el siguiente enlace:\n` +
-                            `${linkVoucherPDF}\n\n` +
-                            `¡Te esperamos en Malalcahuello! 🌲❄️`;
-
-            navigator.clipboard.writeText(mensaje);
-
-            if (fono) {
-                const numLimpio = fono.replace(/\D/g, '');
-                const numCompleto = numLimpio.startsWith('56') ? numLimpio : `56${numLimpio}`;
-                window.open(`https://wa.me/${numCompleto}?text=${encodeURIComponent(mensaje)}`, '_blank');
+            if (indiceBoletaEditando !== null) {
+                const fila = tbody.rows[indiceBoletaEditando];
+                if (fila) {
+                    fila.cells[0].innerText = periodoTexto;
+                    fila.cells[1].innerText = `$${monto.toLocaleString('es-CL')}`;
+                    fila.cells[2].innerText = `${kwh.toLocaleString('es-CL')} kWh`;
+                    fila.cells[3].innerHTML = `$${costoUnitario.toLocaleString('es-CL')} / kWh`;
+                    fila.cells[3].setAttribute('data-costo', costoUnitario);
+                }
+                indiceBoletaEditando = null;
             } else {
-                alert('¡Mensaje copiado al portapapeles!');
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50';
+                tr.innerHTML = `
+                    <td class="p-2.5 font-semibold text-slate-800">${periodoTexto}</td>
+                    <td class="p-2.5">$${monto.toLocaleString('es-CL')}</td>
+                    <td class="p-2.5">${kwh.toLocaleString('es-CL')} kWh</td>
+                    <td class="p-2.5 font-bold text-amber-800" data-costo="${costoUnitario}">$${costoUnitario.toLocaleString('es-CL')} / kWh</td>
+                    <td class="p-2.5 text-center">
+                        <button type="button" onclick="this.closest('tr').remove(); guardarGestionElectricaEnFirestore(); calcularPromedioGeneral(); calcularAnalisisAnual();" class="bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-600 px-2.5 py-1 rounded-lg transition shadow-sm" title="Eliminar boleta">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
             }
+
+            document.getElementById('inputMonto').value = '';
+            document.getElementById('inputKwh').value = '';
+
+            calcularPromedioGeneral();
+            calcularEstadiaElectrica();
+            calcularAnalisisAnual();
+            guardarGestionElectricaEnFirestore();
         }
 
-        // --- 1. GESTIÓN ELÉCTRICA: AGREGAR, EDITAR Y ELIMINAR BOLETAS ---
-let indiceBoletaEditando = null;
+        function prepararEditarBoleta(button) {
+            const tr = button.closest('tr');
+            const tbody = document.getElementById('tablaBoletas');
+            indiceBoletaEditando = Array.from(tbody.rows).indexOf(tr);
 
-function agregarBoleta() {
-    const bimestre = document.getElementById('selectBimestre').value;
-    const anio = document.getElementById('selectAnio').value;
-    const monto = parseFloat(document.getElementById('inputMonto').value);
-    const kwh = parseFloat(document.getElementById('inputKwh').value);
+            const periodoTexto = tr.cells[0].innerText;
+            const montoStr = tr.cells[1].innerText.replace('$', '').replace(/\./g, '');
+            const kwhStr = tr.cells[2].innerText.replace(' kWh', '').replace(/\./g, '');
 
-    if (isNaN(monto) || isNaN(kwh) || kwh <= 0) {
-        alert('⚠️ Por favor ingresa un monto y un consumo en kWh válidos.');
-        return;
-    }
+            const partesPeriodo = periodoTexto.split(' 20');
+            if (partesPeriodo.length === 2) {
+                document.getElementById('selectBimestre').value = partesPeriodo[0].trim();
+                document.getElementById('selectAnio').value = '20' + partesPeriodo[1].trim();
+            }
 
-    const costoUnitario = Math.round(monto / kwh);
-    const periodoTexto = `${bimestre} ${anio}`;
-    const tbody = document.getElementById('tablaBoletas');
+            document.getElementById('inputMonto').value = montoStr;
+            document.getElementById('inputKwh').value = kwhStr;
 
-    if (indiceBoletaEditando !== null) {
-        // Modo Edición: Actualizar la fila existente
-        const fila = tbody.rows[indiceBoletaEditando];
-        if (fila) {
-            fila.cells[0].innerText = periodoTexto;
-            fila.cells[1].innerText = `$${monto.toLocaleString('es-CL')}`;
-            fila.cells[2].innerText = `${kwh.toLocaleString('es-CL')} kWh`;
-            fila.cells[3].innerHTML = `$${costoUnitario.toLocaleString('es-CL')} / kWh`;
-            fila.cells[3].setAttribute('data-costo', costoUnitario);
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
-        indiceBoletaEditando = null;
-        // Restaurar texto del botón principal si se desea
-    } else {
-        // Modo Creación: Nueva fila
-        const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-50';
-        tr.innerHTML = `
-            <td class="p-2.5 font-semibold text-slate-800">${periodoTexto}</td>
-            <td class="p-2.5">$${monto.toLocaleString('es-CL')}</td>
-            <td class="p-2.5">${kwh.toLocaleString('es-CL')} kWh</td>
-            <td class="p-2.5 font-bold text-amber-800" data-costo="${costoUnitario}">$${costoUnitario.toLocaleString('es-CL')} / kWh</td>
-            <td class="p-2.5 text-center space-x-1">
-                <button type="button" onclick="prepararEditarBoleta(this)" class="text-sky-600 hover:text-sky-800 px-1.5 py-1 transition" title="Editar boleta">
-                    <i class="fa-solid fa-pen"></i>
-                </button>
-                <button type="button" onclick="this.closest('tr').remove(); guardarGestionElectricaEnFirestore(); calcularPromedioGeneral(); calcularAnalisisAnual();" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2.5 py-1 rounded-lg transition" title="Eliminar boleta">
-        <i class="fa-solid fa-trash"></i>
-    </button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    }
-
-    document.getElementById('inputMonto').value = '';
-    document.getElementById('inputKwh').value = '';
-
-    calcularPromedioGeneral();
-    calcularEstadiaElectrica();
-    calcularAnalisisAnual();
-}
-
-function prepararEditarBoleta(button) {
-    const tr = button.closest('tr');
-    const tbody = document.getElementById('tablaBoletas');
-    indiceBoletaEditando = Array.from(tbody.rows).indexOf(tr);
-
-    const periodoTexto = tr.cells[0].innerText;
-    const montoStr = tr.cells[1].innerText.replace('$', '').replace(/\./g, '');
-    const kwhStr = tr.cells[2].innerText.replace(' kWh', '').replace(/\./g, '');
-
-    // Separar bimestre y año del texto (Ej: "Enero - Febrero 2026")
-    const partesPeriodo = periodoTexto.split(' 20');
-    if (partesPeriodo.length === 2) {
-        document.getElementById('selectBimestre').value = partesPeriodo[0].trim();
-        document.getElementById('selectAnio').value = '20' + partesPeriodo[1].trim();
-    }
-
-    document.getElementById('inputMonto').value = montoStr;
-    document.getElementById('inputKwh').value = kwhStr;
-
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-}
 
         function obtenerCostoPromedioKwh() {
             const filas = document.querySelectorAll('#tablaBoletas tr');
@@ -3341,109 +3257,143 @@ function prepararEditarBoleta(button) {
             document.getElementById('resTotalPesosEstadia').innerText = `$${totalPesos.toLocaleString('es-CL')}`;
             document.getElementById('resCostoDiarioEstadia').innerText = `$${costoDiario.toLocaleString('es-CL')} / noche`;
         }
-function poblarSelectReservasElectricas() {
-    const selectReserva = document.getElementById('selectReserva');
-    if (!selectReserva) return;
-    
-    const valorPrevio = selectReserva.value;
-    selectReserva.innerHTML = `<option value="">-- Selecciona una reserva real --</option>`;
 
-    if (typeof reservas !== 'undefined' && reservas.length > 0) {
-        reservas.forEach(r => {
-            const noches = r.noches || 1;
-            const nombreHuesped = r.nombre || 'Huésped sin nombre';
-            selectReserva.innerHTML += `<option value="${r.id}" data-noches="${noches}">${nombreHuesped} (${noches} noches - ${formatearFechaChile(r.checkin)})</option>`;
-        });
-    }
+        function poblarSelectReservasElectricas() {
+            const selectReserva = document.getElementById('selectReserva');
+            if (!selectReserva) return;
+            
+            const valorPrevio = selectReserva.value;
+            selectReserva.innerHTML = `<option value="">-- Selecciona una reserva real --</option>`;
 
-    if (valorPrevio) selectReserva.value = valorPrevio;
-}
-function calcularAnalisisAnual() {
-    const anioSel = parseInt(document.getElementById('selectAnioAnalisis').value) || 2026;
-    
-    let totalKwAnio = 0;
-    let totalMontoAnio = 0;
-    let costoKwhPromedio = typeof obtenerCostoPromedioKwh === 'function' ? obtenerCostoPromedioKwh() : 270;
+            if (typeof reservas !== 'undefined' && reservas.length > 0) {
+                reservas.forEach(r => {
+                    const noches = r.noches || 1;
+                    const nombreHuesped = r.nombre || 'Huésped sin nombre';
+                    selectReserva.innerHTML += `<option value="${r.id}" data-noches="${noches}">${nombreHuesped} (${noches} noches - ${formatearFechaChile(r.checkin)})</option>`;
+                });
+            }
 
-    const filasBoletas = document.querySelectorAll('#tablaBoletas tr');
-    filasBoletas.forEach(fila => {
-        const textoFila = fila.innerText || '';
-        if (textoFila.includes(anioSel.toString())) {
-            const cols = fila.querySelectorAll('td');
-            if (cols.length >= 3) {
-                const montoVal = parseFloat(cols[1].innerText.replace('$', '').replace(/\./g, '')) || 0;
-                const kwhVal = parseFloat(cols[2].innerText.replace(' kWh', '').replace(/\./g, '')) || 0;
-                totalMontoAnio += montoVal;
-                totalKwAnio += kwhVal;
+            if (valorPrevio) selectReserva.value = valorPrevio;
+        }
+
+        async function guardarGestionElectricaEnFirestore() {
+            const boletas = [];
+            document.querySelectorAll('#tablaBoletas tr').forEach(tr => {
+                const cols = tr.querySelectorAll('td');
+                if (cols.length >= 4) {
+                    const periodo = cols[0].innerText.trim();
+                    const monto = parseFloat(cols[1].innerText.replace('$', '').replace(/\./g, '')) || 0;
+                    const kwh = parseFloat(cols[2].innerText.replace(' kWh', '').replace(/\./g, '')) || 0;
+                    const costoUnitario = parseFloat(cols[3].getAttribute('data-costo')) || Math.round(monto / kwh);
+                    boletas.push({ periodo, monto, kwh, costoUnitario });
+                }
+            });
+
+            const gestionData = {
+                boletas,
+                fantasmaKwh: parseFloat(document.getElementById('inputFantasmaKwh').value) || 1,
+                tinajaVeranoKwh: parseFloat(document.getElementById('inputTinajaVeranoKwh').value) || 35,
+                tinajaInviernoKwh: parseFloat(document.getElementById('inputTinajaInviernoKwh').value) || 120,
+                kwhArriendo: parseFloat(document.getElementById('inputKwhArriendo').value) || 12,
+                kwhFamilia: parseFloat(document.getElementById('inputKwhFamilia').value) || 12
+            };
+
+            try {
+                await db.collection('configuracion').doc('gestionElectrica').set(gestionData);
+            } catch (err) {
+                console.error("Error al guardar la gestión eléctrica en Firestore:", err);
             }
         }
-    });
 
-    let diasArrendados = 0;
-    let diasFamilia = 0;
+        function calcularAnalisisAnual() {
+            const anioSel = parseInt(document.getElementById('selectAnioAnalisis').value) || 2026;
+            
+            let totalKwAnio = 0;
+            let totalMontoAnio = 0;
+            let costoKwhPromedio = typeof obtenerCostoPromedioKwh === 'function' ? obtenerCostoPromedioKwh() : 270;
 
-    if (typeof reservas !== 'undefined' && reservas.length > 0) {
-        reservas.forEach(r => {
-            if (r.checkin && r.checkin.startsWith(anioSel.toString())) {
-                const noches = parseInt(r.noches) || 1;
-                if (r.canal === 'Familia' || (r.nombre && r.nombre.toLowerCase().includes('familia'))) {
-                    diasFamilia += noches;
-                } else {
-                    diasArrendados += noches;
+            const filasBoletas = document.querySelectorAll('#tablaBoletas tr');
+            filasBoletas.forEach(fila => {
+                const textoFila = fila.innerText || '';
+                if (textoFila.includes(anioSel.toString())) {
+                    const cols = fila.querySelectorAll('td');
+                    if (cols.length >= 3) {
+                        const montoVal = parseFloat(cols[1].innerText.replace('$', '').replace(/\./g, '')) || 0;
+                        const kwhVal = parseFloat(cols[2].innerText.replace(' kWh', '').replace(/\./g, '')) || 0;
+                        totalMontoAnio += montoVal;
+                        totalKwAnio += kwhVal;
+                    }
                 }
+            });
+
+            let diasArrendados = 0;
+            let diasFamilia = 0;
+
+            if (typeof reservas !== 'undefined' && reservas.length > 0) {
+                reservas.forEach(r => {
+                    if (r.checkin && r.checkin.startsWith(anioSel.toString())) {
+                        const noches = parseInt(r.noches) || 1;
+                        if (r.canal === 'Familia' || (r.nombre && r.nombre.toLowerCase().includes('familia'))) {
+                            diasFamilia += noches;
+                        } else {
+                            diasArrendados += noches;
+                        }
+                    }
+                });
             }
-        });
-    }
 
-    const diasBisiesto = (anioSel % 4 === 0 && (anioSel % 100 !== 0 || anioSel % 400 === 0)) ? 366 : 365;
-    let diasVacios = diasBisiesto - (diasArrendados + diasFamilia);
-    if (diasVacios < 0) diasVacios = 0;
+            const diasBisiesto = (anioSel % 4 === 0 && (anioSel % 100 !== 0 || anioSel % 400 === 0)) ? 366 : 365;
+            let diasVacios = diasBisiesto - (diasArrendados + diasFamilia);
+            if (diasVacios < 0) diasVacios = 0;
 
-    // 1. PARÁMETRO DE CONSUMO FANTASMA (ESTRICTAMENTE AISLADO)
-    const kwhFantasmaDia = parseFloat(document.getElementById('inputFantasmaKwh').value) || 1;
-    const kwhTinajaVerano = parseFloat(document.getElementById('inputTinajaVeranoKwh').value) || 35;
-    const kwhTinajaInvierno = parseFloat(document.getElementById('inputTinajaInviernoKwh').value) || 120;
+            const kwhFantasmaDia = parseFloat(document.getElementById('inputFantasmaKwh').value) || 1;
+            const kwhTinajaVerano = parseFloat(document.getElementById('inputTinajaVeranoKwh').value) || 35;
+            const kwhTinajaInvierno = parseFloat(document.getElementById('inputTinajaInviernoKwh').value) || 120;
 
-    // El cálculo del fantasma opera por su cuenta sin restar energía de las demás celdas
-    const kwhFantasmaAnualTotal = diasVacios * kwhFantasmaDia;
-    const costoFantasmaAnual = Math.round(kwhFantasmaAnualTotal * costoKwhPromedio);
-    const costoFantasmaDiario = Math.round(kwhFantasmaDia * costoKwhPromedio);
+            // Consumo fantasma aislado
+            const kwhFantasmaAnualTotal = diasVacios * kwhFantasmaDia;
+            const costoFantasmaAnual = Math.round(kwhFantasmaAnualTotal * costoKwhPromedio);
+            const costoFantasmaDiario = Math.round(kwhFantasmaDia * costoKwhPromedio);
 
-    // 2. CÁLCULO INDEPENDIENTE PARA ARRIENDO Y FAMILIA (Basado en el promedio anual de boletas)
-    const kwPorDiaPromedio = diasBisiesto > 0 ? (totalKwAnio / diasBisiesto) : 0;
-    
-    const costoDiarioArriendo = Math.round(kwPorDiaPromedio * costoKwhPromedio);
-    const costoAnualArriendo = Math.round(diasArrendados * costoDiarioArriendo);
+            // Consumo editable kWh/día para arriendo y familia
+            const kwhArriendoDia = parseFloat(document.getElementById('inputKwhArriendo').value) || 0;
+            const kwhFamiliaDia = parseFloat(document.getElementById('inputKwhFamilia').value) || 0;
 
-    const costoDiarioFamilia = costoDiarioArriendo;
-    const costoAnualFamilia = Math.round(diasFamilia * costoDiarioFamilia);
+            const costoDiarioArriendo = Math.round(kwhArriendoDia * costoKwhPromedio);
+            const costoAnualArriendo = Math.round(diasArrendados * costoDiarioArriendo);
 
-    const costoTinajaVeranoAnual = Math.round(kwhTinajaVerano * costoKwhPromedio);
-    const costoTinajaInviernoAnual = Math.round(kwhTinajaInvierno * costoKwhPromedio);
+            const costoDiarioFamilia = Math.round(kwhFamiliaDia * costoKwhPromedio);
+            const costoAnualFamilia = Math.round(diasFamilia * costoDiarioFamilia);
 
-    // Inyectar en la interfaz
-    document.getElementById('resKwConsumidos').innerText = `${totalKwAnio.toLocaleString('es-CL')} kWh`;
-    document.getElementById('resMontoPagado').innerText = `$${totalMontoAnio.toLocaleString('es-CL')}`;
-    
-    document.getElementById('resDiasArrendados').innerText = `${diasArrendados} días`;
-    document.getElementById('resDiasFamilia').innerText = `${diasFamilia} días`;
-    document.getElementById('resDiasVacios').innerText = `${diasVacios} días`;
+            const costoTinajaVeranoAnual = Math.round(kwhTinajaVerano * costoKwhPromedio);
+            const costoTinajaInviernoAnual = Math.round(kwhTinajaInvierno * costoKwhPromedio);
 
-    document.getElementById('costoDiarioArriendo').innerText = `$${costoDiarioArriendo.toLocaleString('es-CL')} / día`;
-    document.getElementById('costoAnualArriendo').innerText = `$${costoAnualArriendo.toLocaleString('es-CL')}`;
+            // Valor a prorratear (Monto Anual / Total Días Ocupados)
+            const totalDiasOcupacion = diasArrendados + diasFamilia;
+            const valorProrratear = totalDiasOcupacion > 0 ? Math.round(totalMontoAnio / totalDiasOcupacion) : 0;
 
-    document.getElementById('costoDiarioFamilia').innerText = `$${costoDiarioFamilia.toLocaleString('es-CL')} / día`;
-    document.getElementById('costoAnualFamilia').innerText = `$${costoAnualFamilia.toLocaleString('es-CL')}`;
+            document.getElementById('resKwConsumidos').innerText = `${totalKwAnio.toLocaleString('es-CL')} kWh`;
+            document.getElementById('resMontoPagado').innerText = `$${totalMontoAnio.toLocaleString('es-CL')}`;
+            document.getElementById('resValorProrratear').innerText = `$${valorProrratear.toLocaleString('es-CL')} / día`;
+            
+            document.getElementById('resDiasArrendados').innerText = `${diasArrendados} días`;
+            document.getElementById('resDiasFamilia').innerText = `${diasFamilia} días`;
+            document.getElementById('resDiasVacios').innerText = `${diasVacios} días`;
 
-    document.getElementById('costoDiarioFantasma').innerText = `$${costoFantasmaDiario.toLocaleString('es-CL')} / día`;
-    document.getElementById('costoAnualFantasma').innerText = `$${costoFantasmaAnual.toLocaleString('es-CL')}`;
+            document.getElementById('costoDiarioArriendo').innerText = `$${costoDiarioArriendo.toLocaleString('es-CL')} / día`;
+            document.getElementById('costoAnualArriendo').innerText = `$${costoAnualArriendo.toLocaleString('es-CL')}`;
 
-    document.getElementById('costoAnualTinajaVerano').innerText = `$${costoTinajaVeranoAnual.toLocaleString('es-CL')}`;
-    document.getElementById('costoAnualTinajaInvierno').innerText = `$${costoTinajaInviernoAnual.toLocaleString('es-CL')}`;
+            document.getElementById('costoDiarioFamilia').innerText = `$${costoDiarioFamilia.toLocaleString('es-CL')} / día`;
+            document.getElementById('costoAnualFamilia').innerText = `$${costoAnualFamilia.toLocaleString('es-CL')}`;
 
-    // Guardar cambios automáticamente en la base de datos
-    guardarGestionElectricaEnFirestore();
-        }    
-</script>
+            document.getElementById('costoDiarioFantasma').innerText = `$${costoFantasmaDiario.toLocaleString('es-CL')} / día`;
+            document.getElementById('costoAnualFantasma').innerText = `$${costoFantasmaAnual.toLocaleString('es-CL')}`;
+
+            document.getElementById('costoAnualTinajaVerano').innerText = `$${costoTinajaVeranoAnual.toLocaleString('es-CL')}`;
+            document.getElementById('costoAnualTinajaInvierno').innerText = `$${costoTinajaInviernoAnual.toLocaleString('es-CL')}`;
+
+            guardarGestionElectricaEnFirestore();
+        }
+    </script>
 </body>
 </html>
