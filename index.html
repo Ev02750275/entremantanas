@@ -3181,41 +3181,86 @@ document.getElementById('reservaForm').addEventListener('submit', async (e) => {
             }
         }
 
-        // --- FUNCIONES JAVASCRIPT DE GESTIÓN ELÉCTRICA ---
-        function agregarBoleta() {
-            const bimestre = document.getElementById('selectBimestre').value;
-            const anio = document.getElementById('selectAnio').value;
-            const monto = parseFloat(document.getElementById('inputMonto').value);
-            const kwh = parseFloat(document.getElementById('inputKwh').value);
+        // --- 1. GESTIÓN ELÉCTRICA: AGREGAR, EDITAR Y ELIMINAR BOLETAS ---
+let indiceBoletaEditando = null;
 
-            if (isNaN(monto) || isNaN(kwh) || kwh <= 0) {
-                alert('⚠️ Por favor ingresa un monto y un consumo en kWh válidos.');
-                return;
-            }
+function agregarBoleta() {
+    const bimestre = document.getElementById('selectBimestre').value;
+    const anio = document.getElementById('selectAnio').value;
+    const monto = parseFloat(document.getElementById('inputMonto').value);
+    const kwh = parseFloat(document.getElementById('inputKwh').value);
 
-            const costoUnitario = Math.round(monto / kwh);
-            const periodoTexto = `${bimestre} ${anio}`;
-            const tbody = document.getElementById('tablaBoletas');
+    if (isNaN(monto) || isNaN(kwh) || kwh <= 0) {
+        alert('⚠️ Por favor ingresa un monto y un consumo en kWh válidos.');
+        return;
+    }
 
-            const tr = document.createElement('tr');
-            tr.className = 'hover:bg-slate-50';
-            tr.innerHTML = `
-                <td class="p-2.5 font-semibold text-slate-800">${periodoTexto}</td>
-                <td class="p-2.5">$${monto.toLocaleString('es-CL')}</td>
-                <td class="p-2.5">${kwh.toLocaleString('es-CL')} kWh</td>
-                <td class="p-2.5 font-bold text-amber-800" data-costo="${costoUnitario}">$${costoUnitario.toLocaleString('es-CL')} / kWh</td>
-                <td class="p-2.5 text-center">
-                    <button onclick="this.closest('tr').remove(); calcularPromedioGeneral();" class="text-rose-500 hover:text-rose-700 px-2 py-1"><i class="fa-solid fa-trash"></i></button>
-                </td>
-            `;
-            tbody.appendChild(tr);
+    const costoUnitario = Math.round(monto / kwh);
+    const periodoTexto = `${bimestre} ${anio}`;
+    const tbody = document.getElementById('tablaBoletas');
 
-            document.getElementById('inputMonto').value = '';
-            document.getElementById('inputKwh').value = '';
-
-            calcularPromedioGeneral();
-            calcularEstadiaElectrica();
+    if (indiceBoletaEditando !== null) {
+        // Modo Edición: Actualizar la fila existente
+        const fila = tbody.rows[indiceBoletaEditando];
+        if (fila) {
+            fila.cells[0].innerText = periodoTexto;
+            fila.cells[1].innerText = `$${monto.toLocaleString('es-CL')}`;
+            fila.cells[2].innerText = `${kwh.toLocaleString('es-CL')} kWh`;
+            fila.cells[3].innerHTML = `$${costoUnitario.toLocaleString('es-CL')} / kWh`;
+            fila.cells[3].setAttribute('data-costo', costoUnitario);
         }
+        indiceBoletaEditando = null;
+        // Restaurar texto del botón principal si se desea
+    } else {
+        // Modo Creación: Nueva fila
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50';
+        tr.innerHTML = `
+            <td class="p-2.5 font-semibold text-slate-800">${periodoTexto}</td>
+            <td class="p-2.5">$${monto.toLocaleString('es-CL')}</td>
+            <td class="p-2.5">${kwh.toLocaleString('es-CL')} kWh</td>
+            <td class="p-2.5 font-bold text-amber-800" data-costo="${costoUnitario}">$${costoUnitario.toLocaleString('es-CL')} / kWh</td>
+            <td class="p-2.5 text-center space-x-1">
+                <button type="button" onclick="prepararEditarBoleta(this)" class="text-sky-600 hover:text-sky-800 px-1.5 py-1 transition" title="Editar boleta">
+                    <i class="fa-solid fa-pen"></i>
+                </button>
+                <button type="button" onclick="this.closest('tr').remove(); calcularPromedioGeneral(); calcularAnalisisAnual();" class="text-rose-500 hover:text-rose-700 px-1.5 py-1 transition" title="Eliminar boleta">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    document.getElementById('inputMonto').value = '';
+    document.getElementById('inputKwh').value = '';
+
+    calcularPromedioGeneral();
+    calcularEstadiaElectrica();
+    calcularAnalisisAnual();
+}
+
+function prepararEditarBoleta(button) {
+    const tr = button.closest('tr');
+    const tbody = document.getElementById('tablaBoletas');
+    indiceBoletaEditando = Array.from(tbody.rows).indexOf(tr);
+
+    const periodoTexto = tr.cells[0].innerText;
+    const montoStr = tr.cells[1].innerText.replace('$', '').replace(/\./g, '');
+    const kwhStr = tr.cells[2].innerText.replace(' kWh', '').replace(/\./g, '');
+
+    // Separar bimestre y año del texto (Ej: "Enero - Febrero 2026")
+    const partesPeriodo = periodoTexto.split(' 20');
+    if (partesPeriodo.length === 2) {
+        document.getElementById('selectBimestre').value = partesPeriodo[0].trim();
+        document.getElementById('selectAnio').value = '20' + partesPeriodo[1].trim();
+    }
+
+    document.getElementById('inputMonto').value = montoStr;
+    document.getElementById('inputKwh').value = kwhStr;
+
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
 
         function obtenerCostoPromedioKwh() {
             const filas = document.querySelectorAll('#tablaBoletas tr');
