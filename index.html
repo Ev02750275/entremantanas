@@ -1067,7 +1067,110 @@
                     </div>
                 </div>
             </div>
+<!-- 3. Análisis Anual y Consumo Eléctrico -->
+            <div class="space-y-4 pt-4 border-t border-slate-200 mt-4">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
+                        <i class="fa-solid fa-chart-line text-amber-700"></i> 3. Análisis Anual y Consumo Eléctrico
+                    </h4>
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-bold text-slate-600">Año de Análisis:</label>
+                        <select id="selectAnioAnalisis" onchange="calcularAnalisisAnual()" class="bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-amber-600">
+                            <option value="2026" selected>2026</option>
+                            <option value="2025">2025</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                        </select>
+                    </div>
+                </div>
 
+                <!-- Tarjetas Principales Anuales (Arriba) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-50/70 p-4 rounded-xl border border-slate-200 text-center shadow-sm">
+                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total kW Consumidos (Año Seleccionado)</div>
+                        <div class="text-2xl font-extrabold text-slate-800" id="resKwConsumidos">0 kWh</div>
+                    </div>
+                    <div class="bg-amber-50/60 p-4 rounded-xl border border-amber-200 text-center shadow-sm">
+                        <div class="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1">Total $ Pagado (Boletas Frontel Anual)</div>
+                        <div class="text-2xl font-extrabold text-amber-900" id="resMontoPagado">$0</div>
+                    </div>
+                </div>
+
+                <!-- Cuadraditos Independientes de Días -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 text-center shadow-sm">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Días Arrendados</div>
+                        <div class="text-lg font-bold text-blue-700" id="resDiasArrendados">0 días</div>
+                    </div>
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 text-center shadow-sm">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Días Uso Familia</div>
+                        <div class="text-lg font-bold text-amber-700" id="resDiasFamilia">0 días</div>
+                    </div>
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 text-center shadow-sm">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Días Sin Arrendar (Vacíos)</div>
+                        <div class="text-lg font-bold text-slate-600" id="resDiasVacios">365 días</div>
+                    </div>
+                </div>
+
+                <!-- Tabla Detallada de Costos (Columnas Diario y Anual) -->
+                <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+                    <table class="w-full text-xs text-left border-collapse">
+                        <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                            <tr>
+                                <th class="p-3">Concepto Eléctrico</th>
+                                <th class="p-3 text-right">Diario ($ / día)</th>
+                                <th class="p-3 text-right">Anual ($ / año)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 text-slate-700">
+                            <tr>
+                                <td class="p-3 font-medium">Costo Días Arrendados (Real)</td>
+                                <td class="p-3 text-right font-semibold text-blue-700" id="costoDiarioArriendo">$0 / día</td>
+                                <td class="p-3 text-right font-bold text-blue-800" id="costoAnualArriendo">$0</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-medium">Costo Días Uso Familia</td>
+                                <td class="p-3 text-right font-semibold text-amber-700" id="costoDiarioFamilia">$0 / día</td>
+                                <td class="p-3 text-right font-bold text-amber-900" id="costoAnualFamilia">$0</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-medium">Costo Consumo Fantasma (Días Vacíos)</td>
+                                <td class="p-3 text-right font-semibold text-slate-600" id="costoDiarioFantasma">$0 / día</td>
+                                <td class="p-3 text-right font-bold text-slate-700" id="costoAnualFantasma">$0</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-medium">Llenado Tinaja (Verano)</td>
+                                <td class="p-3 text-right text-slate-400">-</td>
+                                <td class="p-3 text-right font-bold text-emerald-700" id="costoAnualTinajaVerano">$0</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-medium">Llenado Tinaja (Invierno)</td>
+                                <td class="p-3 text-right text-slate-400">-</td>
+                                <td class="p-3 text-right font-bold text-indigo-700" id="costoAnualTinajaInvierno">$0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Parámetros Editables (Abajo y Discretos) -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                    <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Parámetros de Configuración Interna</div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-700 mb-1">Consumo Fantasma Diario (kWh/día)</label>
+                            <input type="number" id="inputFantasmaKwh" value="1" step="0.5" oninput="calcularAnalisisAnual()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-amber-600">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-700 mb-1">Llenado Tinaja Verano (kWh)</label>
+                            <input type="number" id="inputTinajaVeranoKwh" value="35" oninput="calcularAnalisisAnual()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-amber-600">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-700 mb-1">Llenado Tinaja Invierno (kWh)</label>
+                            <input type="number" id="inputTinajaInviernoKwh" value="120" oninput="calcularAnalisisAnual()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-amber-600">
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- Pie del Modal con Botón de Cierre -->
             <div class="flex justify-end pt-3 border-t border-slate-200">
                 <button type="button" onclick="toggleModal('modalControlElectrico')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-1.5 px-4 rounded-xl text-xs transition">
@@ -3179,6 +3282,86 @@ function poblarSelectReservasElectricas() {
 
     if (valorPrevio) selectReserva.value = valorPrevio;
 }
+function calcularAnalisisAnual() {
+            const anioSel = parseInt(document.getElementById('selectAnioAnalisis').value) || 2026;
+            
+            let totalKwAnio = 0;
+            let totalMontoAnio = 0;
+            let costoKwhPromedio = typeof obtenerCostoPromedioKwh === 'function' ? obtenerCostoPromedioKwh() : 270;
+
+            const filasBoletas = document.querySelectorAll('#tablaBoletas tr');
+            filasBoletas.forEach(fila => {
+                const textoFila = fila.innerText || '';
+                if (textoFila.includes(anioSel.toString())) {
+                    const cols = fila.querySelectorAll('td');
+                    if (cols.length >= 3) {
+                        const montoVal = parseFloat(cols[1].innerText.replace('$', '').replace(/\./g, '')) || 0;
+                        const kwhVal = parseFloat(cols[2].innerText.replace(' kWh', '').replace(/\./g, '')) || 0;
+                        totalMontoAnio += montoVal;
+                        totalKwAnio += kwhVal;
+                    }
+                }
+            });
+
+            let diasArrendados = 0;
+            let diasFamilia = 0;
+
+            if (typeof reservas !== 'undefined' && reservas.length > 0) {
+                reservas.forEach(r => {
+                    if (r.checkin && r.checkin.startsWith(anioSel.toString())) {
+                        const noches = parseInt(r.noches) || 1;
+                        if (r.canal === 'Familia' || (r.nombre && r.nombre.toLowerCase().includes('familia'))) {
+                            diasFamilia += noches;
+                        } else {
+                            diasArrendados += noches;
+                        }
+                    }
+                });
+            }
+
+            const diasBisiesto = (anioSel % 4 === 0 && (anioSel % 100 !== 0 || anioSel % 400 === 0)) ? 366 : 365;
+            let diasVacios = diasBisiesto - (diasArrendados + diasFamilia);
+            if (diasVacios < 0) diasVacios = 0;
+
+            const kwhFantasmaDia = parseFloat(document.getElementById('inputFantasmaKwh').value) || 1;
+            const kwhTinajaVerano = parseFloat(document.getElementById('inputTinajaVeranoKwh').value) || 35;
+            const kwhTinajaInvierno = parseFloat(document.getElementById('inputTinajaInviernoKwh').value) || 120;
+
+            const costoFantasmaAnual = Math.round(diasVacios * kwhFantasmaDia * costoKwhPromedio);
+            const costoFantasmaDiario = Math.round(kwhFantasmaDia * costoKwhPromedio);
+
+            const kwRestantes = Math.max(0, totalKwAnio - (diasVacios * kwhFantasmaDia));
+            const totalDiasOcupados = diasArrendados + diasFamilia || 1;
+            const kwPorDiaOcupado = kwRestantes / totalDiasOcupados;
+
+            const costoAnualArriendo = Math.round(diasArrendados * kwPorDiaOcupado * costoKwhPromedio);
+            const costoDiarioArriendo = Math.round(kwPorDiaOcupado * costoKwhPromedio);
+
+            const costoAnualFamilia = Math.round(diasFamilia * kwPorDiaOcupado * costoKwhPromedio);
+            const costoDiarioFamilia = costoDiarioArriendo;
+
+            const costoTinajaVeranoAnual = Math.round(kwhTinajaVerano * costoKwhPromedio);
+            const costoTinajaInviernoAnual = Math.round(kwhTinajaInvierno * costoKwhPromedio);
+
+            document.getElementById('resKwConsumidos').innerText = `${totalKwAnio.toLocaleString('es-CL')} kWh`;
+            document.getElementById('resMontoPagado').innerText = `$${totalMontoAnio.toLocaleString('es-CL')}`;
+            
+            document.getElementById('resDiasArrendados').innerText = `${diasArrendados} días`;
+            document.getElementById('resDiasFamilia').innerText = `${diasFamilia} días`;
+            document.getElementById('resDiasVacios').innerText = `${diasVacios} días`;
+
+            document.getElementById('costoDiarioArriendo').innerText = `$${costoDiarioArriendo.toLocaleString('es-CL')} / día`;
+            document.getElementById('costoAnualArriendo').innerText = `$${costoAnualArriendo.toLocaleString('es-CL')}`;
+
+            document.getElementById('costoDiarioFamilia').innerText = `$${costoDiarioFamilia.toLocaleString('es-CL')} / día`;
+            document.getElementById('costoAnualFamilia').innerText = `$${costoAnualFamilia.toLocaleString('es-CL')}`;
+
+            document.getElementById('costoDiarioFantasma').innerText = `$${costoFantasmaDiario.toLocaleString('es-CL')} / día`;
+            document.getElementById('costoAnualFantasma').innerText = `$${costoFantasmaAnual.toLocaleString('es-CL')}`;
+
+            document.getElementById('costoAnualTinajaVerano').innerText = `$${costoTinajaVeranoAnual.toLocaleString('es-CL')}`;
+            document.getElementById('costoAnualTinajaInvierno').innerText = `$${costoTinajaInviernoAnual.toLocaleString('es-CL')}`;
+        }
     </script>
 </body>
 </html>
