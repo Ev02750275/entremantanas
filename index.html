@@ -102,7 +102,6 @@
                 <button type="button" onclick="abrirModalHuespedes()" class="inline-flex items-center px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold rounded-lg shadow transition">
                     <i class="fa-solid fa-users mr-1.5"></i> Huéspedes
                 </button>
-                <!-- BOTÓN DE GESTIÓN ELÉCTRICA INTEGRADO ARRIBA -->
                 <button type="button" onclick="toggleModal('modalControlElectrico')" class="bg-amber-700 hover:bg-amber-600 text-white font-bold py-1.5 px-3 rounded-xl text-xs inline-flex items-center gap-1.5 shadow transition">
                     <i class="fa-solid fa-bolt text-amber-300"></i> Gestión Eléctrica
                 </button>
@@ -118,266 +117,303 @@
     </header>
 
     <!-- MAIN DASHBOARD CONTENT -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <!-- ESTRUCTURA PRINCIPAL EN 2 COLUMNAS (3 COLUMNAS IZQ / 1 COLUMNA DER) -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
 
-            <!-- FORMULARIO PRINCIPAL -->
-            <section class="lg:col-span-3 bg-white border border-slate-200 p-5 sm:p-6 rounded-2xl shadow-sm space-y-5">
-                <div class="flex justify-between items-center border-b border-slate-200 pb-3">
-                    <h2 id="formTitulo" class="text-base font-bold text-emerald-900 flex items-center">
-                        <i class="fa-solid fa-calendar-plus text-emerald-700 mr-2.5"></i>Ingresar / Editar Reserva
-                    </h2>
-                    <span id="badgeEdit" class="hidden bg-amber-100 text-amber-800 border border-amber-200 text-xs font-semibold px-2.5 py-1 rounded-md">
-                        <i class="fa-solid fa-pen mr-1"></i> Modo Edición
-                    </span>
-                </div>
+            <!-- COLUMNA IZQUIERDA (ANCHO 3/4) -->
+            <div class="lg:col-span-3 space-y-6">
 
-                <form id="reservaForm" class="space-y-4">
-                    <input type="hidden" id="reservaId">
-                    <input type="hidden" id="checkin">
-                    <input type="hidden" id="checkout">
+                <!-- 1. CALENDARIO DE OCUPACIÓN -->
+                <section id="seccionCalendario" class="bg-white border border-slate-200 p-5 sm:p-6 rounded-2xl shadow-sm space-y-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-center border-b border-slate-200 pb-4 gap-3">
+                        <h2 class="text-base font-bold text-slate-800 flex items-center">
+                            <i class="fa-solid fa-calendar-days text-emerald-700 mr-2.5"></i>1. Calendario Ocupacional de Disponibilidad
+                        </h2>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="cambiarMesCalendario(-1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-semibold text-xs border border-slate-300">
+                                <i class="fa-solid fa-chevron-left mr-1"></i> Anterior
+                            </button>
+                            <button type="button" onclick="resetMesCalendario()" class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-3 py-1.5 rounded-lg font-bold text-xs">
+                                Hoy
+                            </button>
+                            <button type="button" onclick="cambiarMesCalendario(1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-semibold text-xs border border-slate-300">
+                                Siguiente <i class="fa-solid fa-chevron-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
 
-                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-2">
-                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
-                                <i class="fa-solid fa-hashtag mr-1.5 text-slate-500"></i>Cargar Reserva por Código OTA
+                    <div class="flex flex-wrap gap-3 text-xs font-semibold bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded cal-day-confirmada inline-block"></span> <span class="text-slate-700">Confirmada</span></div>
+                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded cal-day-curso inline-block"></span> <span class="text-slate-700">En Curso</span></div>
+                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded cal-day-terminada inline-block"></span> <span class="text-slate-700">Terminada</span></div>
+                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded cal-day-airbnb inline-block"></span> <span class="text-slate-700">OTA Pendiente</span></div>
+                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded cal-day-bloqueo inline-block"></span> <span class="text-slate-700">Bloqueado</span></div>
+                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded cal-day-transicion inline-block"></span> <span class="text-slate-700">Cambio Huésped</span></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="calendarioContenedor"></div>
+                </section>
+
+                <!-- 2. FORMULARIO PRINCIPAL -->
+                <section class="bg-white border border-slate-200 p-5 sm:p-6 rounded-2xl shadow-sm space-y-5">
+                    <div class="flex justify-between items-center border-b border-slate-200 pb-3">
+                        <h2 id="formTitulo" class="text-base font-bold text-emerald-900 flex items-center">
+                            <i class="fa-solid fa-calendar-plus text-emerald-700 mr-2.5"></i>2. Ingresar / Editar Reserva
+                        </h2>
+                        <span id="badgeEdit" class="hidden bg-amber-100 text-amber-800 border border-amber-200 text-xs font-semibold px-2.5 py-1 rounded-md">
+                            <i class="fa-solid fa-pen mr-1"></i> Modo Edición
+                        </span>
+                    </div>
+
+                    <form id="reservaForm" class="space-y-4">
+                        <input type="hidden" id="reservaId">
+                        <input type="hidden" id="checkin">
+                        <input type="hidden" id="checkout">
+
+                        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-2">
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                                    <i class="fa-solid fa-hashtag mr-1.5 text-slate-500"></i>Cargar Reserva por Código OTA
+                                </label>
+
+                                <div class="flex items-center gap-1.5 bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
+                                    <span class="text-[10px] uppercase font-extrabold text-slate-400 px-1">Sincronizar:</span>
+                                    <button type="button" onclick="sincronizarNavegador('airbnb', true)" class="px-2 py-1 bg-rose-600 hover:bg-rose-500 text-white text-[10px] font-bold rounded shadow-sm transition">
+                                        <i class="fa-solid fa-rotate mr-1"></i> Airbnb
+                                    </button>
+                                    <button type="button" onclick="sincronizarNavegador('booking', true)" class="px-2 py-1 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold rounded shadow-sm transition">
+                                        <i class="fa-solid fa-rotate mr-1"></i> Booking
+                                    </button>
+                                    <label class="px-2 py-1 bg-rose-900 hover:bg-rose-950 text-rose-100 text-[10px] font-semibold rounded cursor-pointer transition">
+                                        <i class="fa-solid fa-file-arrow-up mr-1 text-rose-300"></i> .ics
+                                        <input type="file" id="inputArchivoIcs" accept=".ics" onchange="cargarArchivoIcsLocal(event)" class="hidden">
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-wrap gap-2">
+                                <input type="text" id="codigoOTA" placeholder="Ej: HM12345678 o 4839201" class="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition min-w-[200px]">
+                                <button type="button" onclick="cargarFechasPorCodigo('Airbnb')" class="bg-rose-700 hover:bg-rose-600 text-white font-semibold px-3 py-1.5 rounded-lg text-xs shadow transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    <span>Buscar Airbnb</span>
+                                </button>
+                                <button type="button" onclick="cargarFechasPorCodigo('Booking')" class="bg-blue-700 hover:bg-blue-600 text-white font-semibold px-3 py-1.5 rounded-lg text-xs shadow transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    <span>Buscar Booking</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- DATOS DE HUÉSPED -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Nombre Huésped</label>
+                                <input type="text" id="nombre" placeholder="Huésped Pendiente" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">RUT / Pasaporte</label>
+                                <input type="text" id="rut" placeholder="Pendiente" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition">
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500">Teléfono / WhatsApp</label>
+                                    <button type="button" onclick="mostrarClaveCerradura()" class="text-[10px] font-bold text-emerald-700 hover:underline transition">
+                                        <i class="fa-solid fa-key mr-0.5"></i> Clave
+                                    </button>
+                                </div>
+                                <input type="tel" id="telefono" placeholder="Sin Teléfono" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Dirección / Ciudad</label>
+                                <input type="text" id="direccion" placeholder="Ej: Víctor Lamas 1273, Concepción" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Email Contacto</label>
+                                <input type="email" id="email" placeholder="Sin Email" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Canal Origen</label>
+                                <select id="canal" onchange="evaluarModoFamilia()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 font-bold focus:outline-none focus:border-emerald-600 transition">
+                                    <option value="Directo">Directa</option>
+                                    <option value="Airbnb">Airbnb</option>
+                                    <option value="Booking">Booking.com</option>
+                                    <option value="Familia">Familia (Uso Personal)</option>
+                                    <option value="Otro">Otro Canal</option>
+                                </select>
+                            </div>
+                            <div id="wrapperTemporada">
+                                <label class="block text-[11px] font-semibold uppercase tracking-wider text-amber-800 mb-1">
+                                    <i class="fa-solid fa-sun-plant-wilt mr-1"></i> Selección Temporada / Tarifa
+                                </label>
+                                <select id="selectTemporadaReserva" class="w-full bg-amber-50 border border-amber-300 rounded-lg px-3 py-2 text-xs font-bold text-amber-900 focus:outline-none focus:border-amber-600">
+                                    <option value="Verano">☀ Verano (Costo Estival)</option>
+                                    <option value="Invierno">❄ Invierno (Costo Invernal)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="seccionPasajerosFechas" class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-200 pb-2">
+                                <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-calendar-range text-emerald-700"></i> Fechas de Reserva & Pasajeros
+                                </label>
+                                <span id="lblEstadoSeleccionFechas" class="text-[11px] font-bold text-sky-700 bg-sky-100 px-2.5 py-0.5 rounded-full border border-sky-200">
+                                    🖱️ Clic en Calendario arriba: 1° Entrada | 2° Salida
+                                </span>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+                                <div class="sm:col-span-2 flex items-center gap-2">
+                                    <div id="btnRangoFechas" onclick="scrollAlCalendario()" class="flex-1 bg-white border-2 border-emerald-600 hover:bg-emerald-50/50 p-2.5 rounded-xl cursor-pointer transition flex items-center justify-between shadow-sm">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fa-solid fa-calendar-days text-emerald-700 text-lg"></i>
+                                            <div>
+                                                <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Período de Estadía</span>
+                                                <span id="lblRangoFechasSeleccionado" class="text-xs font-black text-slate-800">Seleccionar en Calendario...</span>
+                                            </div>
+                                        </div>
+                                        <span class="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-1 rounded-md">
+                                            <i class="fa-solid fa-hand-pointer mr-1"></i> Seleccionar
+                                        </span>
+                                    </div>
+
+                                    <button type="button" onclick="reiniciarSeleccionRangoFechas()" title="Reiniciar/Editar Fechas" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold p-3 rounded-xl transition text-xs flex items-center justify-center">
+                                        <i class="fa-solid fa-arrow-rotate-left text-sm"></i>
+                                    </button>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div id="wrapperAdultos">
+                                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Adultos</label>
+                                        <input type="number" id="adultos" min="1" value="2" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-800 font-bold focus:outline-none focus:border-emerald-600">
+                                    </div>
+                                    <div id="wrapperNinos">
+                                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Niños</label>
+                                        <input type="number" id="ninos" min="0" value="0" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-800 font-bold focus:outline-none focus:border-emerald-600">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="wrapperRequerimientos" class="bg-indigo-50/70 p-3.5 rounded-xl border border-indigo-100">
+                            <label class="block font-bold text-xs uppercase tracking-wider text-indigo-900 mb-2">
+                                <i class="fa-solid fa-list-check mr-1 text-indigo-600"></i> Requerimientos Especiales
                             </label>
-
-                            <div class="flex items-center gap-1.5 bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
-                                <span class="text-[10px] uppercase font-extrabold text-slate-400 px-1">Sincronizar:</span>
-                                <button type="button" onclick="sincronizarNavegador('airbnb', true)" class="px-2 py-1 bg-rose-600 hover:bg-rose-500 text-white text-[10px] font-bold rounded shadow-sm transition">
-                                    <i class="fa-solid fa-rotate mr-1"></i> Airbnb
-                                </button>
-                                <button type="button" onclick="sincronizarNavegador('booking', true)" class="px-2 py-1 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold rounded shadow-sm transition">
-                                    <i class="fa-solid fa-rotate mr-1"></i> Booking
-                                </button>
-                                <label class="px-2 py-1 bg-rose-900 hover:bg-rose-950 text-rose-100 text-[10px] font-semibold rounded cursor-pointer transition">
-                                    <i class="fa-solid fa-file-arrow-up mr-1 text-rose-300"></i> .ics
-                                    <input type="file" id="inputArchivoIcs" accept=".ics" onchange="cargarArchivoIcsLocal(event)" class="hidden">
+                            <div class="flex flex-wrap gap-6 text-xs font-semibold text-slate-700">
+                                <label class="inline-flex items-center gap-2 cursor-pointer hover:text-slate-900">
+                                    <input type="checkbox" id="reqCuna" class="rounded border-slate-300 text-emerald-600 focus:ring-0 w-4 h-4">
+                                    <span>🍼 Cuna</span>
+                                </label>
+                                <label class="inline-flex items-center gap-2 cursor-pointer hover:text-slate-900">
+                                    <input type="checkbox" id="reqProtectorEstufa" class="rounded border-slate-300 text-emerald-600 focus:ring-0 w-4 h-4">
+                                    <span>🛡️ Protector Estufa</span>
+                                </label>
+                                <label class="inline-flex items-center gap-2 cursor-pointer hover:text-slate-900">
+                                    <input type="checkbox" id="reqPerro" class="rounded border-slate-300 text-emerald-600 focus:ring-0 w-4 h-4">
+                                    <span>🐾 Perro / Mascota</span>
                                 </label>
                             </div>
                         </div>
-                        
-                        <div class="flex flex-wrap gap-2">
-                            <input type="text" id="codigoOTA" placeholder="Ej: HM12345678 o 4839201" class="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition min-w-[200px]">
-                            <button type="button" onclick="cargarFechasPorCodigo('Airbnb')" class="bg-rose-700 hover:bg-rose-600 text-white font-semibold px-3 py-1.5 rounded-lg text-xs shadow transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-magnifying-glass"></i>
-                                <span>Buscar Airbnb</span>
-                            </button>
-                            <button type="button" onclick="cargarFechasPorCodigo('Booking')" class="bg-blue-700 hover:bg-blue-600 text-white font-semibold px-3 py-1.5 rounded-lg text-xs shadow transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-magnifying-glass"></i>
-                                <span>Buscar Booking</span>
-                            </button>
-                        </div>
-                    </div>
 
-                    <!-- DATOS DE HUÉSPED -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div>
-                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Nombre Huésped</label>
-                            <input type="text" id="nombre" placeholder="Huésped Pendiente" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">RUT / Pasaporte</label>
-                            <input type="text" id="rut" placeholder="Pendiente" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition">
-                        </div>
-                        <div>
-                            <div class="flex justify-between items-center mb-1">
-                                <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500">Teléfono / WhatsApp</label>
-                                <button type="button" onclick="mostrarClaveCerradura()" class="text-[10px] font-bold text-emerald-700 hover:underline transition">
-                                    <i class="fa-solid fa-key mr-0.5"></i> Clave
-                                </button>
-                            </div>
-                            <input type="tel" id="telefono" placeholder="Sin Teléfono" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Dirección / Ciudad</label>
-                            <input type="text" id="direccion" placeholder="Ej: Víctor Lamas 1273, Concepción" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Email Contacto</label>
-                            <input type="email" id="email" placeholder="Sin Email" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Canal Origen</label>
-                            <select id="canal" onchange="evaluarModoFamilia()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 font-bold focus:outline-none focus:border-emerald-600 transition">
-                                <option value="Directo">Directa</option>
-                                <option value="Airbnb">Airbnb</option>
-                                <option value="Booking">Booking.com</option>
-                                <option value="Familia">Familia (Uso Personal)</option>
-                                <option value="Otro">Otro Canal</option>
-                            </select>
-                        </div>
-                        <div id="wrapperTemporada">
-                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-amber-800 mb-1">
-                                <i class="fa-solid fa-sun-plant-wilt mr-1"></i> Selección Temporada / Tarifa
-                            </label>
-                            <select id="selectTemporadaReserva" class="w-full bg-amber-50 border border-amber-300 rounded-lg px-3 py-2 text-xs font-bold text-amber-900 focus:outline-none focus:border-amber-600">
-                                <option value="Verano">☀ Verano (Costo Estival)</option>
-                                <option value="Invierno">❄ Invierno (Costo Invernal)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div id="seccionPasajerosFechas" class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-200 pb-2">
-                            <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                                <i class="fa-solid fa-calendar-range text-emerald-700"></i> Fechas de Reserva & Pasajeros
-                            </label>
-                            <span id="lblEstadoSeleccionFechas" class="text-[11px] font-bold text-sky-700 bg-sky-100 px-2.5 py-0.5 rounded-full border border-sky-200">
-                                🖱️ Clic en Calendario: 1° Entrada | 2° Salida
-                            </span>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
-                            <div class="sm:col-span-2 flex items-center gap-2">
-                                <div id="btnRangoFechas" onclick="scrollAlCalendario()" class="flex-1 bg-white border-2 border-emerald-600 hover:bg-emerald-50/50 p-2.5 rounded-xl cursor-pointer transition flex items-center justify-between shadow-sm">
-                                    <div class="flex items-center gap-3">
-                                        <i class="fa-solid fa-calendar-days text-emerald-700 text-lg"></i>
-                                        <div>
-                                            <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Período de Estadía</span>
-                                            <span id="lblRangoFechasSeleccionado" class="text-xs font-black text-slate-800">Seleccionar en Calendario...</span>
-                                        </div>
-                                    </div>
-                                    <span class="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-1 rounded-md">
-                                        <i class="fa-solid fa-hand-pointer mr-1"></i> Seleccionar
-                                    </span>
-                                </div>
-
-                                <button type="button" onclick="reiniciarSeleccionRangoFechas()" title="Reiniciar/Editar Fechas" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold p-3 rounded-xl transition text-xs flex items-center justify-center">
-                                    <i class="fa-solid fa-arrow-rotate-left text-sm"></i>
-                                </button>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-2">
-                                <div id="wrapperAdultos">
-                                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Adultos</label>
-                                    <input type="number" id="adultos" min="1" value="2" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-800 font-bold focus:outline-none focus:border-emerald-600">
-                                </div>
-                                <div id="wrapperNinos">
-                                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Niños</label>
-                                    <input type="number" id="ninos" min="0" value="0" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-800 font-bold focus:outline-none focus:border-emerald-600">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="wrapperRequerimientos" class="bg-indigo-50/70 p-3.5 rounded-xl border border-indigo-100">
-                        <label class="block font-bold text-xs uppercase tracking-wider text-indigo-900 mb-2">
-                            <i class="fa-solid fa-list-check mr-1 text-indigo-600"></i> Requerimientos Especiales
-                        </label>
-                        <div class="flex flex-wrap gap-6 text-xs font-semibold text-slate-700">
-                            <label class="inline-flex items-center gap-2 cursor-pointer hover:text-slate-900">
-                                <input type="checkbox" id="reqCuna" class="rounded border-slate-300 text-emerald-600 focus:ring-0 w-4 h-4">
-                                <span>🍼 Cuna</span>
-                            </label>
-                            <label class="inline-flex items-center gap-2 cursor-pointer hover:text-slate-900">
-                                <input type="checkbox" id="reqProtectorEstufa" class="rounded border-slate-300 text-emerald-600 focus:ring-0 w-4 h-4">
-                                <span>🛡️ Protector Estufa</span>
-                            </label>
-                            <label class="inline-flex items-center gap-2 cursor-pointer hover:text-slate-900">
-                                <input type="checkbox" id="reqPerro" class="rounded border-slate-300 text-emerald-600 focus:ring-0 w-4 h-4">
-                                <span>🐾 Perro / Mascota</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- SECCIÓN COSTOS Y PRECIOS -->
-                    <div id="seccionCostosPrecios" class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                        <div>
-                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Duración Calculada</label>
-                            <input type="text" id="cantDiasMostrar" readonly value="0 días / 0 noches" class="w-full bg-slate-100 border border-slate-300 font-bold text-slate-700 rounded-lg px-3 py-2 text-xs">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Tarifa Noche ($ CLP) *</label>
-                            <input type="number" id="valorDiarioFinal" value="270000" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-emerald-800 focus:outline-none focus:border-emerald-600">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Fee de Aseo ($ CLP)</label>
-                            <input type="number" id="feeAseo" value="0" min="0" class="w-full bg-emerald-50/50 border border-emerald-300 rounded-lg px-3 py-2 text-xs font-bold text-emerald-900 focus:outline-none focus:border-emerald-600">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Comisión Plataforma ($ CLP)</label>
-                            <input type="number" id="costoPlataforma" min="0" value="0" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-600">
-                        </div>
-                    </div>
-
-                    <div id="wrapperDocTributario">
-                        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Documento Tributario</label>
-                        <select id="tipoDoc" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-600">
-                            <option value="Sin Documento">Sin Documento / Registro Interno</option>
-                            <option value="Boleta Exenta">Boleta Exenta</option>
-                            <option value="Factura Afecta">Factura Afecta (19% IVA)</option>
-                        </select>
-                    </div>
-
-                    <div id="seccionAbonos" class="bg-amber-50/60 p-3.5 rounded-xl border border-amber-200/80 space-y-2">
-                        <label class="block font-bold text-xs uppercase tracking-wider text-amber-900">
-                            <i class="fa-solid fa-money-bill-transfer mr-1"></i> Registro de Abonos & Pagos
-                        </label>
-                        <div class="flex gap-2">
-                            <input type="number" id="montoPago" placeholder="Monto CLP $" class="bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 flex-1 focus:outline-none focus:border-amber-600">
-                            <button type="button" id="btnAgregarPago" onclick="agregarAbono()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition">
-                                + Registrar Abono
-                            </button>
-                        </div>
-                        <div class="max-h-28 overflow-y-auto bg-white rounded-lg border border-slate-200">
-                            <table class="w-full text-xs text-left">
-                                <thead class="bg-amber-100/70 text-amber-900 border-b border-amber-200">
-                                    <tr>
-                                        <th class="p-2">Fecha</th>
-                                        <th class="p-2">Monto</th>
-                                        <th class="p-2 text-center">Quitar</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tablaAbonos" class="divide-y divide-slate-100"></tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Anotaciones Especiales</label>
-                        <textarea id="anotaciones" rows="2" placeholder="Comentarios adicionales o notas de estadía..." class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:border-emerald-600"></textarea>
-                    </div>
-
-                    <div class="flex gap-3 pt-2">
-                        <button type="submit" class="flex-1 bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl shadow transition active:scale-95 text-xs">
-                            <i class="fa-solid fa-floppy-disk mr-1.5"></i> Guardar Reserva
-                        </button>
-                        <button type="button" onclick="limpiarFormulario()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2.5 px-4 rounded-xl transition text-xs">
-                            <i class="fa-solid fa-broom mr-1"></i> Limpiar
-                        </button>
-                    </div>
-
-                    <div id="seccionGastosExtras" class="bg-slate-100/80 p-3.5 rounded-xl border border-slate-300/80 space-y-2 mt-4">
-                        <div class="flex justify-between items-center">
-                            <label class="block font-bold text-xs uppercase tracking-wider text-slate-700">
-                                <i class="fa-solid fa-receipt mr-1.5 text-slate-600"></i> Gastos Adicionales Específicos (Cierre / Post-Estadía)
-                            </label>
-                            <span class="text-[10px] font-semibold text-slate-500 bg-slate-200/80 px-2 py-0.5 rounded-md">
-                                Registrar al finalizar o editar
-                            </span>
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- SECCIÓN COSTOS Y PRECIOS -->
+                        <div id="seccionCostosPrecios" class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                             <div>
-                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Bencina Generador ($ CLP)</label>
-                                <input type="number" id="costoBencinaGenerador" value="0" min="0" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-800 focus:outline-none focus:border-slate-500">
+                                <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Duración Calculada</label>
+                                <input type="text" id="cantDiasMostrar" readonly value="0 días / 0 noches" class="w-full bg-slate-100 border border-slate-300 font-bold text-slate-700 rounded-lg px-3 py-2 text-xs">
                             </div>
                             <div>
-                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Imprevistos / Urgencias ($ CLP)</label>
-                                <input type="number" id="costoImprevistosReserva" value="0" min="0" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-800 focus:outline-none focus:border-slate-500">
+                                <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Tarifa Noche ($ CLP) *</label>
+                                <input type="number" id="valorDiarioFinal" value="270000" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-emerald-800 focus:outline-none focus:border-emerald-600">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Fee de Aseo ($ CLP)</label>
+                                <input type="number" id="feeAseo" value="0" min="0" class="w-full bg-emerald-50/50 border border-emerald-300 rounded-lg px-3 py-2 text-xs font-bold text-emerald-900 focus:outline-none focus:border-emerald-600">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Comisión Plataforma ($ CLP)</label>
+                                <input type="number" id="costoPlataforma" min="0" value="0" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-600">
                             </div>
                         </div>
-                    </div>
-                </form>
-            </section>
 
-            <!-- PANEL DE RESUMEN FINANCIERO -->
-            <section class="bg-slate-900 text-white border border-slate-800 p-5 rounded-2xl shadow-xl flex flex-col justify-between space-y-4">
+                        <div id="wrapperDocTributario">
+                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Documento Tributario</label>
+                            <select id="tipoDoc" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-600">
+                                <option value="Sin Documento">Sin Documento / Registro Interno</option>
+                                <option value="Boleta Exenta">Boleta Exenta</option>
+                                <option value="Factura Afecta">Factura Afecta (19% IVA)</option>
+                            </select>
+                        </div>
+
+                        <div id="seccionAbonos" class="bg-amber-50/60 p-3.5 rounded-xl border border-amber-200/80 space-y-2">
+                            <label class="block font-bold text-xs uppercase tracking-wider text-amber-900">
+                                <i class="fa-solid fa-money-bill-transfer mr-1"></i> Registro de Abonos & Pagos
+                            </label>
+                            <div class="flex gap-2">
+                                <input type="number" id="montoPago" placeholder="Monto CLP $" class="bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 flex-1 focus:outline-none focus:border-amber-600">
+                                <button type="button" id="btnAgregarPago" onclick="agregarAbono()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition">
+                                    + Registrar Abono
+                                </button>
+                            </div>
+                            <div class="max-h-28 overflow-y-auto bg-white rounded-lg border border-slate-200">
+                                <table class="w-full text-xs text-left">
+                                    <thead class="bg-amber-100/70 text-amber-900 border-b border-amber-200">
+                                        <tr>
+                                            <th class="p-2">Fecha</th>
+                                            <th class="p-2">Monto</th>
+                                            <th class="p-2 text-center">Quitar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tablaAbonos" class="divide-y divide-slate-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Anotaciones Especiales</label>
+                            <textarea id="anotaciones" rows="2" placeholder="Comentarios adicionales o notas de estadía..." class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:border-emerald-600"></textarea>
+                        </div>
+
+                        <div class="flex gap-3 pt-2">
+                            <button type="submit" class="flex-1 bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl shadow transition active:scale-95 text-xs">
+                                <i class="fa-solid fa-floppy-disk mr-1.5"></i> Guardar Reserva
+                            </button>
+                            <button type="button" onclick="limpiarFormulario()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2.5 px-4 rounded-xl transition text-xs">
+                                <i class="fa-solid fa-broom mr-1"></i> Limpiar
+                            </button>
+                        </div>
+
+                        <div id="seccionGastosExtras" class="bg-slate-100/80 p-3.5 rounded-xl border border-slate-300/80 space-y-2 mt-4">
+                            <div class="flex justify-between items-center">
+                                <label class="block font-bold text-xs uppercase tracking-wider text-slate-700">
+                                    <i class="fa-solid fa-receipt mr-1.5 text-slate-600"></i> Gastos Adicionales Específicos (Cierre / Post-Estadía)
+                                </label>
+                                <span class="text-[10px] font-semibold text-slate-500 bg-slate-200/80 px-2 py-0.5 rounded-md">
+                                    Registrar al finalizar o editar
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Bencina Generador ($ CLP)</label>
+                                    <input type="number" id="costoBencinaGenerador" value="0" min="0" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-800 focus:outline-none focus:border-slate-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Imprevistos / Urgencias ($ CLP)</label>
+                                    <input type="number" id="costoImprevistosReserva" value="0" min="0" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-800 focus:outline-none focus:border-slate-500">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+
+            </div>
+
+            <!-- COLUMNA DERECHA (ANCHO 1/4 - DESGLOSE FINANCIERO Y CONTADORES) -->
+            <section class="lg:col-span-1 bg-slate-900 text-white border border-slate-800 p-5 rounded-2xl shadow-xl flex flex-col justify-between space-y-4">
                 <div class="space-y-4">
                     <div>
                         <h2 class="text-sm font-bold text-emerald-400 flex items-center">
@@ -479,8 +515,10 @@
                     </button>
                 </div>
             </section>
+
         </div>
 
+    </main>
         <!-- CALENDARIO DE OCUPACIÓN -->
         <section id="seccionCalendario" class="bg-white border border-slate-200 p-5 sm:p-6 rounded-2xl shadow-sm space-y-4">
             <div class="flex flex-col sm:flex-row justify-between items-center border-b border-slate-200 pb-4 gap-3">
@@ -953,7 +991,7 @@
                 </button>
             </div>
 
-            <!-- Tarjeta de Indicadores (KPI) -->
+            <!-- PUNTO 2: Tarjeta de Indicadores (KPI) con Promedio Verano e Invierno -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="bg-amber-50/50 p-4 rounded-xl border border-amber-200 shadow-sm flex flex-col justify-between">
                     <div>
@@ -961,6 +999,20 @@
                         <div class="text-2xl font-black text-amber-900 mt-1" id="kpiCostoKwh">$0 <span class="text-xs font-normal text-slate-500">/ kWh</span></div>
                     </div>
                     <p class="text-[11px] text-slate-500 mt-2">Calculado de tus boletas bimestrales Frontel</p>
+                </div>
+                <div class="bg-orange-50/50 p-4 rounded-xl border border-orange-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold text-orange-800 uppercase tracking-wider">☀️ Promedio Consumo Verano</span>
+                        <div class="text-2xl font-black text-orange-900 mt-1" id="kpiPromedioVerano">$0 <span class="text-xs font-normal text-slate-500">/ día</span></div>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-2">Promedio diario según reservas de Verano</p>
+                </div>
+                <div class="bg-sky-50/50 p-4 rounded-xl border border-sky-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold text-sky-800 uppercase tracking-wider">❄️ Promedio Consumo Invierno</span>
+                        <div class="text-2xl font-black text-sky-900 mt-1" id="kpiPromedioInvierno">$0 <span class="text-xs font-normal text-slate-500">/ día</span></div>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-2">Promedio diario según reservas de Invierno</p>
                 </div>
             </div>
 
@@ -1031,14 +1083,14 @@
                 </div>
             </div>
 
-            <!-- 2. Sección de Medidor Wi-Fi por Estadía -->
+            <!-- PUNTO 1: Sección de Medidor Wi-Fi por Estadía -->
             <div class="space-y-3 pt-2 border-t border-slate-200">
                 <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
                     <i class="fa-solid fa-gauge text-amber-700"></i> 2. Análisis de Consumo Eléctrico por Estadía (Medidor Wi-Fi)
                 </h4>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 items-end">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-700 mb-1">Seleccionar Reserva</label>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 items-end">
+                    <div class="md:col-span-2">
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">Seleccionar Reserva (Fecha - Nombre)</label>
                         <select id="selectReserva" onchange="alCambiarReservaElectrica()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium focus:outline-none focus:border-amber-600">
                             <option value="">-- Selecciona una reserva real --</option>
                         </select>
@@ -1051,6 +1103,16 @@
                         <label class="block text-[11px] font-bold text-slate-700 mb-1">Medición Final (kWh)</label>
                         <input type="number" id="medicionFinal" placeholder="Ej: 14285" oninput="calcularEstadiaElectrica()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium focus:outline-none focus:border-amber-600">
                     </div>
+                </div>
+
+                <!-- PUNTO 1.a: Botones Guardar y Eliminar -->
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="guardarLecturaReservaElectrica()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-xl text-xs shadow transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar Lectura
+                    </button>
+                    <button type="button" onclick="eliminarLecturaReservaElectrica()" class="bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold py-2 px-4 rounded-xl text-xs border border-rose-300 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-trash"></i> Eliminar Datos
+                    </button>
                 </div>
 
                 <!-- Resultados Separados -->
@@ -1070,7 +1132,7 @@
                 </div>
             </div>
 
-            <!-- 3. Análisis Anual y Consumo Eléctrico -->
+            <!-- 3 y 4. Análisis Anual y Consumo Eléctrico -->
             <div class="space-y-4 pt-4 border-t border-slate-200 mt-4">
                 <div class="flex items-center justify-between">
                     <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
@@ -1121,7 +1183,7 @@
                     </div>
                 </div>
 
-                <!-- Tabla Detallada de Costos con Inputs kWh/día -->
+                <!-- Tabla Detallada de Costos (PUNTO 4: PARÁMETROS EN LA MISMA COLUMNA DEL CONSUMO PROMEDIO) -->
                 <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
                     <table class="w-full text-xs text-left border-collapse">
                         <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
@@ -1151,43 +1213,30 @@
                             </tr>
                             <tr>
                                 <td class="p-3 font-medium">Costo Consumo Fantasma (Días Vacíos)</td>
-                                <td class="p-3 text-center text-slate-400 text-[11px]">(Usa parámetro inferior)</td>
+                                <td class="p-3 text-center">
+                                    <input type="number" id="inputFantasmaKwh" value="1" step="0.5" oninput="calcularAnalisisAnual()" class="w-24 bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs text-center font-bold text-slate-700 focus:outline-none focus:border-amber-600" title="Ingresa el consumo fantasma diario en kWh"> kWh/día
+                                </td>
                                 <td class="p-3 text-right font-semibold text-slate-600" id="costoDiarioFantasma">$0 / día</td>
                                 <td class="p-3 text-right font-bold text-slate-700" id="costoAnualFantasma">$0</td>
                             </tr>
                             <tr>
                                 <td class="p-3 font-medium">Llenado Tinaja (Verano)</td>
-                                <td class="p-3 text-center text-slate-400 text-[11px]">-</td>
+                                <td class="p-3 text-center">
+                                    <input type="number" id="inputTinajaVeranoKwh" value="35" oninput="calcularAnalisisAnual()" class="w-24 bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs text-center font-bold text-emerald-700 focus:outline-none focus:border-amber-600"> kWh/llenado
+                                </td>
                                 <td class="p-3 text-right text-slate-400">-</td>
                                 <td class="p-3 text-right font-bold text-emerald-700" id="costoAnualTinajaVerano">$0</td>
                             </tr>
                             <tr>
                                 <td class="p-3 font-medium">Llenado Tinaja (Invierno)</td>
-                                <td class="p-3 text-center text-slate-400 text-[11px]">-</td>
+                                <td class="p-3 text-center">
+                                    <input type="number" id="inputTinajaInviernoKwh" value="120" oninput="calcularAnalisisAnual()" class="w-24 bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs text-center font-bold text-indigo-700 focus:outline-none focus:border-amber-600"> kWh/llenado
+                                </td>
                                 <td class="p-3 text-right text-slate-400">-</td>
                                 <td class="p-3 text-right font-bold text-indigo-700" id="costoAnualTinajaInvierno">$0</td>
                             </tr>
                         </tbody>
                     </table>
-                </div>
-
-                <!-- Parámetros Editables (Abajo y Discretos) -->
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                    <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Parámetros de Configuración Interna</div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-700 mb-1">Consumo Fantasma Diario (kWh/día)</label>
-                            <input type="number" id="inputFantasmaKwh" value="1" step="0.5" oninput="calcularAnalisisAnual()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-amber-600">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-700 mb-1">Llenado Tinaja Verano (kWh)</label>
-                            <input type="number" id="inputTinajaVeranoKwh" value="35" oninput="calcularAnalisisAnual()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-amber-600">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-700 mb-1">Llenado Tinaja Invierno (kWh)</label>
-                            <input type="number" id="inputTinajaInviernoKwh" value="120" oninput="calcularAnalisisAnual()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-amber-600">
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -1275,7 +1324,7 @@
                 actualizarEstadosAutomaticos();
                 poblarFiltroAnos();
                 poblarFiltrosKPIAnos();
-		        poblarSelectReservasElectricas();
+                poblarSelectReservasElectricas();
                 renderCalendario();
                 renderTabla();
                 actualizarResumenGlobal();
@@ -1286,7 +1335,6 @@
                 if (usuarios.length === 0) {
                     db.collection('usuarios').add({ nombre: "Eduardo Vicencio", email: "e.vicencio@evarq.cl" });
                 }
-                
             }, err => console.error("Error sincronizando usuarios:", err));
 
             db.collection('configuracion').doc('costosCasa').onSnapshot(doc => {
@@ -3136,8 +3184,6 @@
         }
 
         // --- GESTIÓN ELÉCTRICA ---
-        let indiceBoletaEditando = null;
-
         function agregarBoleta() {
             const bimestre = document.getElementById('selectBimestre').value;
             const anio = document.getElementById('selectAnio').value;
@@ -3153,32 +3199,20 @@
             const periodoTexto = `${bimestre} ${anio}`;
             const tbody = document.getElementById('tablaBoletas');
 
-            if (indiceBoletaEditando !== null) {
-                const fila = tbody.rows[indiceBoletaEditando];
-                if (fila) {
-                    fila.cells[0].innerText = periodoTexto;
-                    fila.cells[1].innerText = `$${monto.toLocaleString('es-CL')}`;
-                    fila.cells[2].innerText = `${kwh.toLocaleString('es-CL')} kWh`;
-                    fila.cells[3].innerHTML = `$${costoUnitario.toLocaleString('es-CL')} / kWh`;
-                    fila.cells[3].setAttribute('data-costo', costoUnitario);
-                }
-                indiceBoletaEditando = null;
-            } else {
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50';
-                tr.innerHTML = `
-                    <td class="p-2.5 font-semibold text-slate-800">${periodoTexto}</td>
-                    <td class="p-2.5">$${monto.toLocaleString('es-CL')}</td>
-                    <td class="p-2.5">${kwh.toLocaleString('es-CL')} kWh</td>
-                    <td class="p-2.5 font-bold text-amber-800" data-costo="${costoUnitario}">$${costoUnitario.toLocaleString('es-CL')} / kWh</td>
-                    <td class="p-2.5 text-center">
-                        <button type="button" onclick="this.closest('tr').remove(); guardarGestionElectricaEnFirestore(); calcularPromedioGeneral(); calcularAnalisisAnual();" class="bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-600 px-2.5 py-1 rounded-lg transition shadow-sm" title="Eliminar boleta">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            }
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-slate-50';
+            tr.innerHTML = `
+                <td class="p-2.5 font-semibold text-slate-800">${periodoTexto}</td>
+                <td class="p-2.5">$${monto.toLocaleString('es-CL')}</td>
+                <td class="p-2.5">${kwh.toLocaleString('es-CL')} kWh</td>
+                <td class="p-2.5 font-bold text-amber-800" data-costo="${costoUnitario}">$${costoUnitario.toLocaleString('es-CL')} / kWh</td>
+                <td class="p-2.5 text-center">
+                    <button type="button" onclick="this.closest('tr').remove(); guardarGestionElectricaEnFirestore(); calcularPromedioGeneral(); calcularAnalisisAnual();" class="bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-600 px-2.5 py-1 rounded-lg transition shadow-sm" title="Eliminar boleta">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
 
             document.getElementById('inputMonto').value = '';
             document.getElementById('inputKwh').value = '';
@@ -3187,27 +3221,6 @@
             calcularEstadiaElectrica();
             calcularAnalisisAnual();
             guardarGestionElectricaEnFirestore();
-        }
-
-        function prepararEditarBoleta(button) {
-            const tr = button.closest('tr');
-            const tbody = document.getElementById('tablaBoletas');
-            indiceBoletaEditando = Array.from(tbody.rows).indexOf(tr);
-
-            const periodoTexto = tr.cells[0].innerText;
-            const montoStr = tr.cells[1].innerText.replace('$', '').replace(/\./g, '');
-            const kwhStr = tr.cells[2].innerText.replace(' kWh', '').replace(/\./g, '');
-
-            const partesPeriodo = periodoTexto.split(' 20');
-            if (partesPeriodo.length === 2) {
-                document.getElementById('selectBimestre').value = partesPeriodo[0].trim();
-                document.getElementById('selectAnio').value = '20' + partesPeriodo[1].trim();
-            }
-
-            document.getElementById('inputMonto').value = montoStr;
-            document.getElementById('inputKwh').value = kwhStr;
-
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
 
         function obtenerCostoPromedioKwh() {
@@ -3227,12 +3240,39 @@
             return Math.round(sumaCosto / totalElementos);
         }
 
+        // PUNTO 2: Promedios Verano e Invierno
         function calcularPromedioGeneral() {
-            const promedio = obtenerCostoPromedioKwh();
+            const promedioKwh = obtenerCostoPromedioKwh();
             const kpiElem = document.getElementById('kpiCostoKwh');
             if (kpiElem) {
-                kpiElem.innerHTML = `$${promedio.toLocaleString('es-CL')} <span class="text-xs font-normal text-slate-500">/ kWh</span>`;
+                kpiElem.innerHTML = `$${promedioKwh.toLocaleString('es-CL')} <span class="text-xs font-normal text-slate-500">/ kWh</span>`;
             }
+
+            let sumaVerano = 0, countVerano = 0;
+            let sumaInvierno = 0, countInvierno = 0;
+
+            reservas.forEach(r => {
+                if (r.medicionInicial && r.medicionFinal && r.medicionFinal > r.medicionInicial) {
+                    const kwhConsumidos = r.medicionFinal - r.medicionInicial;
+                    const noches = r.noches || 1;
+                    const costoTotalPesos = kwhConsumidos * promedioKwh;
+                    const diarioPesos = costoTotalPesos / noches;
+
+                    if (r.temporadaReserva === 'Verano') {
+                        sumaVerano += diarioPesos;
+                        countVerano++;
+                    } else if (r.temporadaReserva === 'Invierno') {
+                        sumaInvierno += diarioPesos;
+                        countInvierno++;
+                    }
+                }
+            });
+
+            const promVerano = countVerano > 0 ? Math.round(sumaVerano / countVerano) : 0;
+            const promInvierno = countInvierno > 0 ? Math.round(sumaInvierno / countInvierno) : 0;
+
+            document.getElementById('kpiPromedioVerano').innerHTML = `$${promVerano.toLocaleString('es-CL')} <span class="text-xs font-normal text-slate-500">/ día</span>`;
+            document.getElementById('kpiPromedioInvierno').innerHTML = `$${promInvierno.toLocaleString('es-CL')} <span class="text-xs font-normal text-slate-500">/ día</span>`;
         }
 
         function calcularEstadiaElectrica() {
@@ -3249,7 +3289,7 @@
 
             const selectReserva = document.getElementById('selectReserva');
             const optionSelected = selectReserva.options[selectReserva.selectedIndex];
-            const noches = parseInt(optionSelected.getAttribute('data-noches')) || 1;
+            const noches = parseInt(optionSelected ? optionSelected.getAttribute('data-noches') : 1) || 1;
 
             const costoDiario = noches > 0 ? Math.round(totalPesos / noches) : totalPesos;
 
@@ -3258,6 +3298,7 @@
             document.getElementById('resCostoDiarioEstadia').innerText = `$${costoDiario.toLocaleString('es-CL')} / noche`;
         }
 
+        // PUNTO 1.c: Ordenar de la más reciente a la más antigua con Fecha primero
         function poblarSelectReservasElectricas() {
             const selectReserva = document.getElementById('selectReserva');
             if (!selectReserva) return;
@@ -3266,14 +3307,94 @@
             selectReserva.innerHTML = `<option value="">-- Selecciona una reserva real --</option>`;
 
             if (typeof reservas !== 'undefined' && reservas.length > 0) {
-                reservas.forEach(r => {
+                const reservasOrdenadas = [...reservas].sort((a, b) => (b.checkin || '').localeCompare(a.checkin || ''));
+
+                reservasOrdenadas.forEach(r => {
                     const noches = r.noches || 1;
+                    const fechaFormateada = r.checkin ? r.checkin.split('-').reverse().join('/') : 'Sin fecha';
                     const nombreHuesped = r.nombre || 'Huésped sin nombre';
-                    selectReserva.innerHTML += `<option value="${r.id}" data-noches="${noches}">${nombreHuesped} (${noches} noches - ${formatearFechaChile(r.checkin)})</option>`;
+                    selectReserva.innerHTML += `<option value="${r.id}" data-noches="${noches}">${fechaFormateada} - ${nombreHuesped} (${noches}n)</option>`;
                 });
             }
 
-            if (valorPrevio) selectReserva.value = valorPrevio;
+            if (valorPrevio) {
+                selectReserva.value = valorPrevio;
+                alCambiarReservaElectrica();
+            }
+        }
+
+        // PUNTO 1.b: Cargar o resetear a cero datos al cambiar reserva
+        function alCambiarReservaElectrica() {
+            const selectReserva = document.getElementById('selectReserva');
+            const idReserva = selectReserva.value;
+
+            if (!idReserva) {
+                limpiarCamposMedidorWifi();
+                return;
+            }
+
+            const r = reservas.find(item => item.id === idReserva);
+            if (r) {
+                document.getElementById('medicionInicial').value = (r.medicionInicial !== undefined && r.medicionInicial !== null) ? r.medicionInicial : '';
+                document.getElementById('medicionFinal').value = (r.medicionFinal !== undefined && r.medicionFinal !== null) ? r.medicionFinal : '';
+                calcularEstadiaElectrica();
+            } else {
+                limpiarCamposMedidorWifi();
+            }
+        }
+
+        function limpiarCamposMedidorWifi() {
+            document.getElementById('medicionInicial').value = '';
+            document.getElementById('medicionFinal').value = '';
+            document.getElementById('resTotalKwhEstadia').innerText = '0 kWh';
+            document.getElementById('resTotalPesosEstadia').innerText = '$0';
+            document.getElementById('resCostoDiarioEstadia').innerText = '$0 / noche';
+        }
+
+        // PUNTO 1.a: Guardar lectura
+        async function guardarLecturaReservaElectrica() {
+            const idReserva = document.getElementById('selectReserva').value;
+            if (!idReserva) {
+                alert('⚠️ Por favor selecciona una reserva antes de guardar.');
+                return;
+            }
+
+            const inicial = parseFloat(document.getElementById('medicionInicial').value) || 0;
+            const final = parseFloat(document.getElementById('medicionFinal').value) || 0;
+
+            try {
+                await db.collection('reservas').doc(idReserva).update({
+                    medicionInicial: inicial,
+                    medicionFinal: final
+                });
+                alert('✅ ¡Lectura guardada con éxito!');
+                calcularPromedioGeneral();
+            } catch (err) {
+                alert('❌ Error al guardar lectura: ' + err.message);
+            }
+        }
+
+        // PUNTO 1.a: Eliminar lectura
+        async function eliminarLecturaReservaElectrica() {
+            const idReserva = document.getElementById('selectReserva').value;
+            if (!idReserva) {
+                alert('⚠️ Por favor selecciona una reserva para eliminar su lectura.');
+                return;
+            }
+
+            if (confirm('¿Eliminar la lectura guardada para esta reserva?')) {
+                try {
+                    await db.collection('reservas').doc(idReserva).update({
+                        medicionInicial: firebase.firestore.FieldValue.delete(),
+                        medicionFinal: firebase.firestore.FieldValue.delete()
+                    });
+                    limpiarCamposMedidorWifi();
+                    alert('🗑️ Lectura eliminada correctamente.');
+                    calcularPromedioGeneral();
+                } catch (err) {
+                    alert('❌ Error al eliminar la lectura: ' + err.message);
+                }
+            }
         }
 
         async function guardarGestionElectricaEnFirestore() {
@@ -3305,12 +3426,13 @@
             }
         }
 
+        // PUNTO 3: Fórmula corregida de valor a prorratear
         function calcularAnalisisAnual() {
             const anioSel = parseInt(document.getElementById('selectAnioAnalisis').value) || 2026;
-            
+            let costoKwhPromedio = obtenerCostoPromedioKwh();
+
             let totalKwAnio = 0;
             let totalMontoAnio = 0;
-            let costoKwhPromedio = typeof obtenerCostoPromedioKwh === 'function' ? obtenerCostoPromedioKwh() : 270;
 
             const filasBoletas = document.querySelectorAll('#tablaBoletas tr');
             filasBoletas.forEach(fila => {
@@ -3350,12 +3472,15 @@
             const kwhTinajaVerano = parseFloat(document.getElementById('inputTinajaVeranoKwh').value) || 35;
             const kwhTinajaInvierno = parseFloat(document.getElementById('inputTinajaInviernoKwh').value) || 120;
 
-            // Consumo fantasma aislado
+            const costoFantasmaDiario = Math.round(kwhFantasmaDia * costoKwhPromedio);
             const kwhFantasmaAnualTotal = diasVacios * kwhFantasmaDia;
             const costoFantasmaAnual = Math.round(kwhFantasmaAnualTotal * costoKwhPromedio);
-            const costoFantasmaDiario = Math.round(kwhFantasmaDia * costoKwhPromedio);
 
-            // Consumo editable kWh/día para arriendo y familia
+            // FÓRMULA CORREGIDA DE PRORRATEO
+            const valorProrratear = diasArrendados > 0 
+                ? Math.round((diasVacios * costoFantasmaDiario) / diasArrendados) 
+                : 0;
+
             const kwhArriendoDia = parseFloat(document.getElementById('inputKwhArriendo').value) || 0;
             const kwhFamiliaDia = parseFloat(document.getElementById('inputKwhFamilia').value) || 0;
 
@@ -3367,10 +3492,6 @@
 
             const costoTinajaVeranoAnual = Math.round(kwhTinajaVerano * costoKwhPromedio);
             const costoTinajaInviernoAnual = Math.round(kwhTinajaInvierno * costoKwhPromedio);
-
-            // Valor a prorratear (Monto Anual / Total Días Ocupados)
-            const totalDiasOcupacion = diasArrendados + diasFamilia;
-            const valorProrratear = totalDiasOcupacion > 0 ? Math.round(totalMontoAnio / totalDiasOcupacion) : 0;
 
             document.getElementById('resKwConsumidos').innerText = `${totalKwAnio.toLocaleString('es-CL')} kWh`;
             document.getElementById('resMontoPagado').innerText = `$${totalMontoAnio.toLocaleString('es-CL')}`;
