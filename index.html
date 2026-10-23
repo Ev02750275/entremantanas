@@ -87,9 +87,7 @@
                 <button type="button" onclick="limpiarFormulario()" class="inline-flex items-center px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow transition">
                     <i class="fa-solid fa-plus mr-1.5"></i> Nueva Reserva
                 </button>
-                <button type="button" onclick="abrirModalHistorialReservas()" class="inline-flex items-center px-3 py-1.5 bg-indigo-700 hover:bg-indigo-600 text-white text-xs font-bold rounded-lg shadow transition border border-indigo-500">
-                    <i class="fa-solid fa-list-check mr-1.5"></i> Historial Reservas
-                </button>
+                
                 <button type="button" onclick="abrirModalRentabilidad()" class="inline-flex items-center px-3 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-lg shadow transition">
                     <i class="fa-solid fa-scale-balanced mr-1.5"></i> Margen Contribución
                 </button>
@@ -409,6 +407,59 @@
                         </div>
                     </form>
                 </section>
+<!-- HISTORIAL DE RESERVAS (ABAJO DE GASTOS ADICIONALES) -->
+        <section id="seccionHistorialPrincipal" class="bg-white border border-slate-200 p-5 sm:p-6 rounded-2xl shadow-sm space-y-4 mt-5">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-200 pb-4">
+                <h3 class="text-base font-bold text-slate-800 flex items-center">
+                    <i class="fa-solid fa-list-check mr-2.5 text-indigo-700"></i>Historial Registrado de Reservas
+                </h3>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="exportarReservasExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow">
+                        <i class="fa-solid fa-file-excel"></i> Exportar Excel
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2 w-full bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <input type="text" id="filtroTexto" oninput="renderTabla()" placeholder="🔍 Buscar por huésped o código..." class="bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-600 flex-1 min-w-[200px]">
+
+                <select id="filtroEstado" onchange="renderTabla()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 font-semibold focus:outline-none focus:border-indigo-600">
+                    <option value="">Todos los Estados</option>
+                    <option value="Reserva">🟡 Reserva Confirmada</option>
+                    <option value="Reserva en Curso">🟢 En Curso</option>
+                    <option value="Reserva Terminada">⚪ Terminada</option>
+                </select>
+
+                <select id="filtroMes" onchange="renderTabla()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 font-semibold focus:outline-none focus:border-indigo-600">
+                    <option value="">Todos los Meses</option>
+                    <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+                    <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+                    <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+                    <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                </select>
+
+                <select id="filtroAno" onchange="renderTabla()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 font-semibold focus:outline-none focus:border-indigo-600"></select>
+            </div>
+
+            <div class="overflow-x-auto rounded-xl border border-slate-200 max-h-[60vh]">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead class="sticky top-0 bg-slate-100 text-slate-600 border-b border-slate-200 font-bold uppercase text-[10px] tracking-wider z-10">
+                        <tr>
+                            <th class="p-3">Huésped / Contacto</th>
+                            <th class="p-3">Fechas Estadía</th>
+                            <th class="p-3">Temporada</th>
+                            <th class="p-3">Pasajeros / Extras</th>
+                            <th class="p-3">Canal / Código</th>
+                            <th class="p-3">Total Bruto</th>
+                            <th class="p-3">Abonos & Saldo</th>
+                            <th class="p-3">Estado</th>
+                            <th class="p-3 text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaReservas" class="divide-y divide-slate-200 bg-white"></tbody>
+                </table>
+            </div>
+        </section>
 
             </div>
 
@@ -480,10 +531,10 @@
                                 <span>Noches Arrendadas:</span>
                                 <span id="dashNochesMes" class="font-bold text-slate-900">0</span>
                             </div>
-                            <div class="flex justify-between text-emerald-700 font-extrabold text-xs pt-1 border-t border-emerald-100">
-                                <span>Ingreso Bruto Mes:</span>
-                                <span id="dashBrutoMes">$0</span>
-                            </div>
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 pt-1.5 mt-1 border-t border-emerald-100">
+    <span class="text-emerald-800 font-bold text-xs">Ingreso Bruto Mes:</span>
+    <span id="dashBrutoMes" class="text-lg sm:text-xl font-black text-emerald-700">$0</span>
+</div>
                         </div>
 
                         <div class="bg-white text-slate-800 border-2 border-sky-500 p-3 rounded-xl space-y-1.5 shadow-md">
@@ -499,13 +550,11 @@
                                 <span>Noches Arrendadas:</span>
                                 <span id="dashNochesAno" class="font-bold text-slate-900">0</span>
                             </div>
-                            <div class="flex justify-between text-sky-700 font-extrabold text-xs pt-1 border-t border-sky-100">
-                                <span>Ingreso Bruto Año:</span>
-                                <span id="dashBrutoAno">$0</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 pt-1.5 mt-1 border-t border-sky-100">
+        <span class="text-sky-800 font-bold text-xs">Ingreso Bruto Año:</span>
+        <span id="dashBrutoAno" class="text-lg sm:text-xl font-black text-emerald-700">$0</span>
+    </div>
+</div>
 
                 <!-- BOTÓN DE ACCIÓN EXCLUSIVO WHATSAPP -->
                 <div class="pt-2">
@@ -519,37 +568,7 @@
         </div>
 
     </main>
-        <!-- CALENDARIO DE OCUPACIÓN -->
-        <section id="seccionCalendario" class="bg-white border border-slate-200 p-5 sm:p-6 rounded-2xl shadow-sm space-y-4">
-            <div class="flex flex-col sm:flex-row justify-between items-center border-b border-slate-200 pb-4 gap-3">
-                <h2 class="text-base font-bold text-slate-800 flex items-center">
-                    <i class="fa-solid fa-calendar-days text-emerald-700 mr-2.5"></i>Calendario Ocupacional de Disponibilidad
-                </h2>
-                <div class="flex items-center gap-2">
-                    <button type="button" onclick="cambiarMesCalendario(-1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-semibold text-xs border border-slate-300">
-                        <i class="fa-solid fa-chevron-left mr-1"></i> Anterior
-                    </button>
-                    <button type="button" onclick="resetMesCalendario()" class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-3 py-1.5 rounded-lg font-bold text-xs">
-                        Hoy
-                    </button>
-                    <button type="button" onclick="cambiarMesCalendario(1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-semibold text-xs border border-slate-300">
-                        Siguiente <i class="fa-solid fa-chevron-right ml-1"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="flex flex-wrap gap-4 text-xs font-semibold bg-slate-50 p-3 rounded-xl border border-slate-200">
-                <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-confirmada inline-block"></span> <span class="text-slate-700">Reserva Confirmada / Importada</span></div>
-                <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-curso inline-block"></span> <span class="text-slate-700">Reserva en Curso (Verde)</span></div>
-                <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-terminada inline-block"></span> <span class="text-slate-700">Reserva Terminada</span></div>
-                <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-airbnb inline-block"></span> <span class="text-slate-700">Airbnb / Booking Pendiente (Rosa)</span></div>
-                <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-bloqueo inline-block"></span> <span class="text-slate-700">Fecha bloqueada</span></div>
-                <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded cal-day-transicion inline-block"></span> <span class="text-slate-700">Cambio Huésped (Turnaround Mismo Día)</span></div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="calendarioContenedor"></div>
-        </section>
-
+        
     </main>
 
     <!-- MODALES -->
@@ -1533,33 +1552,36 @@
                 document.getElementById('lblRangoFechasSeleccionado').innerText = `Entrada: ${formatearFechaChile(fechaStr)} (Selecciona Salida...)`;
                 document.getElementById('lblEstadoSeleccionFechas').innerText = "👇 Haz clic en la FECHA DE SALIDA (Check-Out)";
             } else {
-                if (fechaStr <= seleccionTempCheckin) {
-                    seleccionTempCheckin = fechaStr;
-                    seleccionTempCheckout = null;
-                    document.getElementById('checkin').value = fechaStr;
-                    document.getElementById('checkout').value = '';
-                    document.getElementById('lblRangoFechasSeleccionado').innerText = `Entrada: ${formatearFechaChile(fechaStr)} (Selecciona Salida...)`;
-                    document.getElementById('lblEstadoSeleccionFechas').innerText = "👇 Haz clic en la FECHA DE SALIDA (Check-Out)";
-                } else {
-                    if (verificarSobreposicionFechas(seleccionTempCheckin, fechaStr, document.getElementById('reservaId').value)) {
-                        alert('⚠️ RANGO NO DISPONIBLE: Hay otra reserva u ocupación en el período seleccionado.');
-                        return;
-                    }
-
-                    seleccionTempCheckout = fechaStr;
-                    document.getElementById('checkout').value = fechaStr;
-
-                    document.getElementById('lblRangoFechasSeleccionado').innerText = `${formatearFechaChile(seleccionTempCheckin)} ➔ ${formatearFechaChile(seleccionTempCheckout)}`;
-                    document.getElementById('lblEstadoSeleccionFechas').innerText = "✅ Período Seleccionado";
-
-                    actualizarSelectorTemporadaAutomatico();
-                    validarFechasEnTiempoReal();
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (fechaStr <= seleccionTempCheckin) {
+                seleccionTempCheckin = fechaStr;
+                seleccionTempCheckout = null;
+                document.getElementById('checkin').value = fechaStr;
+                document.getElementById('checkout').value = '';
+                document.getElementById('lblRangoFechasSeleccionado').innerText = `Entrada: ${formatearFechaChile(fechaStr)} (Selecciona Salida...)`;
+                document.getElementById('lblEstadoSeleccionFechas').innerText = "👇 Haz clic en la FECHA DE SALIDA (Check-Out)";
+            } else {
+                if (verificarSobreposicionFechas(seleccionTempCheckin, fechaStr, document.getElementById('reservaId').value)) {
+                    alert('⚠️ RANGO NO DISPONIBLE: Hay otra reserva u ocupación en el período seleccionado.');
+                    return;
                 }
-            }
 
-            renderCalendario();
+                // Estas líneas deben ir AQUÍ ADENTRO:
+                seleccionTempCheckout = fechaStr;
+            document.getElementById('checkout').value = fechaStr;
+
+            document.getElementById('lblRangoFechasSeleccionado').innerText = `${formatearFechaChile(seleccionTempCheckin)} → ${formatearFechaChile(seleccionTempCheckout)}`;
+            document.getElementById('lblEstadoSeleccionFechas').innerText = "✅ Período Seleccionado";
+
+            // ⬇️ Colócalo aquí arriba para que baje de inmediato al seleccionar la salida:
+            window.scrollBy({ top: 580, behavior: 'smooth' });
+
+            actualizarSelectorTemporadaAutomatico();
+            validarFechasEnTiempoReal();
         }
+    }
+
+    renderCalendario();
+}
 
         function cargarFechasPorCodigo(plataforma = 'Airbnb') {
             const codigoBuscado = document.getElementById('codigoOTA').value.trim().toUpperCase();
@@ -2114,6 +2136,7 @@
 
                 return coincideTexto && coincideEstado && coincideMes && coincideAno;
             });
+		reservasFiltradas.sort((a, b) => b.checkin.localeCompare(a.checkin));
 
             if (reservasFiltradas.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-slate-400 font-medium">No se encontraron reservas con los filtros aplicados.</td></tr>`;
