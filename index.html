@@ -221,7 +221,7 @@
                             </div>
                         </div>
 
-<!-- 2.1 SECCIÓN PASAJEROS & FECHAS CON BOTÓN LIMPIAR INTEGRADO -->
+                        <!-- 2.1 SECCIÓN PASAJEROS & FECHAS CON BOTÓN LIMPIAR INTEGRADO -->
                         <div id="seccionPasajerosFechas" class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
                             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-200 pb-2">
                                 <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
@@ -247,7 +247,7 @@
                                         </span>
                                     </div>
 
-                                    <!-- BOTÓN LIMPIAR FECHAS UBICADO EN LA ZONA DE FECHAS -->
+                                    <!-- BOTÓN LIMPIAR FECHAS -->
                                     <button type="button" onclick="reiniciarSeleccionRangoFechas()" title="Limpiar / Reiniciar Fechas" class="bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-300 font-bold px-3 py-2.5 rounded-xl transition text-xs flex items-center gap-1 shadow-sm">
                                         <i class="fa-solid fa-broom text-sm"></i>
                                         <span class="hidden md:inline">Limpiar Fechas</span>
@@ -559,18 +559,23 @@
         </div>
     </div>
 
+    <!-- MODAL USUARIOS (ESTRUCTURA CORREGIDA) -->
     <div id="modalUsuarios" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-xl w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b border-slate-200 pb-3">
                 <h3 class="text-sm font-bold text-slate-800 flex items-center">
                     <i class="fa-solid fa-users-gear mr-2 text-emerald-700"></i>Gestión de Usuarios Operativos
                 </h3>
-                <button type="button" onclick="toggleModal('modalUsuarios')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button type="button" onclick="toggleModal('modalUsuarios')" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
             </div>
+
             <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-200 text-xs space-y-1">
                 <label class="block font-bold text-emerald-900">Usuario Activo en Sesión:</label>
                 <select id="selUsuarioActivo" onchange="seleccionarUsuarioActivo(this.value)" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-slate-800 font-bold outline-none focus:border-emerald-600"></select>
             </div>
+
             <form id="formUsuario" onsubmit="guardarUsuario(event)" class="space-y-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
                 <div class="flex justify-between items-center border-b border-slate-200 pb-1.5">
                     <span id="usrFormTitle" class="font-bold text-slate-700">Registrar Usuario (Máx. 5)</span>
@@ -587,17 +592,24 @@
                 </div>
                 <button type="submit" id="btnUsrSubmit" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2 rounded-lg transition">+ Agregar Usuario</button>
             </form>
-            <div class="overflow-y-auto max-h-36 rounded-xl border border-slate-200 bg-white">
+
+            <div class="overflow-x-auto max-h-52 rounded-xl border border-slate-200 bg-white">
                 <table class="w-full text-xs text-left">
-                    <thead class="bg-slate-100 text-slate-600 border-b border-slate-200 font-bold">
+                    <thead class="bg-slate-100 text-slate-600 border-b border-slate-200 font-bold sticky top-0 bg-slate-100 z-10">
                         <tr>
                             <th class="p-2.5">Nombre</th>
                             <th class="p-2.5">Email</th>
-                            <th class="p-2.5 text-center">Acciones</th>
+                            <th class="p-2.5 text-center w-28">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="tablaUsuarios" class="divide-y divide-slate-100"></tbody>
                 </table>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t border-slate-200">
+                <button type="button" onclick="toggleModal('modalUsuarios')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-1.5 px-4 rounded-xl text-xs transition">
+                    <i class="fa-solid fa-xmark mr-1"></i> Cerrar Ventana
+                </button>
             </div>
         </div>
     </div>
@@ -1247,14 +1259,17 @@
                 renderCalendario();
                 renderTabla();
                 actualizarResumenGlobal();
-            }, err => console.error("Error sincronizando reservas:", err));
+            }, err => console.error("Error synchronizing reservas:", err));
 
             db.collection('usuarios').onSnapshot(snapshot => {
                 usuarios = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 if (usuarios.length === 0) {
                     db.collection('usuarios').add({ nombre: "Eduardo Vicencio", email: "e.vicencio@evarq.cl" });
+                } else {
+                    renderUsuarios();
+                    actualizarEtiquetaUsuarioActivo();
                 }
-            }, err => console.error("Error sincronizando usuarios:", err));
+            }, err => console.error("Error synchronizing usuarios:", err));
 
             db.collection('configuracion').doc('costosCasa').onSnapshot(doc => {
                 if (doc.exists) {
@@ -1413,7 +1428,6 @@
             const inputIn = document.getElementById('checkin');
             const inputOut = document.getElementById('checkout');
 
-            // 1. Si no hay check-in inicial o ya había un rango completo previamente seleccionado
             if (!seleccionTempCheckin || (seleccionTempCheckin && seleccionTempCheckout)) {
                 seleccionTempCheckin = fechaStr;
                 seleccionTempCheckout = null;
@@ -1424,10 +1438,8 @@
                 document.getElementById('lblRangoFechasSeleccionado').innerText = `Entrada: ${formatearFechaChile(fechaStr)} (Selecciona Salida...)`;
                 document.getElementById('lblEstadoSeleccionFechas').innerText = "👇 Haz clic en la FECHA DE SALIDA (Check-Out)";
             } 
-            // 2. Selección de la fecha de Salida (Check-Out)
             else {
                 if (fechaStr <= seleccionTempCheckin) {
-                    // Si seleccionan una fecha igual o menor, reiniciar como nuevo Check-In
                     seleccionTempCheckin = fechaStr;
                     seleccionTempCheckout = null;
 
@@ -1455,7 +1467,6 @@
                     actualizarSelectorTemporadaAutomatico();
                     calcularValores();
 
-                    // === AVANCE SUAVE A LA SECCIÓN DE DATOS DEL HUÉSPED ===
                     setTimeout(() => {
                         const formSection = document.getElementById('reservaForm');
                         if (formSection) {
@@ -1466,57 +1477,6 @@
                             });
                         }
                     }, 150);
-                }
-            }
-
-            renderCalendario();
-        }
-
-        function manejarClicFechaLibre(fechaStr) {
-            const inputIn = document.getElementById('checkin');
-            const inputOut = document.getElementById('checkout');
-
-            // 1. Si no hay check-in inicial o ya había un rango completo previamente seleccionado
-            if (!seleccionTempCheckin || (seleccionTempCheckin && seleccionTempCheckout)) {
-                seleccionTempCheckin = fechaStr;
-                seleccionTempCheckout = null;
-
-                if (inputIn) inputIn.value = fechaStr;
-                if (inputOut) inputOut.value = '';
-
-                document.getElementById('lblRangoFechasSeleccionado').innerText = `Entrada: ${formatearFechaChile(fechaStr)} (Selecciona Salida...)`;
-                document.getElementById('lblEstadoSeleccionFechas').innerText = "👇 Haz clic en la FECHA DE SALIDA (Check-Out)";
-            } 
-            // 2. Selección de la fecha de Salida (Check-Out)
-            else {
-                if (fechaStr <= seleccionTempCheckin) {
-                    // Si seleccionan una fecha igual o menor, reiniciar como nuevo Check-In
-                    seleccionTempCheckin = fechaStr;
-                    seleccionTempCheckout = null;
-
-                    if (inputIn) inputIn.value = fechaStr;
-                    if (inputOut) inputOut.value = '';
-
-                    document.getElementById('lblRangoFechasSeleccionado').innerText = `Entrada: ${formatearFechaChile(fechaStr)} (Selecciona Salida...)`;
-                    document.getElementById('lblEstadoSeleccionFechas').innerText = "👇 Haz clic en la FECHA DE SALIDA (Check-Out)";
-                } else {
-                    const idReservaEditando = document.getElementById('reservaId') ? document.getElementById('reservaId').value : null;
-
-                    if (verificarSobreposicionFechas(seleccionTempCheckin, fechaStr, idReservaEditando)) {
-                        alert('⚠️ RANGO NO DISPONIBLE: Hay otra reserva u ocupación dentro del período seleccionado.');
-                        return;
-                    }
-
-                    seleccionTempCheckout = fechaStr;
-
-                    if (inputIn) inputIn.value = seleccionTempCheckin;
-                    if (inputOut) inputOut.value = fechaStr;
-
-                    document.getElementById('lblRangoFechasSeleccionado').innerText = `${formatearFechaChile(seleccionTempCheckin)} ➔ ${formatearFechaChile(seleccionTempCheckout)}`;
-                    document.getElementById('lblEstadoSeleccionFechas').innerText = "✅ Período Seleccionado Exitosamente";
-
-                    actualizarSelectorTemporadaAutomatico();
-                    calcularValores();
                 }
             }
 
@@ -1649,17 +1609,16 @@
         }
 
         function actualizarSelectorTemporadaAutomatico() {
-    const checkinVal = document.getElementById('checkin').value;
-    if (checkinVal) {
-        const partes = checkinVal.split('-');
-        if (partes.length >= 2) {
-            const mes = parseInt(partes[1], 10);
-            // Abril (4) a Septiembre (9) -> Invierno | Octubre (10) a Marzo (3) -> Verano/Estival
-            const esInvierno = (mes >= 4 && mes <= 9);
-            document.getElementById('selectTemporadaReserva').value = esInvierno ? 'Invierno' : 'Verano';
+            const checkinVal = document.getElementById('checkin').value;
+            if (checkinVal) {
+                const partes = checkinVal.split('-');
+                if (partes.length >= 2) {
+                    const mes = parseInt(partes[1], 10);
+                    const esInvierno = (mes >= 4 && mes <= 9);
+                    document.getElementById('selectTemporadaReserva').value = esInvierno ? 'Invierno' : 'Verano';
+                }
+            }
         }
-    }
-}
 
         function exportarReservasExcel() {
             if (reservas.length === 0) return alert('No hay reservas para exportar.');
@@ -2586,88 +2545,129 @@
             }
         }
 
+        // FUNCIONES DE GESTIÓN DE USUARIOS
         function abrirModalUsuarios() {
-            const sel = document.getElementById('selUsuarioActivo');
-            sel.innerHTML = '';
-            usuarios.forEach(u => {
-                sel.innerHTML += `<option value="${u.id}" ${u.id == usuarioActivoId ? 'selected' : ''}>${u.nombre} (${u.email})</option>`;
-            });
-            cancelarEdicionUsuario();
-            renderUsuarios();
-            toggleModal('modalUsuarios');
-        }
+    renderUsuarios();
+    cancelarEdicionUsuario();
+    toggleModal('modalUsuarios');
+}
 
-        function seleccionarUsuarioActivo(id) {
-            usuarioActivoId = id;
-            localStorage.setItem('usr_activo_caban', id);
-        }
+function seleccionarUsuarioActivo(id) {
+    usuarioActivoId = id;
+    localStorage.setItem('usr_activo_caban', id);
+    actualizarEtiquetaUsuarioActivo();
+}
 
-        function renderUsuarios() {
-            const tbody = document.getElementById('tablaUsuarios');
-            tbody.innerHTML = '';
-            usuarios.forEach(u => {
-                tbody.innerHTML += `
-                    <tr class="border-b border-slate-200">
-                        <td class="p-2 font-bold text-slate-800">${u.nombre}</td>
-                        <td class="p-2 text-slate-500">${u.email}</td>
-                        <td class="p-2 text-center space-x-1">
-                            <button type="button" onclick="prepararEdicionUsuario('${u.id}')" title="Editar" class="text-sky-600 hover:text-sky-800"><i class="fa-solid fa-pen"></i></button>
-                            ${usuarios.length > 1 ? `<button type="button" onclick="eliminarUsuario('${u.id}')" title="Eliminar" class="text-rose-600 hover:text-rose-800"><i class="fa-solid fa-trash"></i></button>` : ''}
-                        </td>
-                    </tr>
-                `;
-            });
-        }
+function actualizarEtiquetaUsuarioActivo() {
+    const sel = document.getElementById('selUsuarioActivo');
+    if (!sel) return;
+    sel.innerHTML = '';
+    
+    let usrActivoObj = usuarios.find(u => u.id === usuarioActivoId);
+    if (!usrActivoObj && usuarios.length > 0) {
+        usrActivoObj = usuarios[0];
+        usuarioActivoId = usrActivoObj.id;
+    }
 
-        function prepararEdicionUsuario(id) {
-            const u = usuarios.find(item => item.id === id);
-            if (!u) return;
-            document.getElementById('usrEditId').value = u.id;
-            document.getElementById('usrNombre').value = u.nombre;
-            document.getElementById('usrEmail').value = u.email;
+    usuarios.forEach(u => {
+        sel.innerHTML += `<option value="${u.id}" ${u.id === usuarioActivoId ? 'selected' : ''}>${u.nombre} (${u.email})</option>`;
+    });
 
-            document.getElementById('usrFormTitle').innerText = `Editando: ${u.nombre}`;
-            document.getElementById('btnUsrSubmit').innerText = '💾 Guardar Cambios';
-            document.getElementById('btnUsrSubmit').classList.replace('bg-emerald-700', 'bg-sky-600');
-            document.getElementById('btnCancelarEditUsr').classList.remove('hidden');
-        }
+    const lbl = document.getElementById('lblUsuarioActivo');
+    if (lbl) {
+        lbl.innerText = usrActivoObj ? usrActivoObj.nombre : 'Seleccionar Usuario';
+    }
+}
 
-        function cancelarEdicionUsuario() {
-            document.getElementById('formUsuario').reset();
-            document.getElementById('usrEditId').value = '';
-            document.getElementById('usrFormTitle').innerText = 'Registrar Usuario (Máx. 5)';
-            document.getElementById('btnUsrSubmit').innerText = '+ Agregar Usuario';
-            document.getElementById('btnUsrSubmit').classList.replace('bg-sky-600', 'bg-emerald-700');
-            document.getElementById('btnCancelarEditUsr').classList.add('hidden');
-        }
+function renderUsuarios() {
+    const tbody = document.getElementById('tablaUsuarios');
+    if (!tbody) return;
+    tbody.innerHTML = '';
 
-        async function guardarUsuario(e) {
-            e.preventDefault();
-            const editId = document.getElementById('usrEditId').value;
-            const nombre = document.getElementById('usrNombre').value.trim();
-            const email = document.getElementById('usrEmail').value.trim();
+    if (!usuarios || usuarios.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400">No hay usuarios registrados.</td></tr>`;
+        return;
+    }
 
-            try {
-                if (editId) {
-                    await db.collection('usuarios').doc(editId).update({ nombre, email });
-                } else {
-                    if (usuarios.length >= 5) return alert('⚠ LÍMITE ALCANZADO: Solo puedes registrar un máximo de 5 usuarios.');
-                    if (usuarios.some(u => u.email.toLowerCase() === email.toLowerCase())) return alert('Ese email/identificador ya existe.');
-                    const docRef = await db.collection('usuarios').add({ nombre, email });
-                    usuarioActivoId = docRef.id;
-                }
-                cancelarEdicionUsuario();
-                abrirModalUsuarios();
-            } catch (err) {
-                alert("Error al guardar usuario: " + err.message);
+    usuarios.forEach(u => {
+        tbody.innerHTML += `
+            <tr class="border-b border-slate-200 hover:bg-slate-50">
+                <td class="p-2.5 font-bold text-slate-800">${u.nombre || 'Sin nombre'}</td>
+                <td class="p-2.5 text-slate-500">${u.email || ''}</td>
+                <td class="p-2.5 text-center whitespace-nowrap">
+                    <button type="button" onclick="prepararEdicionUsuario('${u.id}')" title="Editar" class="px-2 py-1 bg-sky-100 text-sky-700 hover:bg-sky-200 rounded-md font-bold text-[11px] mr-1">
+                        ✏️ Editar
+                    </button>
+                    <button type="button" onclick="eliminarUsuario('${u.id}')" title="Eliminar" class="px-2 py-1 bg-rose-100 text-rose-700 hover:bg-rose-200 rounded-md font-bold text-[11px]">
+                        🗑️ Borrar
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+async function guardarUsuario(e) {
+    e.preventDefault();
+    const id = document.getElementById('usrEditId').value;
+    const nombre = document.getElementById('usrNombre').value.trim();
+    const email = document.getElementById('usrEmail').value.trim();
+
+    if (!nombre || !email) {
+        alert('Por favor completa el nombre y el correo.');
+        return;
+    }
+
+    try {
+        if (id) {
+            await db.collection('usuarios').doc(id).update({ nombre, email });
+        } else {
+            if (usuarios.length >= 5) {
+                alert('Has alcanzado el límite máximo de 5 usuarios.');
+                return;
             }
+            await db.collection('usuarios').add({ nombre, email });
         }
+        cancelarEdicionUsuario();
+    } catch (err) {
+        alert('Error al guardar el usuario: ' + err.message);
+    }
+}
 
-        async function eliminarUsuario(id) {
-            if (confirm('¿Eliminar este usuario?')) {
-                await db.collection('usuarios').doc(id).delete();
+function prepararEdicionUsuario(id) {
+    const usr = usuarios.find(u => u.id === id);
+    if (!usr) return;
+    document.getElementById('usrEditId').value = usr.id;
+    document.getElementById('usrNombre').value = usr.nombre || '';
+    document.getElementById('usrEmail').value = usr.email || '';
+    document.getElementById('usrFormTitle').innerText = 'Editando Usuario';
+    document.getElementById('btnUsrSubmit').innerText = 'Guardar Cambios';
+    document.getElementById('btnCancelarEditUsr').classList.remove('hidden');
+}
+
+function cancelarEdicionUsuario() {
+    document.getElementById('formUsuario').reset();
+    document.getElementById('usrEditId').value = '';
+    document.getElementById('usrFormTitle').innerText = 'Registrar Usuario (Máx. 5)';
+    document.getElementById('btnUsrSubmit').innerText = '+ Agregar Usuario';
+    document.getElementById('btnCancelarEditUsr').classList.add('hidden');
+}
+
+async function eliminarUsuario(id) {
+    if (!id) return;
+
+    if (confirm('¿Deseas eliminar este usuario de la base de datos?')) {
+        try {
+            await db.collection('usuarios').doc(id).delete();
+            if (usuarioActivoId === id) {
+                localStorage.removeItem('usr_activo_caban');
+                usuarioActivoId = null;
             }
+        } catch (err) {
+            alert("❌ Error al eliminar en la base de datos: " + err.message);
         }
+    }
+}
 
         function cargarValoresCostosCasa() {
             const v = costosCasa.verano || {};
@@ -3391,18 +3391,16 @@
 
             guardarGestionElectricaEnFirestore();
         }
-function reiniciarSeleccionRangoFechas() {
-            // 1. Limpiar variables de selección temporal
+
+        function reiniciarSeleccionRangoFechas() {
             seleccionTempCheckin = null;
             seleccionTempCheckout = null;
 
-            // 2. Limpiar inputs ocultos de formulario
             const inputIn = document.getElementById('checkin');
             const inputOut = document.getElementById('checkout');
             if (inputIn) inputIn.value = '';
             if (inputOut) inputOut.value = '';
 
-            // 3. Restaurar etiquetas de texto en el formulario
             const elRango = document.getElementById('lblRangoFechasSeleccionado');
             if (elRango) elRango.innerText = "Seleccionar en Calendario...";
 
@@ -3412,10 +3410,7 @@ function reiniciarSeleccionRangoFechas() {
             const elDias = document.getElementById('cantDiasMostrar');
             if (elDias) elDias.value = '0 días / 0 noches';
 
-            // 4. Recalcular montos a $0
             calcularValores();
-
-            // 5. REDIBUJAR EL CALENDARIO (Limpia los colores azules de las fechas seleccionadas)
             renderCalendario();
         }
     </script>
